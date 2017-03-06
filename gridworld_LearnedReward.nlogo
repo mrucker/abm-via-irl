@@ -1,90 +1,200 @@
 extensions [matlab]
 
+globals [
+  gridworld
+  policy
+]
+
+turtles-own [
+  state
+]
+
+to setup
+  clear-all
+  set-default-shape turtles "person"
+
+  ;; create gridworld
+  set gridworld patches with [pxcor >= 0 or pycor >= 0]
+  ask gridworld [ set pcolor black ]
+
+  ;; create the agents
+  create-turtles 500 [
+    set color white
+    move-to patch-at random 32 random 32
+  ]
+
+  ;; Solve MDP of random policy
+  matlab:eval "finished=0;"
+  matlab:send-double "matlab_seed" seed
+  matlab:eval "rng(matlab_seed);"
+  matlab:eval "run('NetLogo_LearnedReward.m');finished=1;"
+  let matlabReady false
+  while [ matlabReady = false]
+  [
+    wait 1
+    set matlabReady (matlab:get-double "finished")
+  ]
+
+  show "ready"
+
+  matlab:eval "learned_policy = Pol{selected};"
+  ;;matlab:eval "learned_policy = policy;"
+  set policy matlab:get-double-list "learned_policy"
+
+  ;; start the clock
+  reset-ticks
+end
+
 
 to go
 
-  matlab:eval "run('NetLogo.m')"
+  ask turtles [
+    set state (xcor) + (ycor * 32)
+    let action item state policy
+    let x xcor
+    let y ycor
 
-  let policy n-values 1024 [0]
-  set policy matlab:get-double-list "policy"
-  show policy
+    if action = 1 [
+      set y ycor + 1
+    ]
+    if action = 2 [
+      set x xcor + 1
+    ]
+    if action = 3 [
+      set y ycor - 1
+    ]
+    if action = 4 [
+      set x xcor - 1
+    ]
 
-  let num_steps 0
-  set num_steps matlab:get-double "num_steps"
-  show num_steps
+    facexy x y
 
-  let dlist [1 2 3 4 5]
-  show dlist
-  matlab:send-double-list "d1" dlist
-  matlab:eval "d2 = sum(d1)"
-  let d matlab:get-double "d2"
+    if x >= 0 and y >= 0 and x <= 31 and y <= 31 [
+       let target patch-ahead 1
+       move-to target
+    ]
+  ]
 
-  show d
+  tick
+end
+
+
+to move-to-empty-one-of [locations]  ;; turtle procedure
+  move-to one-of locations
+  while [any? other turtles-here] [
+    move-to one-of locations
+  ]
 end
 @#$#@#$#@
 GRAPHICS-WINDOW
-210
-10
-649
-470
-16
-16
-13.0
+200
+25
+753
+599
+-1
+-1
+16.97
 1
-10
+24
 1
 1
 1
 0
-1
-1
-1
--16
-16
--16
-16
 0
 0
+1
+0
+31
+0
+31
+1
+1
 1
 ticks
-30.0
+10.0
+
+BUTTON
+20
+150
+85
+183
+go
+go
+T
+1
+T
+OBSERVER
+NIL
+NIL
+NIL
+NIL
+0
+
+BUTTON
+20
+100
+86
+133
+setup
+setup
+NIL
+1
+T
+OBSERVER
+NIL
+NIL
+NIL
+NIL
+1
+
+INPUTBOX
+20
+25
+172
+85
+seed
+753
+1
+0
+Number
 
 @#$#@#$#@
+## ACKNOWLEDGMENT
+
+
+
 ## WHAT IS IT?
 
-(a general understanding of what the model is trying to show or explain)
+
 
 ## HOW IT WORKS
 
-(what rules the agents use to create the overall behavior of the model)
+
 
 ## HOW TO USE IT
 
-(how to use the model, including a description of each of the items in the Interface tab)
+
 
 ## THINGS TO NOTICE
 
-(suggested things for the user to notice while running the model)
 
 ## THINGS TO TRY
 
-(suggested things for the user to try to do (move sliders, switches, etc.) with the model)
 
 ## EXTENDING THE MODEL
 
-(suggested things to add or change in the Code tab to make the model more complicated, detailed, accurate, etc.)
+
 
 ## NETLOGO FEATURES
 
-(interesting or unusual features of NetLogo that the model uses, particularly in the Code tab; or where workarounds were needed for missing features)
+
 
 ## RELATED MODELS
 
-(models in the NetLogo Models Library and elsewhere which are of related interest)
+
+
 
 ## CREDITS AND REFERENCES
-
-(a reference to the model's URL on the web if it has one, as well as any other necessary credits, citations, and links)
 @#$#@#$#@
 default
 true
@@ -278,22 +388,6 @@ Polygon -7500403 true true 135 105 90 60 45 45 75 105 135 135
 Polygon -7500403 true true 165 105 165 135 225 105 255 45 210 60
 Polygon -7500403 true true 135 90 120 45 150 15 180 45 165 90
 
-sheep
-false
-15
-Circle -1 true true 203 65 88
-Circle -1 true true 70 65 162
-Circle -1 true true 150 105 120
-Polygon -7500403 true false 218 120 240 165 255 165 278 120
-Circle -7500403 true false 214 72 67
-Rectangle -1 true true 164 223 179 298
-Polygon -1 true true 45 285 30 285 30 240 15 195 45 210
-Circle -1 true true 3 83 150
-Rectangle -1 true true 65 221 80 296
-Polygon -1 true true 195 285 210 285 210 240 240 210 195 210
-Polygon -7500403 true false 276 85 285 105 302 99 294 83
-Polygon -7500403 true false 219 85 210 105 193 99 201 83
-
 square
 false
 0
@@ -378,13 +472,6 @@ Line -7500403 true 40 84 269 221
 Line -7500403 true 40 216 269 79
 Line -7500403 true 84 40 221 269
 
-wolf
-false
-0
-Polygon -16777216 true false 253 133 245 131 245 133
-Polygon -7500403 true true 2 194 13 197 30 191 38 193 38 205 20 226 20 257 27 265 38 266 40 260 31 253 31 230 60 206 68 198 75 209 66 228 65 243 82 261 84 268 100 267 103 261 77 239 79 231 100 207 98 196 119 201 143 202 160 195 166 210 172 213 173 238 167 251 160 248 154 265 169 264 178 247 186 240 198 260 200 271 217 271 219 262 207 258 195 230 192 198 210 184 227 164 242 144 259 145 284 151 277 141 293 140 299 134 297 127 273 119 270 105
-Polygon -7500403 true true -1 195 14 180 36 166 40 153 53 140 82 131 134 133 159 126 188 115 227 108 236 102 238 98 268 86 269 92 281 87 269 103 269 113
-
 x
 false
 0
@@ -410,5 +497,5 @@ Line -7500403 true 150 150 90 180
 Line -7500403 true 150 150 210 180
 
 @#$#@#$#@
-0
+1
 @#$#@#$#@
