@@ -6,7 +6,13 @@
 
 addpath('MDPtoolbox');
 
-Run();
+loop = 5;
+
+t = tic;
+for i = 1:loop
+    Run();
+end
+disp(['avg' ' ' num2str(toc(t) / loop)]);
 
 function Run(); global n m num_macrocells num_states num_actions;
     n = 32; % nxn gridworld
@@ -160,5 +166,5 @@ function Run(); global n m num_macrocells num_states num_actions;
 end
 
 function [V, policy] = Value_Iteration(P, R, discount)
-    [V, policy, ~, ~] = mdp_value_iteration (P, R, discount);
+    [V, policy, ~, ~] = mar_value_iteration (P, R, discount);
 end
