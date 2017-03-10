@@ -48,7 +48,7 @@ end
 
 for a=1:A % avoid looping over S
     
-    ind = find(policy == a); % the rows that use action a
+    ind = find(policy == a); % the states in which we take action a
     if ~isempty(ind)
         if iscell(P)
             Ppolicy(ind,:) = P{a}(ind,:);
@@ -63,4 +63,3 @@ end
 if issparse(PR)
     PRpolicy = sparse(PRpolicy);
 end
-    

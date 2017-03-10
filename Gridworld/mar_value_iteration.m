@@ -5,21 +5,22 @@ function [V, policy, iter, cpu_time] = mar_value_iteration(P, R, discount, epsil
     S_N = size(R,1);
     A_N = size(R,2);
     
-    V = V0;
     Q = zeros(S_N, A_N);
-    
+
     if(nargin < 4)
         epsilon = .01;
     end
 
     if(nargin < 5)
-        max_iter = 1000;
+        max_iter = 100;
     end
-    
+
     if(nargin < 6)
         V = zeros(S_N, 001);
+    else
+        V = V0;
     end
-    
+
 %     if nargin < 5
 %         if discount ~= 1
 %             max_iter = mdp_value_iteration_bound_iter(P, R, discount, epsilon, V);            
@@ -31,11 +32,11 @@ function [V, policy, iter, cpu_time] = mar_value_iteration(P, R, discount, epsil
     if discount ~= 1
         epsilon = epsilon * (1-discount)/discount;
     end;
-       
+
     done = false;
-    
+
     while ~done
-        
+
         v    = V;
         iter = iter + 1;
 
@@ -44,9 +45,9 @@ function [V, policy, iter, cpu_time] = mar_value_iteration(P, R, discount, epsil
         end
 
         [V, policy] = max(Q, [], 2);
-        
+
         done = max(V-v) < epsilon | iter == max_iter;
     end
-    
+
     cpu_time = 0;
 end

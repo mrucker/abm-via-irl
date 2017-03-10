@@ -6,8 +6,8 @@
 
 addpath('MDPtoolbox');
 
-loop = 5;
-
+loop = 1;
+rng(30);
 t = tic;
 for i = 1:loop
     Run();
