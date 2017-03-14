@@ -7,8 +7,10 @@
 addpath('MDPtoolbox');
 
 loop = 1;
-rng(30);
 t = tic;
+
+Setup();
+
 for i = 1:loop
     Run();
 end
@@ -165,6 +167,12 @@ function Run(); global n m num_macrocells num_states num_actions;
     fprintf('Done\n');
 end
 
+function Setup()
+    rng(20);
+end
+
 function [V, policy] = Value_Iteration(P, R, discount)
-    [V, policy, ~, ~] = mar_value_iteration (P, R, discount);
+    %[V, policy, ~, ~] = mdp_value_iteration (P, R, discount);    
+    %[V, policy, ~, ~] = mar_value_iteration (P, R, discount);
+    [V, policy, ~, ~] = mar_value_iteration2 (P, R, discount);
 end

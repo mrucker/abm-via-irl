@@ -14,7 +14,7 @@ R = sparse([1 S_N], [1 1], [0 0], S_N, A_N);
 P = cell(A_N,1);
 
 d        = 1;
-e        = .1;
+e        = .0001;
 V0       = zeros(S_N,1);
 V0(end)  = 1;
 max_iter = 1000;
@@ -33,13 +33,14 @@ loop = 1;
 
 tstart = tic;
 for i = 1:loop
-   [v1, policy1, ~, ~]  = mar_value_iteration(P, R, d, e, max_iter, V0);
+   [v1, policy1, ~, ~]  = mar_value_iteration2(P, R, d, e, max_iter, V0);
 end
 disp(['v1' ' ' num2str(toc(tstart) / loop)]);
 
 tstart = tic;
 for i = 1:loop
-    [v2, policy2, ~, ~] = mdp_value_iteration (P, R, d, e, max_iter, V0);
+    %[v2, policy2, ~, ~] = mdp_value_iteration (P, R, d, e, max_iter, V0);
+    [v2, policy2, ~, ~] = mar_value_iteration(P, R, d, e, max_iter, V0);
 end
 disp(['v2' ' ' num2str(toc(tstart) / loop)]);
 
