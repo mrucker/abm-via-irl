@@ -14,7 +14,7 @@ R = sparse([1 S_N], [1 1], [0 0], S_N, A_N);
 P = cell(A_N,1);
 
 d        = 1;
-e        = .0001;
+e        = .1;
 V0       = zeros(S_N,1);
 V0(end)  = 1;
 max_iter = 1000;

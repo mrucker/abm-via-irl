@@ -115,7 +115,7 @@ function Run(); global n m num_macrocells num_states num_actions;
         % 4.
         R = kron(reshape(w(:,i),(n/m),(n/m)), ones(m,m));
         R = repmat(R(:), 1, num_actions); 
-        [V, Pol{i}] = Value_Iteration(P, R, discount);
+        [~, Pol{i}] = Value_Iteration(P, R, discount);
 
         % 5.
         mu(:,i) = feature_expectations(P, discount, D, Pol{i}, num_samples, num_steps);
@@ -168,11 +168,17 @@ function Run(); global n m num_macrocells num_states num_actions;
 end
 
 function Setup()
-    rng(20);
+    rng(80);
+    %10: 03.3, 03.8, 02.5
+    %15: 02.4, 07.5, 02.7
+    %20: 14.8, 09.6, 10.6
+    %40: 14.8, 11.2, 18.1
+    %60: 43.4, 15.9, 28.0
+    %80: 08.9, 05.1, 05.4
 end
 
 function [V, policy] = Value_Iteration(P, R, discount)
-    %[V, policy, ~, ~] = mdp_value_iteration (P, R, discount);    
+    %[V, policy, ~, ~] = mdp_value_iteration (P, R, discount);
     %[V, policy, ~, ~] = mar_value_iteration (P, R, discount);
-    [V, policy, ~, ~] = mar_value_iteration2 (P, R, discount);
+    [V, policy, ~, ~] = mar_value_iteration2(P, R, discount);
 end
