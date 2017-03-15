@@ -42,7 +42,7 @@ function Run(); global n m num_macrocells num_states num_actions;
 
     % Transition probabilities
     for a = 1:num_actions
-        %for each action a, we have a zero sparse matrix P{a} with size of
+        %for each action a, we have a sparse matrix P{a} with size of
         %32^2x32^2x160
         P{a} = sparse([],[],[],num_states,num_states,num_states * (num_actions + 1));
         for from = 1:num_states
