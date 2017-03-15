@@ -9,7 +9,6 @@ A  = 0:floor(C/2);
 S_N = numel(S);
 A_N = numel(A);
 
-
 R = sparse([1 S_N], [1 1], [0 0], S_N, A_N);
 P = cell(A_N,1);
 

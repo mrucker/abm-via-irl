@@ -33,8 +33,8 @@ function [V, policy, iter, cpu_time] = mar_value_iteration2(P, R, discount, epsi
         epsilon = epsilon * (1-discount)/discount; %[(Powell 64) I have no idea why they apply this transformation]
     end;
 
-    done = false;    
-    
+    done = false;
+
     while ~done
 
         v    = V;
