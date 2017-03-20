@@ -30,7 +30,7 @@ function Run(); global n m num_macrocells num_states num_actions;
     r    = rand(num_macrocells,1) .* mask;
     r    = r ./ sum(r);
     R    = kron(reshape(r,(n/m),(n/m)), ones(m,m));
-    R    = repmat(R(:), 1, num_actions); 
+    R    = repmat(R(:), 1, num_actions);
 
     % Transition probabilities
     for a = 1:num_actions
@@ -107,7 +107,7 @@ function Run(); global n m num_macrocells num_states num_actions;
         % 4.
         R = kron(reshape(w(:,i),(n/m),(n/m)), ones(m,m));
         R = repmat(R(:), 1, num_actions); 
-        [V, Pol{i}] = Value_Iteration(P, R, discount);
+        [~, Pol{i}] = Value_Iteration(P, R, discount);
 
         % 5.
         mu(:,i) = feature_expectations(P, discount, D, Pol{i}, num_samples, num_steps);

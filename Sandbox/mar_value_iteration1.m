@@ -1,4 +1,4 @@
-function [V, policy, iter, cpu_time] = mar_value_iteration(P, R, discount, epsilon, max_iter, V0)
+function [V, policy, iter, cpu_time] = mar_value_iteration1(P, R, discount, epsilon, max_iter, V0)
 
     iter = 0;
 
