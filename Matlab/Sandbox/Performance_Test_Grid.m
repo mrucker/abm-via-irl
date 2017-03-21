@@ -1,10 +1,11 @@
+addpath(fullfile(fileparts(which(mfilename)),'../MDPtoolbox/'));
+addpath(fullfile(fileparts(which(mfilename)),'../Gridworld/'));
+
 %% Gridworld experiment
 % Apprenticeship learning experiment in a simple gridworld
 
 %%
 % Make parameters availabe in functions
-
-addpath('MDPtoolbox');
 
 loop = 1;
 
@@ -179,6 +180,6 @@ end
 
 function [V, policy] = Value_Iteration(P, R, discount)
     %[V, policy, ~, ~] = mdp_value_iteration (P, R, discount);
-    %[V, policy, ~, ~] = mar_value_iteration (P, R, discount);
-    [V, policy, ~, ~] = mar_value_iteration2(P, R, discount);
+    %[V, policy, ~, ~] = mar_value_iteration1(P, R, discount);
+    [V, policy, ~, ~] = mar_value_iteration2 (P, R, discount);
 end
