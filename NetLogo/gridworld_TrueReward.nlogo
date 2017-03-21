@@ -1,4 +1,4 @@
-extensions [matlab]
+extensions[matlab pathdir]
 
 globals [
   gridworld
@@ -10,6 +10,8 @@ turtles-own [
 ]
 
 to setup
+  matlab:eval (word "run('"pathdir:get-current"\\Initialize.m')")
+
   clear-all
   set-default-shape turtles "person"
 
