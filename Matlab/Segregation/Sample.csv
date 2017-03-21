@@ -1,0 +1,6 @@
+AgentId, Conversation_Length, Conversation_With_Like, People_Around_To_Talk, Action
+101231,15.23 ,0,0,1
+101231,2.10  ,0,1,2
+101231,3.00  ,1,0,3
+101231,20    ,0,1,4
+101231,19.424,1,0,1
