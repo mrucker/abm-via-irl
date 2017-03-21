@@ -1,3 +1,5 @@
+addpath(fullfile(fileparts(which(mfilename)),'../MDPtoolbox/'));
+
 global C;
 
 PW = 0.2;
@@ -39,7 +41,7 @@ disp(['v1' ' ' num2str(toc(tstart) / loop)]);
 tstart = tic;
 for i = 1:loop
     %[v2, policy2, ~, ~] = mdp_value_iteration (P, R, d, e, max_iter, V0);
-    [v2, policy2, ~, ~] = mar_value_iteration(P, R, d, e, max_iter, V0);
+    [v2, policy2, ~, ~] = mar_value_iteration1(P, R, d, e, max_iter, V0);
 end
 disp(['v2' ' ' num2str(toc(tstart) / loop)]);
 

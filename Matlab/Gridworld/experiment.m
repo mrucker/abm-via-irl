@@ -1,10 +1,10 @@
+addpath(fullfile(fileparts(which(mfilename)),'../MDPtoolbox/'));
+
 %% Gridworld experiment
 % Apprenticeship learning experiment in a simple gridworld
 
 %%
 % Make parameters availabe in functions
-
-addpath('MDPtoolbox');
 
 Run();
 
