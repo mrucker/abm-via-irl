@@ -7,14 +7,12 @@
 addpath('MDPtoolbox');
 
 loop = 1;
-t = tic;
 
 Setup();
 
-for i = 1:loop
-    Run();
-end
-disp(['avg' ' ' num2str(toc(t) / loop)]);
+t = tic;
+Run();
+%disp(['avg' ' ' num2str(toc(t) / loop)]);
 
 function Run(); global n m num_macrocells num_states num_actions;
     n = 32; % nxn gridworld

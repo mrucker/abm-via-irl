@@ -1,2 +1,3 @@
-# project-6582
-Final IRL Project
+The Netlogo matlab extension only works with Netlogo 5.0. For this reason all development was done on Netlogo version 5.3.1.
+
+All dependencies should now be internal to the repo with one exception. The "~\NetLogo\matlab\matlabServer1.m" file needs to be placed in a directory contained in any of your MATLAB's default search paths. This is because we aren't able to set any matlab search paths until we've started up our server to listen to commands from Netlogo.
