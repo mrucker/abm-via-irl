@@ -40,7 +40,7 @@ function Run()
     expert_trajectories = ReadSampleTrajectories('SampleTrajectories.csv');
     expert_trajectories = horzcat(expert_trajectories{2}, expert_trajectories{3}, expert_trajectories{4});
     
-    mu_expert = zeros(num_features,1);         
+    mu_expert = zeros(num_features,1);
     for t = 1:numel(expert_trajectories)
         mu_expert = mu_expert + discount^(t-1) * phi(expert_trajectories(t));
     end
@@ -82,7 +82,7 @@ function Run()
 
         % 4. We need to finish this
         for j = 1:num_states
-            R(j) =  w(:,i) * phi(state_space(j));
+            R(j) =  phi(state_space(j, :)) * w(:,i);
         end
         
         [~, Pol{i}] = Value_Iteration(P, R, discount);
@@ -101,22 +101,7 @@ function Run()
     [min_distance, selected] = min(distances);
     fprintf('Distance: %6.4f\n\n', min_distance);
 
-    % fprintf('Calculating combination of mu...\n');
-    % cvx_begin
-    %     variable lambda(i-1)
-    %     minimize( norm( mu*lambda - mu_expert, 2 ) )
-    %     subject to
-    %         sum(lambda) == 1;
-    %         lambda >= 0;
-    % cvx_end
-    % [~,idx] = max(lambda);
-    % mu_mixed = mu*lambda;
-
     w_last = w(:,i);
-    % R = kron(reshape(w(:,i),(n/m),(n/m)), ones(m,m));
-    % R = repmat(R(:), 1, num_actions); 
-    % [V, Pol_mixed, iter, cpu_time] = mdp_value_iteration (P, R, discount);
-    % fprintf('Distance: %6.4f\n\n', norm( mu_mixed - mu_expert, 2 ));
 
     fprintf('Comparison between performance of expert and apprentice on found reward function:\n');
     fprintf('V(Apprentice): %6.4f\n', w(:,selected)' * mu(:, selected));
