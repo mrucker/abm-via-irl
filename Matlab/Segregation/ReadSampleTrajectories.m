@@ -1,13 +1,7 @@
-global ROOT; 
-
-ROOT  = '.';
-
-v = ReadValues();
-
-function [values] = ReadValues(); global ROOT;
+function values = ReadSampleTrajectories(fileName)
 
     ME = [];
-    fid = fopen([ROOT '\sample.csv']);
+    fid = fopen(fileName);
 
     try
         values = textscan(fid, '%f %f %f %f %f', 'HeaderLines', 1, 'Delimiter', ',');
