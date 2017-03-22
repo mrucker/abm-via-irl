@@ -1,8 +1,8 @@
+addpath(fullfile(fileparts(which(mfilename)),'../MDPtoolbox/'));
+
 %%
 % Make parameters availabe in functions
 global n m num_macrocells num_states num_actions;
-
-
 
 n = 32; % nxn gridworld
 m = 4; % mxm macrocells
@@ -13,7 +13,6 @@ epsilon = 1;
 num_macrocells = (n / m) ^ 2;
 num_states = n ^ 2;
 num_actions = 4; % North, East, South, West
-
 
 num_samples = 100; % Number of samples to take to approximate feature expectations
 num_steps = 100; % Number of steps for each sample

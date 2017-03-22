@@ -1,8 +1,8 @@
+addpath(fullfile(fileparts(which(mfilename)),'../MDPtoolbox/'));
+
 %%
 % Make parameters availabe in functions
 global n m num_macrocells num_states num_actions;
-
-addpath('MDPtoolbox');
 
 n = 32; % nxn gridworld
 m = 4; % mxm macrocells

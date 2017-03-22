@@ -10,7 +10,7 @@ turtles-own [
 ]
 
 to setup
-  matlab:eval (word "run('"pathdir:get-current"\\_initialize.m')")
+  matlab:eval (word "run('"pathdir:get-current"\\initialize.m')")
 
   clear-all
   set-default-shape turtles "person"
