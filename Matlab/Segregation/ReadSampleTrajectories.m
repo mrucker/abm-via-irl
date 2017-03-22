@@ -12,7 +12,7 @@ function values = ReadSampleTrajectories(fileName)
         rethrow(ME);
     end
 
-    if(~all(0 <= values{2}) || ~all(values{2} <= 20) )
+    if(~all(0 <= values{2}) || ~all(values{2} <= 5) )
         throw(MException('badConversationLength', 'invalid indication of length of conversation'));
     end
     
