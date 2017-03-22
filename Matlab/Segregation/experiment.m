@@ -7,16 +7,24 @@ function Run()
     discount = 0.99;
     epsilon  = 1;
     
-    num_actions = 4;
-    num_states = 100; %just made this up. We'll need to come back and set it correctly
+    state_space = [...
+        horzcat(ones(4, 1)*0, [0;0;1;1], [0;1;0;1]);...
+        horzcat(ones(4, 1)*1, [0;0;1;1], [0;1;0;1]);...
+        horzcat(ones(4, 1)*2, [0;0;1;1], [0;1;0;1]);...
+        horzcat(ones(4, 1)*3, [0;0;1;1], [0;1;0;1]);...
+        horzcat(ones(4, 1)*4, [0;0;1;1], [0;1;0;1]);...
+        horzcat(ones(4, 1)*5, [0;0;1;1], [0;1;0;1]);...
+    ];
+        
+    num_actions  = 4;
+    num_states   = size(state_space,1); %|{0 1 2 3 4 5}| * |{0 1}| * |{0 1}|
     num_features = 3;
     
-    num_samples = 100; % Number of samples to take to approximate feature expectations
-    num_steps = 100;   % Number of steps for each sample
+    num_samples = 100; % Number of samples to use in feature expectations
+    num_steps   = 100; % Number of steps to use in each sample
 
     % Initial uniform state distribution
     D = ones(num_states, 1) / num_states;
-
     P = cell(num_actions, 1);
     
     % Transition probabilities
@@ -31,6 +39,7 @@ function Run()
     % Sample trajectories from expert policy.
     expert_trajectories = ReadSampleTrajectories('SampleTrajectories.csv');
     expert_trajectories = horzcat(expert_trajectories{2}, expert_trajectories{3}, expert_trajectories{4});
+    
     mu_expert = zeros(num_features,1);         
     for t = 1:numel(expert_trajectories)
         mu_expert = mu_expert + discount^(t-1) * phi(expert_trajectories(t));
@@ -40,10 +49,11 @@ function Run()
     mu_est = zeros(num_features, 0);
     w      = zeros(num_features, 0);
     t      = zeros(0,1);
+    R      = zeros(num_states,1);
 
     % Projection algorithm
     % 1.
-    Pol{1}  = ceil(rand(num_states,1) * 4);
+    Pol{1}  = ceil(rand(num_states,1) * num_actions);
     mu(:,1) = feature_expectations(P, discount, D, Pol{1}, num_samples, num_steps);
     i = 2;
 
@@ -71,8 +81,10 @@ function Run()
         end
 
         % 4. We need to finish this
-        R = kron(reshape(w(:,i),(n/m),(n/m)), ones(m,m));
-        R = repmat(R(:), 1, num_actions);
+        for j = 1:num_states
+            R(j) =  w(:,i) * phi(state_space(j));
+        end
+        
         [~, Pol{i}] = Value_Iteration(P, R, discount);
 
         % 5.
