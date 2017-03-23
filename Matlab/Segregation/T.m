@@ -50,18 +50,7 @@ function p1 = T(s0, a0, s1)
               p1 = p{2}(find(neighbor == s1));
           elseif (a0 == 4) && (ismember(s1, neigbhor) == 0)
               p1 = 0;
-          end
-              
-      end
-          
-          
-          
-    
-    
-    
-    
-    
-    
-        
+          end     
+      end      
 end
 
