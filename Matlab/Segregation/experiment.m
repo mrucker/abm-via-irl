@@ -41,15 +41,15 @@ function Run()
     expert_trajectories = horzcat(expert_trajectories{2}, expert_trajectories{3}, expert_trajectories{4});
     
     mu_expert = zeros(num_features,1);
-    for t = 1:numel(expert_trajectories)
-        mu_expert = mu_expert + discount^(t-1) * phi(expert_trajectories(t));
+    for t = 1:size(expert_trajectories,1)
+        mu_expert = mu_expert + discount^(t-1) * phi(expert_trajectories(t, :))';
     end
 
     mu     = zeros(num_features, 0);
     mu_est = zeros(num_features, 0);
     w      = zeros(num_features, 0);
     t      = zeros(0,1);
-    R      = zeros(num_states,1);
+    R      = zeros(num_states,num_actions);
 
     % Projection algorithm
     % 1.
@@ -82,7 +82,7 @@ function Run()
 
         % 4. We need to finish this
         for j = 1:num_states
-            R(j) =  phi(state_space(j, :)) * w(:,i);
+            R(j, :) =  repmat(phi(state_space(j, :)) * w(:,i), 1,4);
         end
         
         [~, Pol{i}] = Value_Iteration(P, R, discount);
@@ -114,10 +114,10 @@ function Run()
     fprintf('V(Expert): %6.4f\n\n', w_last' * mu_expert);
 
 
-    fprintf('Comparison between performance of expert and apprentice on true reward function:\n');
-    fprintf('V(Apprentice): %6.4f\n', r' * mu(:, selected));
+    %fprintf('Comparison between performance of expert and apprentice on true reward function:\n');
+    %fprintf('V(Apprentice): %6.4f\n', r' * mu(:, selected));
     %fprintf('V(Mixed): %6.4f\n', r' * mu_mixed);
-    fprintf('V(Expert): %6.4f\n\n', r' * mu_expert);
+    %fprintf('V(Expert): %6.4f\n\n', r' * mu_expert);
 
     fprintf('Done\n');
 end
