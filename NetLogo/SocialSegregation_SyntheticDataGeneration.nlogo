@@ -210,7 +210,6 @@ to export-trajectory
     file-close
   ]
 end
-
 @#$#@#$#@
 GRAPHICS-WINDOW
 270
