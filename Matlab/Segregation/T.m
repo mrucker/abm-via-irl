@@ -1,4 +1,6 @@
+
 function p1 = T(s0, a0, s1)
+
 %     action 1, continue talk; action 2, start talk; action 3, go 0.5 range;
 %     action 4, go 2.5 range;
 %     Suppose people talk 7 sec with people they don't like, talk 14 sec with people they like
@@ -24,7 +26,7 @@ function p1 = T(s0, a0, s1)
       elseif (s0 >= 17) && (s0 < 30) && (a0 == 1)
           neighbor = {s0 + 1, s0 + 16};
           p = {0.5, 0.5};
-      elseif s0 == 30 && (a0 == 4)
+      elseif s0 == 30 && (a0 == 4)`
           neighbor = {1, 9};
           p = {0.5, 0.5};
       elseif (s0 >= 31) && ( s0 < 46)
