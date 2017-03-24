@@ -1,7 +1,6 @@
-extensions [csv]
+extensions [matlab pathdir]
 
 globals [
-  trajectory-file                  ;csv file that has states and actions of all agents
 
   ;global statistics
   percent-same-color-area          ;on average, percentage of majority color agents in a 10-by-10 patch
@@ -9,13 +8,15 @@ globals [
 ]
 
 turtles-own [
+  state
+  policy
+
   conversation-length     ;number of tick during which the agent have a conversation
   conversation-with-like? ;defines the color of the recent partner
   people-around           ;list of people around
   potential-partner       ;list of people who are available to talk
   people-around-to-talk?  ;whether there is a potential conversation partner
   action                  ;1: move short distance 2: move long distance 3: start conversation 4: continue conversation
-  trajectory              ;list of status and actions
 
   ;agent statistics
   cumulative-conversation-length-with-same-color
@@ -28,7 +29,22 @@ to setup
   clear-all
   set-default-shape turtles "person"
   ask n-of number-of-agents patches [ sprout 1 ]
+
+  ;Solve MDP of random policy
+  matlab:eval "finished=0;"
+  matlab:eval "run('Segregation_experiment.m');finished=1;"
+  let matlabReady false
+  while [matlabReady = false] [
+    wait 1
+    set matlabReady (matlab:get-double "finished")
+  ]
+  show "ready"
+  matlab:eval "learned_policy = Pol{selected};"
+
   ask turtles [
+    set state 0
+    set policy matlab:get-double-list "learned_policy"
+
     set color one-of [ red green ] ;make approximately half the turtles red and the other half green
     set conversation-length 0
     set people-around-to-talk? 0
@@ -39,14 +55,12 @@ to setup
     set same-color-ratio-around-me 0
     set cumulative-conversation-length-with-same-color 0.1
     set cumulative-conversation-length-with-different-color 0.1
-    set trajectory [[]]
     move 2
   ]
 
   set percent-same-color-area 0
   set percent-same-color-conversation 0
 
-  setup-file
   reset-ticks
 end
 
@@ -63,44 +77,19 @@ end
 
 to update-agents
   ask turtles [
+    ;determine states
     set people-around other turtles in-radius proximity-radius
-
-    ifelse (conversation-length = 0) [;in case the agent is not having a conversation
+    ifelse any? people-around [
       set potential-partner people-around with [conversation-length = 0]
-
       ifelse any? potential-partner [;in case there is a potential partner
         set people-around-to-talk? 1
-        set action 3
-      ]
-      [;in case there no potential partner
-        ifelse (conversation-with-like? = 1) [;in case most recent partner had the same color
-          set people-around-to-talk? 0
-          set action 1
-        ]
-        [;in case most recent partner had different color
-          set people-around-to-talk? 0
-          set action 2
-        ]
-      ]
-    ]
-    [;in case the agent is having a conversation
-      ifelse conversation-with-like? = 1 [;in case the partner has the same color
-        ifelse conversation-length >= conv-length-with-same [
-          set action 1
-        ]
-        [;in case conversation-length < duration-with-same-color
-          set action 4
-        ]
-      ]
-      [;in case the partner has the different color
-        ifelse conversation-length >= conv-length-with-different [
-          set action 2
-        ]
-        [;in case conversation-length < duration-with-different-color
-          set action 4
-        ]
-      ]
-    ]
+      ][ set people-around-to-talk? 0 ]
+    ][ set people-around-to-talk? 0 ]
+
+    set state conversation-length * 4 + conversation-with-like? * 2 + people-around-to-talk? + 1
+
+    ;look up action
+    set action item state policy
 
     do-action
     update-agent-statistics
@@ -113,17 +102,14 @@ end
 to do-action
 
   ifelse (action = 1) [
-    save-trajectory
     set conversation-length 0
     move 1
 
   ][ifelse (action = 2) [
-    save-trajectory
     set conversation-length 0
     move 2
 
   ][ifelse (action = 3) [
-    save-trajectory
     let partner one-of potential-partner
     face partner
     fd 0.5
@@ -134,23 +120,14 @@ to do-action
     [
       set people-around-to-talk? 1
       set action 3
-      save-trajectory
       set conversation-length 1
       set conversation-with-like? same-color?
     ]
 
   ][ifelse (action = 4) [
-    save-trajectory
     set conversation-length conversation-length + 1
   ][]]]]
 
-end
-
-
-
-
-to save-trajectory
-  set trajectory lput (list who conversation-length conversation-with-like? people-around-to-talk? action) trajectory
 end
 
 
@@ -191,25 +168,6 @@ end
 
 
 
-
-to setup-file
-  set trajectory-file ("trajectory.csv")
-  carefully [file-delete trajectory-file] []
-  file-open trajectory-file
-  file-print csv:to-row (list "AgentID" "Conversation_Length" "Conversation_With_Like" "People_Around_To_Talk" "Action")
-  file-close
-end
-
-
-
-
-to export-trajectory
-  ask turtles [
-    file-open trajectory-file
-    foreach trajectory [file-print csv:to-row ?]
-    file-close
-  ]
-end
 @#$#@#$#@
 GRAPHICS-WINDOW
 270
@@ -352,23 +310,6 @@ conv-length-with-different
 1
 NIL
 HORIZONTAL
-
-BUTTON
-180
-15
-242
-48
-save
-export-trajectory
-NIL
-1
-T
-OBSERVER
-NIL
-NIL
-NIL
-NIL
-1
 
 SLIDER
 15
