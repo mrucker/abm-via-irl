@@ -1,58 +1,88 @@
 
-function p1 = T(s0, a0, s1)
+function p = T(s0, a0, s1)
 
-%     action 1, continue talk; action 2, start talk; action 3, go 0.5 range;
-%     action 4, go 2.5 range;
-%     Suppose people talk 7 sec with people they don't like, talk 14 sec with people they like
-%     There would be 45 * 45 states in total, I code s0 from 1 to 45
-%     (0~7, 0, 0), (0~7, 0, 1), (1~14, 1, 0), (0~14, 1, 1)
-      
-      if (1 < s0) && (s0 < 8) && (a0 == 1) 
-          neighbor = {s0 + 1, s0 + 9};
-          p = {0.5, 0.5}; 
-      elseif (s0 == 1) && (a0 == 3 || a0 == 4)
-          neighbor = {s0 + 30, s0 + 8, s0};
-          p{1} = {0.42, 0.28, 0.3};
-          p{2} = {0.36, 0.24, 0.4};
-      elseif s0 == 8 && (a0 == 3)
-          neighbor = {1, 9};
-          p = {0.5, 0.5};  
-      elseif (9 <= s0) && (s0 < 16) && (a0 == 1)
-          neighbor = {s0 - 7, s0 + 1};
-          p = {0.5, 0.5};
-      elseif s0 == 16 && (a0 == 3)
-          neighbor = {1, 9};
-          p = {0.5, 0.5};
-      elseif (s0 >= 17) && (s0 < 30) && (a0 == 1)
-          neighbor = {s0 + 1, s0 + 16};
-          p = {0.5, 0.5};
-      elseif s0 == 30 && (a0 == 4)`
-          neighbor = {1, 9};
-          p = {0.5, 0.5};
-      elseif (s0 >= 31) && ( s0 < 46)
-          neighbor = {s0 - 14, s0 + 1};
-          p = {0.5, 0.5};
-      elseif s0 == 45
-          neighbor = {1, 9};
-          p = {0.5, 0.5};
-      end
-      
-      if iscell(p) == 0
-          if ismember(s1, neighbor) == 1
-              p1 = p(find(neighbor == s1));
-          else
-              p1 = 0;
-          end
-      else
-          if (a0 == 3) && (ismember(s1, neigbhor) == 1)
-              p1 = p{1}(find(neighbor == s1));
-          elseif (a0 == 3) && (ismember(s1, neighbor) == 0)
-              p1 = 0;
-          elseif (a0 == 4) && (ismember(s1, neigbhor) == 1)
-              p1 = p{2}(find(neighbor == s1));
-          elseif (a0 == 4) && (ismember(s1, neigbhor) == 0)
-              p1 = 0;
-          end     
-      end      
+%     action 1, move 0.5; action 2, move 2.5; action 3 start conv;
+%     action 4, continue conv;
+%     Here are our state space:
+%      1     0     0     0
+%      2     0     0     1
+%      3     0     1     0
+%      4     0     1     1
+%      5     1     0     0
+%      6     1     0     1
+%      7     1     1     0
+%      8     1     1     1
+%      9     2     0     0
+%     10     2     0     1
+%     11     2     1     0
+%     12     2     1     1
+%     13     3     0     0
+%     14     3     0     1
+%     15     3     1     0
+%     16     3     1     1
+%     17     4     0     0
+%     18     4     0     1
+%     19     4     1     0
+%     20     4     1     1
+%     21     5     0     0
+%     22     5     0     1
+%     23     5     1     0
+%     24     5     1     1
+    if (s0 == 1) && (a0 == 1)
+        neighbor = [s0, s0+1];
+        p = [0.5, 0.5];
+    elseif (s0 == 2) && (a0 == 3)
+        neighbor = [s0 + 4, s0 + 6];
+        p = [0.5, 0.5];
+    elseif (s0 == 6) && (a0 == 4)
+        neighbor = s0 + 4;
+        p = 1;
+    elseif (s0 == 10) && (a0 == 1)
+        neighbor = [1, 2];
+        p = [0.5, 0.5];
+    elseif (s0 == 2) && (a0 == 3)
+        neighbor = [s0 + 6, s0 + 4];
+        p = [0.5, 0.5];
+    elseif (s0 == 8) && (a0 == 4)
+        neighbor = 12;
+        p = 1;
+    elseif (s0 == 12) && (a0 == 4)
+        neighbor = 16;
+        p = 1;
+    elseif (s0 == 16) && (a0 == 4)
+        neighbor = 20;
+        p = 1;
+    elseif (s0 == 20) && (a0 == 4)
+        neighbor = 24;
+        p = 1;
+    elseif (s0 == 24) && (a0 == 2)
+        neighbor = [3, 4];
+        p = [0.5, 0.5];
+    elseif (s0 == 3) && (a0 == 2)
+        neighbor = [3, 4];
+        p = [0.5, 0.5];
+    elseif (s0 == 4) && (a0 == 3)
+        neighbor = [6, 8];
+        p = [0.5, 0.5];
+    end
+    
+    if isvector(neighbor)
+        if any(find(neighbor == s1))
+            p = 0;
+        else
+            p = p(find(neigbor == s1));
+        end
+    else
+        if neighbor == s1
+            p = 1;
+        else
+            p = 0;
+        end
+    end
+        
+        
+        
+        
+        
 end
 
