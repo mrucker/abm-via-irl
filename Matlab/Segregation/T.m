@@ -80,6 +80,10 @@ function p = T(s0, a0, s1)
         neighbor = {[s1 == (s0 + 2) && (a0 == 3), s1 == (s0 + 4) && (a0 == 3)], s1 == 25 && (a0 ~= 3)};
         prob = {[0.35, 0.35]', 0.3};
         p = neighbor{1} * prob{1} + neighbor{2} * prob{2};
+    elseif (s0 == 25)
+        neighbor = [s1 == 25, s1 ~= 25];
+        prob = [1, 0]';
+        p = neighbor * prob;
     end       
 end
 
