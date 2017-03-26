@@ -28,62 +28,57 @@ function p = T(s0, a0, s1)
 %     22     5     0     1
 %     23     5     1     0
 %     24     5     1     1
-    if (s0 == 1) && (a0 == 1)
-        neighbor = [s0, s0+1];
-        p = [0.5, 0.5];
-    elseif (s0 == 2) && (a0 == 3)
-        neighbor = [s0 + 4, s0 + 6];
-        p = [0.5, 0.5];
-    elseif (s0 == 6) && (a0 == 4)
-        neighbor = s0 + 4;
-        p = 1;
-    elseif (s0 == 10) && (a0 == 1)
-        neighbor = [1, 2];
-        p = [0.5, 0.5];
-    elseif (s0 == 2) && (a0 == 3)
-        neighbor = [s0 + 6, s0 + 4];
-        p = [0.5, 0.5];
-    elseif (s0 == 8) && (a0 == 4)
-        neighbor = 12;
-        p = 1;
-    elseif (s0 == 12) && (a0 == 4)
-        neighbor = 16;
-        p = 1;
-    elseif (s0 == 16) && (a0 == 4)
-        neighbor = 20;
-        p = 1;
+%     25 limo state
+
+    if (s0 == 1)
+        neighbor = {[(s1 == s0) && (a0 == 1), s1 == (s0 + 1) && (a0 == 1)], s1 == 25 && (a0 ~= 1)};
+        prob = {[0.35, 0.35]',0.3};
+        p = neighbor{1} * prob{1} + neighbor{2} * prob{2};
+    elseif (s0 == 2)
+        neighbor = {[s1 == (s0 + 4) && (a0 == 3), s1 == (s0 + 6) && (a0 == 3)], s1 == 25 && (a0 ~= 3)};
+        prob = {[0.35, 0.35]', 0.3};
+        p = neighbor{1} * prob{1} + neighbor{2} * prob{2};
+    elseif (s0 == 6) 
+        neighbor = [s1 == (s0 + 4) && (a0 == 4), s1 == 25 && (a0 ~= 4)];
+        prob = [0.7, 0.3]';
+        p = neighbor * prob;
+    elseif (s0 == 10) 
+        neighbor = {[s1 == 1 && (a0 == 1), s1 == 2 && (a0 == 1)], s1 == 25 && (a0 ~= 1)};
+        prob = {[0.35, 0.35]', 0.3};
+        p = neighbor{1} * prob{1} + neighbor{2} * prob{2};
+    elseif (s0 == 2) 
+        neighbor = {[s1 == (s0 + 6) && (a0 == 3), s1 == (s0 + 4) && (a0 == 3)], s1 == 25 && (a0 ~= 3)};
+        prob = {[0.35, 0.35]', 0.3};
+        p = neighbor{1} * prob{1} + neighbor{2} * prob{2};
+    elseif (s0 == 8) 
+        neighbor = [s1 == (s0 + 4) && (a0 == 4), s1 == 25 && (a0 ~= 4)];
+        prob = [0.7, 0.3]';
+        p = neighbor * prob;
+    elseif (s0 == 12) 
+        neighbor = [s1 == (s0 + 4) && (a0 == 4), s1 == 25 && (a0 ~= 4)];
+        prob = [0.7, 0.3]';
+        p = neighbor * prob;
+    elseif (s0 == 16) 
+        neighbor = [s1 == (s0 + 4) && (a0 == 4), s1 == 25 && (a0 ~= 4)];
+        prob = [0.7, 0.3]';
+        p = neighbor * prob;
     elseif (s0 == 20) && (a0 == 4)
-        neighbor = 24;
-        p = 1;
-    elseif (s0 == 24) && (a0 == 2)
-        neighbor = [3, 4];
-        p = [0.5, 0.5];
-    elseif (s0 == 3) && (a0 == 2)
-        neighbor = [3, 4];
-        p = [0.5, 0.5];
-    elseif (s0 == 4) && (a0 == 3)
-        neighbor = [6, 8];
-        p = [0.5, 0.5];
-    end
-    
-    if isvector(neighbor)
-        if any(find(neighbor == s1))
-            p = 0;
-        else
-            p = p(find(neigbor == s1));
-        end
-    else
-        if neighbor == s1
-            p = 1;
-        else
-            p = 0;
-        end
-    end
-        
-        
-        
-        
-        
+        neighbor = [s1 == (s0 + 4) && (a0 == 4), s1 == 25 && (a0 ~= 4)];
+        prob = [0.7, 0.3]';
+        p = neighbor * prob;
+    elseif (s0 == 24) 
+        neighbor = {[s1 == 3 && (a0 == 2) , s1 == 4 && (a0 == 2)], s1 == 25 && (a0 == 2)};
+        prob = {[0.35, 0.35]', 0.3};
+        p = neighbor{1} * prob{1} + neighbor{2} * prob{2};
+    elseif (s0 == 3)
+        neighbor = {[s1 == s0 && (a0 == 2), s1 == (s0 + 1) && (a0 == 2)], s1 == 25 && (a0 ~= 2)};
+        prob = {[0.35, 0.35]', 0.3};
+        p = neighbor{1} * prob{1} + neighbor{2} * prob{2};
+    elseif (s0 == 4) 
+        neighbor = {[s1 == (s0 + 2) && (a0 == 3), s1 == (s0 + 4) && (a0 == 3)], s1 == 25 && (a0 ~= 3)};
+        prob = {[0.35, 0.35]', 0.3};
+        p = neighbor{1} * prob{1} + neighbor{2} * prob{2};
+    end       
 end
 
 
