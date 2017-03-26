@@ -29,6 +29,8 @@ function p = T(s0, a0, s1)
 %     23     5     1     0
 %     24     5     1     1
 %     25 limo state
+%     suppose the agent has probability of 70% to take the right action,
+%     and 30 % to take the wrong actions.
 
     if (s0 == 1)
         neighbor = {[(s1 == s0) && (a0 == 1), s1 == (s0 + 1) && (a0 == 1)], s1 == 25 && (a0 ~= 1)};
