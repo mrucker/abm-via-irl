@@ -1,8 +1,9 @@
 addpath(fullfile(fileparts(which(mfilename)),'../MDPtoolbox/'));
+addpath(fullfile(fileparts(which(mfilename)),'../Sandbox/'));
 
 Run();
 
-function Run()
+function Run(); global state_space phis;
 
     discount = 0.99;
     epsilon  = 1;
@@ -15,26 +16,24 @@ function Run()
         horzcat(ones(4, 1)*4, [0;0;1;1], [0;1;0;1]);...
         horzcat(ones(4, 1)*5, [0;0;1;1], [0;1;0;1]);...
     ];
+    state_space = vertcat(state_space, [9,9,9]); %(KL) limbo state
         
-    num_actions  = 4;
-    num_states   = size(state_space,1); %|{0 1 2 3 4 5}| * |{0 1}| * |{0 1}|
+    num_actions  = 4;    
     num_features = 3;
+    num_states   = size(state_space,1); %|{0 1 2 3 4 5}| * |{0 1}| * |{0 1}|
+    
+    phis = zeros(num_states, num_features);
+    
+    for i = 1:num_states
+        phis(i,:) = phi(state_space(i, :));
+    end
     
     num_samples = 100; % Number of samples to use in feature expectations
     num_steps   = 100; % Number of steps to use in each sample
 
     % Initial uniform state distribution
     D = ones(num_states, 1) / num_states;
-    P = cell(num_actions, 1);
-    
-    % Transition probabilities
-    for a = 1:num_actions
-        for from = 1:num_states
-            for to = 1:num_states
-                P{a}(from, to) = T(from, a, to);
-            end
-        end
-    end
+    P = T_2_1(num_actions, num_states);
     
     % Sample trajectories from expert policy.
     expert_trajectories = ReadSampleTrajectories('SampleTrajectories.csv');
@@ -72,7 +71,13 @@ function Run()
         t(i)   = norm(w(:,i), 2);
         w(:,i) = w(:,i) / t(i);
 
-        fprintf('t(%d) = %6.4f\n', i, t(i));
+        if(i == 1 || ceil(t(i)) ~= ceil(t(i-1)))
+            toc
+            fprintf('t(%d) = %6.4f\n', i, t(i));
+            tic
+        end
+        
+        
 
         % 3.
         if t(i) <= epsilon
@@ -80,11 +85,8 @@ function Run()
             break;
         end
 
-        % 4. We need to finish this
-        for j = 1:num_states
-            R(j, :) =  repmat(phi(state_space(j, :)) * w(:,i), 1,4);
-        end
-        
+        % 4. We need to finish this        
+        R = repmat(phis * w(:,i), 1,4);
         [~, Pol{i}] = Value_Iteration(P, R, discount);
 
         % 5.
@@ -123,5 +125,5 @@ function Run()
 end
 
 function [V, policy] = Value_Iteration(P, R, discount)
-    [V, policy, ~, ~] = mdp_value_iteration (P, R, discount);
+    [V, policy, ~, ~] = mar_value_iteration2(P, R, discount);
 end

@@ -1,7 +1,7 @@
 %FEATURE_EXPECTATIONS Expected features.
 %   FEATURE_EXPECTATIONS produces the expected accumulated feature counts
 %   if the given POLICY is followed.
-function mu = feature_expectations(P, discount, D, policy, num_samples, num_steps)
+function mu = feature_expectations(P, discount, D, policy, num_samples, num_steps); global phis;
 
     Mu = zeros(num_samples, 3);
 
@@ -12,7 +12,7 @@ function mu = feature_expectations(P, discount, D, policy, num_samples, num_step
         r = rand();
         s = find(cumprob > r, 1);
         trajectory(1) = s;
-        Mu(i,:) = phi(s)';
+        Mu(i,:) = phis(s,:);
 
         for t = 2:num_steps
             a = policy(s);
@@ -23,7 +23,7 @@ function mu = feature_expectations(P, discount, D, policy, num_samples, num_step
 
             trajectory(t) = s;
             
-            Mu(i,:) = Mu(i,:) + discount ^ (t-1) * phi(s)';
+            Mu(i,:) = Mu(i,:) + discount ^ (t-1) * phis(s,:);
         end
     end
     
