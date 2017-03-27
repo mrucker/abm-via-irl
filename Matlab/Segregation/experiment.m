@@ -3,8 +3,12 @@ addpath(fullfile(fileparts(which(mfilename)),'../Sandbox/'));
 
 Run();
 
+
 function Run(); global state_space phis;
 
+    tts = 0;
+    tt = tic();
+    
     discount = 0.99;
     epsilon  = 1;
     
@@ -72,12 +76,11 @@ function Run(); global state_space phis;
         w(:,i) = w(:,i) / t(i);
 
         if(i == 1 || ceil(t(i)) ~= ceil(t(i-1)))
-            toc
+            tts(end+1) = toc(tt);
+            disp(['Elapsed time is ' num2str(tts(end)) ' seconds']);
             fprintf('t(%d) = %6.4f\n', i, t(i));
-            tic
-        end
-        
-        
+            tt = tic();
+        end        
 
         % 3.
         if t(i) <= epsilon
@@ -122,8 +125,10 @@ function Run(); global state_space phis;
     %fprintf('V(Expert): %6.4f\n\n', r' * mu_expert);
 
     fprintf('Done\n');
+    tts(end+1) = toc(tt);
+    disp(['Elapsed time is ' num2str(sum(tts)) ' seconds']);
 end
 
 function [V, policy] = Value_Iteration(P, R, discount)
-    [V, policy, ~, ~] = mar_value_iteration2(P, R, discount);
+    [V, policy, ~, ~] = mdp_value_iteration(P, R, discount);
 end

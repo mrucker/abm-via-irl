@@ -9,6 +9,9 @@ addpath(fullfile(fileparts(which(mfilename)),'../MDPtoolbox/'));
     %(KL) for use in feature_expectations
     global num_features;
 
+    tts = 0;
+    tt = tic();
+    
     discount = 0.99;
     epsilon  = 1;
     
@@ -76,7 +79,12 @@ addpath(fullfile(fileparts(which(mfilename)),'../MDPtoolbox/'));
         t(i)   = norm(w(:,i), 2);
         w(:,i) = w(:,i) / t(i);
 
-        fprintf('t(%d) = %6.4f\n', i, t(i));
+        if(i == 1 || ceil(t(i)) ~= ceil(t(i-1)))
+            tts(end+1) = toc(tt);
+            disp(['Elapsed time is ' num2str(tts(end)) ' seconds']);
+            fprintf('t(%d) = %6.4f\n', i, t(i));
+            tt = tic();
+        end        
 
         % 3.
         %(KL) for experiment, I added additional terminate conditions
@@ -131,6 +139,9 @@ addpath(fullfile(fileparts(which(mfilename)),'../MDPtoolbox/'));
     %fprintf('V(Expert): %6.4f\n\n', r' * mu_expert);
 
     fprintf('Done\n');
+    
+    tts(end+1) = toc(tt);
+    disp(['Elapsed time is ' num2str(sum(tts)) ' seconds']);
 %end
 
 function [V, policy] = Value_Iteration(P, R, discount)
