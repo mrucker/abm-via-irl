@@ -18,7 +18,7 @@ function Run()
         horzcat(ones(4, 1)*4, [0;0;1;1], [0;1;0;1]);...
         horzcat(ones(4, 1)*5, [0;0;1;1], [0;1;0;1]);...
     ];
-    state_space = vertcat(state_space, [9,9,9]); % limbo state
+    state_space = vertcat(state_space, [9,9,9]); %(KL) limbo state
         
     num_actions  = 4;
     num_states   = size(state_space,1); %|{0 1 2 3 4 5}| * |{0 1}| * |{0 1}|
@@ -45,8 +45,6 @@ function Run()
         [~, state_ix] = ismember(expert_trajectories(t, :), state_space, 'rows');
         mu_expert = mu_expert + discount^(t-1) * phi_2(state_ix);
     end
-    %(KL) average mu_expert
-    mu_expert = 1/size(expert_trajectories,1) * mu_expert;
 
     mu     = zeros(num_features, 0);
     mu_est = zeros(num_features, 0);
