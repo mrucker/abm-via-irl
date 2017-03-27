@@ -1,5 +1,5 @@
 
-function P = T_2(num_actions, num_states)
+function P = T_2_1(num_actions, num_states)
 %%    actions
 %     action 1, move short distance
 %     action 2, move long distance
@@ -39,10 +39,16 @@ function P = T_2(num_actions, num_states)
     end
 
     %% possible actions in state 1,2,6,10
-    action = 1;	from = [1,2,6,10];	to = [1,2];     prob = 0.5;
+    action = 1;	from = [1,2,6,10];	to = [1];     prob = 0.1;
+    P{action}(from, to) = prob;
+    
+    action = 1;	from = [1,2,6,10];	to = [2];     prob = 0.9;
     P{action}(from, to) = prob;
 
-    action = 2;	from = [1,2,6,10];	to = [1,2];     prob = 0.5;
+    action = 2;	from = [1,2,6,10];	to = [1];     prob = 0.1;
+    P{action}(from, to) = prob;
+    
+    action = 2;	from = [1,2,6,10];	to = [2];     prob = 0.9;
     P{action}(from, to) = prob;
 
     action = 3;	from = [2];         to = [6,8];     prob = 0.5;
@@ -51,14 +57,23 @@ function P = T_2(num_actions, num_states)
     action = 4; from = [6];         to = [10];      prob = 1;
     P{action}(from, to) = prob;
 
-    action = 4; from = [10];        to = [1,2];     prob = 0.5;
+    action = 4; from = [10];        to = [1];     prob = 0.1;
+    P{action}(from, to) = prob;
+    
+    action = 4; from = [10];        to = [2];     prob = 0.9;
     P{action}(from, to) = prob;
 
     %% possible actions in state 3,4,8,12,16,20,24
-    action = 1; from = [3,4,8,12,16,20,24]; to = [3,4]; prob = 0.5;
+    action = 1; from = [3,4,8,12,16,20,24]; to = [3]; prob = 0.1;
+    P{action}(from, to) = prob;
+    
+    action = 1; from = [3,4,8,12,16,20,24]; to = [4]; prob = 0.9;
     P{action}(from, to) = prob;
 
-    action = 2; from = [3,4,8,12,16,20,24]; to = [3,4]; prob = 0.5;
+    action = 2; from = [3,4,8,12,16,20,24]; to = [3]; prob = 0.1;
+    P{action}(from, to) = prob;
+    
+    action = 2; from = [3,4,8,12,16,20,24]; to = [4]; prob = 0.9;
     P{action}(from, to) = prob;
 
     action = 3; from = [4];             to = [6,8]; prob = 0.5;
@@ -69,7 +84,10 @@ function P = T_2(num_actions, num_states)
         P{action}(from(i), to(i)) = prob;
     end
 
-    action = 4; from = [24];            to = [3,4]; prob = 0.5;
+    action = 4; from = [24];            to = [3]; prob = 0.1;
+    P{action}(from, to) = prob;
+    
+    action = 4; from = [24];            to = [4]; prob = 0.9;
     P{action}(from, to) = prob;
 
     %% impossible actions

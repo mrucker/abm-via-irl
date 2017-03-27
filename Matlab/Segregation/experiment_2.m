@@ -1,8 +1,10 @@
 addpath(fullfile(fileparts(which(mfilename)),'../MDPtoolbox/'));
 
-Run();
 
-function Run()
+%(KL) I uncommented the function line in order to access the result variables after running this script
+%Run();
+
+%function learned_policy = Run()
 
     %(KL) for use in feature_expectations
     global num_features;
@@ -31,7 +33,7 @@ function Run()
 
     % Initial uniform state distribution
     D = ones(num_states, 1) / num_states;
-    P = T_2(num_actions, num_states); %(KL) T_2 is my understanding for transition probabilities
+    P = T_2_1(num_actions, num_states); %(KL) T_2 is my understanding for transition probabilities
     
     % Sample trajectories from expert policy.
     expert_trajectories = ReadSampleTrajectories('SampleTrajectories.csv');
@@ -45,6 +47,7 @@ function Run()
         [~, state_ix] = ismember(expert_trajectories(t, :), state_space, 'rows');
         mu_expert = mu_expert + discount^(t-1) * phi_2(state_ix);
     end
+    %(KL) I guess we need more than one trajectory for empirical estimate for mu_expert
 
     mu     = zeros(num_features, 0);
     mu_est = zeros(num_features, 0);
@@ -77,7 +80,7 @@ function Run()
 
         % 3.
         %(KL) for experiment, I added additional terminate conditions
-        if t(i) <= epsilon || (i>20 && t(i-10)-t(i)<0.00001)
+        if t(i) <= epsilon || (i>20 && t(i-5)-t(i)<0.001)
             fprintf('Terminate...\n\n');
             break;
         end
@@ -89,7 +92,7 @@ function Run()
 
         %(KL) For now, our R is this because the features are equal to the states
         R = repmat(w(:,i), 1, num_actions);
-        [V, Pol{i}, iter, cpu_time] = mdp_value_iteration (P, R, discount);
+        [V, Pol{i}, iter, cpu_time] = mdp_value_iteration(P, R, discount);
 
         % 5.
         mu(:,i) = feature_expectations_2(P, discount, D, Pol{i}, num_samples, num_steps);
@@ -104,7 +107,11 @@ function Run()
     distances = sqrt(sum(distances .^ 2));
     [min_distance, selected] = min(distances);
     fprintf('Distance: %6.4f\n\n', min_distance);
-
+    
+    %(KL) set output
+    learned_policy = Pol{selected};
+    
+    
     w_last = w(:,i);
 
     fprintf('Comparison between performance of expert and apprentice on found reward function:\n');
@@ -124,7 +131,7 @@ function Run()
     %fprintf('V(Expert): %6.4f\n\n', r' * mu_expert);
 
     fprintf('Done\n');
-end
+%end
 
 function [V, policy] = Value_Iteration(P, R, discount)
     [V, policy, ~, ~] = mdp_value_iteration (P, R, discount);
