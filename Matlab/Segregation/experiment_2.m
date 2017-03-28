@@ -6,30 +6,30 @@ addpath(fullfile(fileparts(which(mfilename)),'../MDPtoolbox/'));
 
 %function learned_policy = Run()
 
-    %(KL) for use in feature_expectations
-    global num_features;
-
     tts = 0;
     tt = tic();
     
     discount = 0.99;
     epsilon  = 1;
-    
-    state_space = [...
-        horzcat(ones(4, 1)*0, [0;0;1;1], [0;1;0;1]);...
-        horzcat(ones(4, 1)*1, [0;0;1;1], [0;1;0;1]);...
-        horzcat(ones(4, 1)*2, [0;0;1;1], [0;1;0;1]);...
-        horzcat(ones(4, 1)*3, [0;0;1;1], [0;1;0;1]);...
-        horzcat(ones(4, 1)*4, [0;0;1;1], [0;1;0;1]);...
-        horzcat(ones(4, 1)*5, [0;0;1;1], [0;1;0;1]);...
-    ];
-    state_space = vertcat(state_space, [9,9,9]); %(KL) limbo state
+
+    conversation_length = 0:5;
+    similar_partner_yn = 0:1;
+    people_around_yn = 0:1;
+    action = 1:4;
+    state_space = sortrows(combvec(conversation_length, similar_partner_yn, people_around_yn)', 1:3);
+    state_space = vertcat(state_space, [9,9,9]); %limbo state
+    state_action_space = horzcat(sortrows(repmat(state_space,4,1), 1:3), repmat(action', 25,1));
         
-    num_actions  = 4;
-    num_states   = size(state_space,1); %|{0 1 2 3 4 5}| * |{0 1}| * |{0 1}|
-    %num_features = 3;
+    num_actions  = length(action);
+    num_states = size(state_space,1);
+    num_state_actions   = size(state_action_space,1);
     %(KL) our number of features is equal to the number of states for now
-    num_features = num_states; 
+    num_features = num_state_actions; 
+    
+    phis = zeros(num_state_actions, num_features);
+    for i = 1:num_state_actions
+        phis(i,i) = 1;
+    end
     
     num_samples = 100; % Number of samples to use in feature expectations
     num_steps   = 100; % Number of steps to use in each sample
@@ -40,15 +40,12 @@ addpath(fullfile(fileparts(which(mfilename)),'../MDPtoolbox/'));
     
     % Sample trajectories from expert policy.
     expert_trajectories = ReadSampleTrajectories('SampleTrajectories.csv');
-    expert_trajectories = horzcat(expert_trajectories{2}, expert_trajectories{3}, expert_trajectories{4});
+    expert_trajectories = horzcat(expert_trajectories{2}, expert_trajectories{3}, expert_trajectories{4}, expert_trajectories{5});
     
     mu_expert = zeros(num_features,1);
     for t = 1:size(expert_trajectories,1)
-        %mu_expert = mu_expert + discount^(t-1) * phi(expert_trajectories(t, :))';
-        
-        %(KL) I added phi_2 function, which is my understanding for Phi
-        [~, state_ix] = ismember(expert_trajectories(t, :), state_space, 'rows');
-        mu_expert = mu_expert + discount^(t-1) * phi_2(state_ix);
+        [~, state_action_ix] = ismember(expert_trajectories(t, :), state_action_space, 'rows');
+        mu_expert = mu_expert + discount^(t-1) * phis(state_action_ix,:)';
     end
     %(KL) I guess we need more than one trajectory for empirical estimate for mu_expert
 
@@ -61,7 +58,7 @@ addpath(fullfile(fileparts(which(mfilename)),'../MDPtoolbox/'));
     % Projection algorithm
     % 1.
     Pol{1}  = ceil(rand(num_states,1) * num_actions);
-    mu(:,1) = feature_expectations_2(P, discount, D, Pol{1}, num_samples, num_steps);
+    mu(:,1) = feature_expectations_2(P, discount, D, Pol{1}, num_samples, num_steps, num_features, phis);
     i = 2;
 
     % 2.
@@ -79,31 +76,27 @@ addpath(fullfile(fileparts(which(mfilename)),'../MDPtoolbox/'));
         t(i)   = norm(w(:,i), 2);
         w(:,i) = w(:,i) / t(i);
 
-        if(i == 1 || ceil(t(i)) ~= ceil(t(i-1)))
-            tts(end+1) = toc(tt);
-            disp(['Elapsed time is ' num2str(tts(end)) ' seconds']);
+        %if(i == 1 || ceil(t(i)) ~= ceil(t(i-1)))
+        %    tts(end+1) = toc(tt);
+        %    disp(['Elapsed time is ' num2str(tts(end)) ' seconds']);
             fprintf('t(%d) = %6.4f\n', i, t(i));
-            tt = tic();
-        end        
+        %    tt = tic();
+        %end        
 
         % 3.
         %(KL) for experiment, I added additional terminate conditions
-        if t(i) <= epsilon || (i>20 && t(i-5)-t(i)<0.001)
+        if t(i) <= epsilon || (i>20 && t(i-1)-t(i)<0.0001)
             fprintf('Terminate...\n\n');
             break;
         end
 
         % 4.
-%         for j = 1:num_states
-%             R(j, :) =  repmat(phi_2(state_space(j, :)) * w(:,i), 1,4);
-%         end
-
-        %(KL) For now, our R is this because the features are equal to the states
-        R = repmat(w(:,i), 1, num_actions);
+        %(KL) reshape w into S*A
+        R = reshape(w(:,i), [num_actions, num_states])';
         [V, Pol{i}, iter, cpu_time] = mdp_value_iteration(P, R, discount);
 
         % 5.
-        mu(:,i) = feature_expectations_2(P, discount, D, Pol{i}, num_samples, num_steps);
+        mu(:,i) = feature_expectations_2(P, discount, D, Pol{i}, num_samples, num_steps, num_features, phis);
 
         % 6.
         i = i + 1;
@@ -115,10 +108,6 @@ addpath(fullfile(fileparts(which(mfilename)),'../MDPtoolbox/'));
     distances = sqrt(sum(distances .^ 2));
     [min_distance, selected] = min(distances);
     fprintf('Distance: %6.4f\n\n', min_distance);
-    
-    %(KL) set output
-    learned_policy = Pol{selected};
-    
     
     w_last = w(:,i);
 
