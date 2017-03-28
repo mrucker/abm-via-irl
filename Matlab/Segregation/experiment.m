@@ -33,26 +33,25 @@ function Run(); global state_space phis;
     end
     
     num_samples = 100; % Number of samples to use in feature expectations
-    num_steps   = 100; % Number of steps to use in each sample
-
-    % Initial uniform state distribution
-    D = ones(num_states, 1) / num_states;
-    P = T_2_1(num_actions, num_states);
+    num_steps   = 100; % Number of steps to use in each sample       
     
     % Sample trajectories from expert policy.
     expert_trajectories = ReadSampleTrajectories('SampleTrajectories.csv');
-    expert_trajectories = horzcat(expert_trajectories{2}, expert_trajectories{3}, expert_trajectories{4});
+    expert_StateActions = horzcat(expert_trajectories{5}, expert_trajectories{2}, expert_trajectories{3}, expert_trajectories{4});
+    expert_States       = horzcat(expert_trajectories{2}, expert_trajectories{3}, expert_trajectories{4});
+    
+    D = ones(num_states, 1) / num_states;
+    P = T_SA(expert_StateActions, num_actions, num_states);
     
     mu_expert = zeros(num_features,1);
-    for t = 1:size(expert_trajectories,1)
-        mu_expert = mu_expert + discount^(t-1) * phi(expert_trajectories(t, :))';
+    for t = 1:size(expert_States,1)
+        mu_expert = mu_expert + discount^(t-1) * phi(expert_States(t, :))';
     end
 
     mu     = zeros(num_features, 0);
     mu_est = zeros(num_features, 0);
     w      = zeros(num_features, 0);
     t      = zeros(0,1);
-    R      = zeros(num_states,num_actions);
 
     % Projection algorithm
     % 1.
