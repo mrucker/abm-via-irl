@@ -41,6 +41,8 @@ addpath(fullfile(fileparts(which(mfilename)),'../MDPtoolbox/'));
     % Sample trajectories from expert policy.
     expert_trajectories = ReadSampleTrajectories('SampleTrajectories.csv');
     expert_trajectories = horzcat(expert_trajectories{2}, expert_trajectories{3}, expert_trajectories{4}, expert_trajectories{5});
+    %(KL) how many steps do we need?
+    expert_trajectories = expert_trajectories(1:1000, :);
     
     mu_expert = zeros(num_features,1);
     for t = 1:size(expert_trajectories,1)
