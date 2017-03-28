@@ -1,13 +1,13 @@
+global state_space;
+
 addpath(fullfile(fileparts(which(mfilename)),'../MDPtoolbox/'));
 
+rng(50);
 
 %(KL) I uncommented the function line in order to access the result variables after running this script
 %Run();
 
-%function learned_policy = Run()
-
-    tts = 0;
-    tt = tic();
+%function learned_policy = Run()    
     
     discount = 0.99;
     epsilon  = 1;
@@ -20,9 +20,9 @@ addpath(fullfile(fileparts(which(mfilename)),'../MDPtoolbox/'));
     state_space = vertcat(state_space, [9,9,9]); %limbo state
     state_action_space = horzcat(sortrows(repmat(state_space,4,1), 1:3), repmat(action', 25,1));
         
-    num_actions  = length(action);
+    num_actions = length(action);
     num_states = size(state_space,1);
-    num_state_actions   = size(state_action_space,1);
+    num_state_actions = size(state_action_space,1);
     %(KL) our number of features is equal to the number of states for now
     num_features = num_state_actions; 
     
@@ -35,17 +35,17 @@ addpath(fullfile(fileparts(which(mfilename)),'../MDPtoolbox/'));
     num_steps   = 100; % Number of steps to use in each sample
 
     % Initial uniform state distribution
-    D = ones(num_states, 1) / num_states;
-    P = T_2_1(num_actions, num_states); %(KL) T_2 is my understanding for transition probabilities
+    D = ones(num_states, 1) / num_states;    
     
     % Sample trajectories from expert policy.
     expert_trajectories = ReadSampleTrajectories('SampleTrajectories.csv');
-    expert_trajectories = horzcat(expert_trajectories{2}, expert_trajectories{3}, expert_trajectories{4}, expert_trajectories{5});
-    %(KL) how many steps do we need?
-    expert_trajectories = expert_trajectories(1:1000, :);
-    
+    expert_trajectories = horzcat(expert_trajectories{2}, expert_trajectories{3}, expert_trajectories{4}, expert_trajectories{5});       
+
+    %P = T_2_1(num_actions, num_states); %(KL) T_2 is my understanding for transition probabilities
+    P = T_SA(expert_trajectories(:, [4 1 2 3]), num_actions, num_states);
+        
     mu_expert = zeros(num_features,1);
-    for t = 1:size(expert_trajectories,1)
+    for t = 1:1000 %(KL) how many steps do we need?
         [~, state_action_ix] = ismember(expert_trajectories(t, :), state_action_space, 'rows');
         mu_expert = mu_expert + discount^(t-1) * phis(state_action_ix,:)';
     end
@@ -63,6 +63,9 @@ addpath(fullfile(fileparts(which(mfilename)),'../MDPtoolbox/'));
     mu(:,1) = feature_expectations_2(P, discount, D, Pol{1}, num_samples, num_steps, num_features, phis);
     i = 2;
 
+    tts = 0;
+    tt = tic();
+    
     % 2.
     tic
     while 1
@@ -78,12 +81,13 @@ addpath(fullfile(fileparts(which(mfilename)),'../MDPtoolbox/'));
         t(i)   = norm(w(:,i), 2);
         w(:,i) = w(:,i) / t(i);
 
-        %if(i == 1 || ceil(t(i)) ~= ceil(t(i-1)))
-        %    tts(end+1) = toc(tt);
-        %    disp(['Elapsed time is ' num2str(tts(end)) ' seconds']);
-            fprintf('t(%d) = %6.4f\n', i, t(i));
-        %    tt = tic();
-        %end        
+        if(i == 1 || ceil(t(i)) ~= ceil(t(i-1)))
+            tts(end+1) = toc(tt);
+            disp(['Elapsed time is ' num2str(tts(end)) ' seconds']);
+            fprintf('t(%d) = %3.0f\n', i, ceil(t(i)));
+            %fprintf('t(%d) = %6.4f\n', i, t(i));
+            tt = tic();
+        end        
 
         % 3.
         %(KL) for experiment, I added additional terminate conditions
