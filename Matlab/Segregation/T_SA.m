@@ -87,7 +87,7 @@ end
 function Validate(P, num_actions, num_states)
     for i=1:num_states
         for a=1:num_actions
-            assert(sum(P{a}(i, :)) == 1, sprintf('probability for state %d, action %d is wrong\n', i, a));
+            assert(abs(sum(P{a}(i, :)) - 1) < .000001, sprintf('probability for state %d, action %d is wrong\n', i, a));
         end
     end
 end

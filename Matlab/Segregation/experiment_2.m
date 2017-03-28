@@ -1,4 +1,5 @@
 addpath(fullfile(fileparts(which(mfilename)),'../MDPtoolbox/'));
+addpath(fullfile(fileparts(which(mfilename)),'../Sandbox/'));
 
 
 %(KL) I uncommented the function line in order to access the result variables after running this script
@@ -33,21 +34,21 @@ addpath(fullfile(fileparts(which(mfilename)),'../MDPtoolbox/'));
     
     num_samples = 100; % Number of samples to use in feature expectations
     num_steps   = 100; % Number of steps to use in each sample
-
-    % Initial uniform state distribution
-    D = ones(num_states, 1) / num_states;
-    P = T_2_1(num_actions, num_states); %(KL) T_2 is my understanding for transition probabilities
-    
+        
     % Sample trajectories from expert policy.
     expert_trajectories = ReadSampleTrajectories('SampleTrajectories.csv');
-    expert_trajectories = horzcat(expert_trajectories{2}, expert_trajectories{3}, expert_trajectories{4});
+    expert_StateActions = horzcat(expert_trajectories{5}, expert_trajectories{2}, expert_trajectories{3}, expert_trajectories{4});
+    expert_States       = horzcat(expert_trajectories{2}, expert_trajectories{3}, expert_trajectories{4});
+    
+    D = ones(num_states, 1) / num_states;
+    P = T_SA(expert_StateActions, num_actions, num_states);
     
     mu_expert = zeros(num_features,1);
-    for t = 1:size(expert_trajectories,1)
+    for t = 1:100000%size(expert_States,1)
         %mu_expert = mu_expert + discount^(t-1) * phi(expert_trajectories(t, :))';
         
         %(KL) I added phi_2 function, which is my understanding for Phi
-        [~, state_ix] = ismember(expert_trajectories(t, :), state_space, 'rows');
+        [~, state_ix] = ismember(expert_States(t, :), state_space, 'rows');
         mu_expert = mu_expert + discount^(t-1) * phi_2(state_ix);
     end
     %(KL) I guess we need more than one trajectory for empirical estimate for mu_expert
@@ -88,10 +89,10 @@ addpath(fullfile(fileparts(which(mfilename)),'../MDPtoolbox/'));
 
         % 3.
         %(KL) for experiment, I added additional terminate conditions
-        if t(i) <= epsilon || (i>20 && t(i-5)-t(i)<0.001)
-            fprintf('Terminate...\n\n');
-            break;
-        end
+        %if t(i) <= epsilon || (i>20 && t(i-5)-t(i)<0.001)
+        %    fprintf('Terminate...\n\n');
+        %    break;
+        %end
 
         % 4.
 %         for j = 1:num_states
