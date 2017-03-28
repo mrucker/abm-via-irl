@@ -8,7 +8,7 @@ addpath(fullfile(fileparts(which(mfilename)),'../MDPtoolbox/'));
 %function learned_policy = Run()    
     
     discount = 0.99;
-    epsilon  = .5;
+    epsilon  = .75;
 
     conversation_length = 0:5;
     similar_partner_yn = 0:1;
@@ -42,12 +42,12 @@ addpath(fullfile(fileparts(which(mfilename)),'../MDPtoolbox/'));
     
     for agentId = unique(expert_trajectories(:,1))'
         agentRows = find(expert_trajectories(:,1) == agentId);
-        agent100s = [agent100s; rowIds(1:100)];
+        agent100s = [agent100s; agentRows(1:100)];
         
         init_state = expert_trajectories(agentRows(1),[2 3 4]);
-        init_s_id  = find(all(state_space' == start_state'));
+        init_s_id  = find(all(state_space' == init_state'));
         
-        initCount(start_s_id) = initCount(init_s_id) + 1;
+        initCount(init_s_id) = initCount(init_s_id) + 1;
     end
     
     expert_trajectories = expert_trajectories(agent100s, [2 3 4 5]);

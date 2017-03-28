@@ -26,13 +26,15 @@ turtles-own [
 
 
 to setup
+  matlab:eval (word "run('"pathdir:get-current"\\initialize.m')")
+
   clear-all
   set-default-shape turtles "person"
   ask n-of number-of-agents patches [ sprout 1 ]
 
   ;Solve MDP of random policy
   matlab:eval "finished=0;"
-  matlab:eval "run('Segregation_experiment.m');finished=1;"
+  matlab:eval "run('experiment_2.m');finished=1;"
   let matlabReady false
   while [matlabReady = false] [
     wait 1
@@ -165,7 +167,6 @@ to update-global-statistics
   set percent-same-color-conversation (total-time-with-same-color / (total-time-with-same-color + total-time-with-different-color)) * 100
   set percent-same-color-area mean [same-color-ratio-around-me] of turtles
 end
-
 
 
 @#$#@#$#@
