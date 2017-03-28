@@ -77,7 +77,7 @@ function Run(); global n m num_macrocells num_states num_actions;
 
     % Sample trajectories from expert policy
     fprintf('Sampling demonstration...\n');
-    mu_expert = feature_expectations(P, discount, D, policy, num_samples, num_steps);
+    mu_expert = feature_expectations(P, discount, D, policy, num_samples, num_steps) * 1000;
 
     mu = zeros(num_macrocells, 0);
     mu_est = zeros(num_macrocells, 0);

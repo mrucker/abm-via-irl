@@ -35,22 +35,40 @@ rng(50);
     num_steps   = 100; % Number of steps to use in each sample
 
     % Initial uniform state distribution
-    D = ones(num_states, 1) / num_states;    
+    D = zeros(num_states,1);
     
     % Sample trajectories from expert policy.
     expert_trajectories = ReadSampleTrajectories('SampleTrajectories.csv');
-    expert_trajectories = horzcat(expert_trajectories{2}, expert_trajectories{3}, expert_trajectories{4}, expert_trajectories{5});       
+    expert_trajectories = horzcat(expert_trajectories{1}, expert_trajectories{2}, expert_trajectories{3}, expert_trajectories{4}, expert_trajectories{5});       
 
+    first100 = [];
+    for agentId = unique(expert_trajectories(:,1))'
+        rowIds = find(expert_trajectories(:,1) == agentId);
+        first100 = [first100; rowIds(1:100)];
+        
+        start_state = expert_trajectories(rowIds(1),[2 3 4]);
+        start_s_id  = find(all(state_space' == start_state'));
+        
+        D(start_s_id) = D(start_s_id) + 1;
+    end
+    
+    expert_trajectories = expert_trajectories(first100, [2 3 4 5]);
+    D = D./sum(D);
+    
     %P = T_2_1(num_actions, num_states); %(KL) T_2 is my understanding for transition probabilities
     P = T_SA(expert_trajectories(:, [4 1 2 3]), num_actions, num_states);
         
     mu_expert = zeros(num_features,1);
-    for t = 1:1000 %(KL) how many steps do we need?
-        [~, state_action_ix] = ismember(expert_trajectories(t, :), state_action_space, 'rows');
-        mu_expert = mu_expert + discount^(t-1) * phis(state_action_ix,:)';
+    for i = 1:num_samples
+        for t = 1:num_steps %(KL) how many steps do we need?
+            [~, state_action_ix] = ismember(expert_trajectories(t*i, :), state_action_space, 'rows');
+            mu_expert = mu_expert + discount^(t-1) * phis(state_action_ix,:)';
+        end
     end
     %(KL) I guess we need more than one trajectory for empirical estimate for mu_expert
-
+    
+    mu_expert = mu_expert./num_samples;
+    
     mu     = zeros(num_features, 0);
     mu_est = zeros(num_features, 0);
     w      = zeros(num_features, 0);
@@ -81,20 +99,20 @@ rng(50);
         t(i)   = norm(w(:,i), 2);
         w(:,i) = w(:,i) / t(i);
 
-        if(i == 1 || ceil(t(i)) ~= ceil(t(i-1)))
-            tts(end+1) = toc(tt);
-            disp(['Elapsed time is ' num2str(tts(end)) ' seconds']);
-            fprintf('t(%d) = %3.0f\n', i, ceil(t(i)));
-            %fprintf('t(%d) = %6.4f\n', i, t(i));
-            tt = tic();
-        end        
+        %if(i == 1 || ceil(t(i)) ~= ceil(t(i-1)))
+            %tts(end+1) = toc(tt);
+            %disp(['Elapsed time is ' num2str(tts(end)) ' seconds']);
+            %fprintf('t(%d) = %3.0f\n', i, ceil(t(i)));
+            fprintf('t(%d) = %6.4f\n', i, t(i));
+        %    tt = tic();
+        %end        
 
         % 3.
         %(KL) for experiment, I added additional terminate conditions
-        if t(i) <= epsilon || (i>20 && t(i-1)-t(i)<0.0001)
-            fprintf('Terminate...\n\n');
-            break;
-        end
+        %if t(i) <= epsilon || (i>20 && t(i-1)-t(i)<0.0001)
+        %    fprintf('Terminate...\n\n');
+        %    break;
+        %end
 
         % 4.
         %(KL) reshape w into S*A
