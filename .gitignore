@@ -3,6 +3,7 @@
 .DS_Store
 .Rhistory
 .RData
+**/NetLogo/trajectory.csv
 
 #######################################################################################
 #Ignore all latex bild files. Expects latex projects to be in a directory named "latex"
