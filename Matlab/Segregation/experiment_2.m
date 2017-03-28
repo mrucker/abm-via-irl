@@ -5,10 +5,10 @@ addpath(fullfile(fileparts(which(mfilename)),'../MDPtoolbox/'));
 %(KL) I uncommented the function line in order to access the result variables after running this script
 %Run();
 
-%function learned_policy = Run()    
+%function learned_policy = Run()
     
     discount = 0.99;
-    epsilon  = .75;
+    epsilon  = .5;
 
     conversation_length = 0:5;
     similar_partner_yn = 0:1;
@@ -157,5 +157,6 @@ addpath(fullfile(fileparts(which(mfilename)),'../MDPtoolbox/'));
 %end
 
 function [V, policy] = Value_Iteration(P, R, discount)
+    %[V, policy, ~, ~] = mar_value_iteration2 (P, R, discount);
     [V, policy, ~, ~] = mdp_value_iteration (P, R, discount);
 end
