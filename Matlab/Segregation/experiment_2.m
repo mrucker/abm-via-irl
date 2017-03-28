@@ -2,8 +2,6 @@ global state_space;
 
 addpath(fullfile(fileparts(which(mfilename)),'../MDPtoolbox/'));
 
-rng(50);
-
 %(KL) I uncommented the function line in order to access the result variables after running this script
 %Run();
 
