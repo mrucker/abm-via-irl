@@ -1,4 +1,4 @@
-extensions [matlab pathdir]
+;extensions [matlab pathdir]
 
 globals [
 
@@ -26,9 +26,9 @@ turtles-own [
 
 
 to setup
-  matlab:eval (word "run('"pathdir:get-current"\\initialize.m')")
-
   clear-all
+
+  matlab:eval (word "run('"pathdir:get-current"\\initialize.m')")
   set-default-shape turtles "person"
   ask n-of number-of-agents patches [ sprout 1 ]
 
@@ -42,10 +42,11 @@ to setup
   ]
   show "ready"
   matlab:eval "learned_policy = Pol{selected};"
+  let matlab_policy matlab:get-double-list "learned_policy"
 
   ask turtles [
     set state 0
-    set policy matlab:get-double-list "learned_policy"
+    set policy matlab_policy
 
     set color one-of [ red green ] ;make approximately half the turtles red and the other half green
     set conversation-length 0
@@ -81,17 +82,19 @@ to update-agents
   ask turtles [
     ;determine states
     set people-around other turtles in-radius proximity-radius
-    ifelse any? people-around [
-      set potential-partner people-around with [conversation-length = 0]
-      ifelse any? potential-partner [;in case there is a potential partner
-        set people-around-to-talk? 1
+    if (conversation-length = 0) [
+      ifelse any? people-around [
+        set potential-partner people-around with [conversation-length = 0]
+        ifelse any? potential-partner [;in case there is a potential partner
+          set people-around-to-talk? 1
+        ][ set people-around-to-talk? 0 ]
       ][ set people-around-to-talk? 0 ]
-    ][ set people-around-to-talk? 0 ]
+    ]
 
     set state conversation-length * 4 + conversation-with-like? * 2 + people-around-to-talk? + 1
 
     ;look up action
-    set action item state policy
+    set action item (state - 1) policy
 
     do-action
     update-agent-statistics
@@ -167,7 +170,6 @@ to update-global-statistics
   set percent-same-color-conversation (total-time-with-same-color / (total-time-with-same-color + total-time-with-different-color)) * 100
   set percent-same-color-area mean [same-color-ratio-around-me] of turtles
 end
-
 
 @#$#@#$#@
 GRAPHICS-WINDOW
@@ -248,21 +250,6 @@ number-of-agents
 NIL
 HORIZONTAL
 
-SLIDER
-15
-95
-240
-128
-conv-length-with-same
-conv-length-with-same
-0.0
-20
-5
-1.0
-1
-NIL
-HORIZONTAL
-
 BUTTON
 15
 15
@@ -299,11 +286,26 @@ NIL
 
 SLIDER
 15
+95
+240
+128
+short-distance
+short-distance
+0
+5
+0
+1
+1
+NIL
+HORIZONTAL
+
+SLIDER
+15
 135
 240
 168
-conv-length-with-different
-conv-length-with-different
+long-distance
+long-distance
 0
 20
 2
@@ -317,36 +319,6 @@ SLIDER
 175
 240
 208
-short-distance
-short-distance
-0
-5
-0
-1
-1
-NIL
-HORIZONTAL
-
-SLIDER
-15
-215
-240
-248
-long-distance
-long-distance
-0
-20
-2
-1
-1
-NIL
-HORIZONTAL
-
-SLIDER
-15
-255
-240
-288
 proximity-radius
 proximity-radius
 1
