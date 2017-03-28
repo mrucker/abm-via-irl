@@ -8,7 +8,7 @@ addpath(fullfile(fileparts(which(mfilename)),'../MDPtoolbox/'));
 %function learned_policy = Run()    
     
     discount = 0.99;
-    epsilon  = 1;
+    epsilon  = .5;
 
     conversation_length = 0:5;
     similar_partner_yn = 0:1;
@@ -107,7 +107,8 @@ addpath(fullfile(fileparts(which(mfilename)),'../MDPtoolbox/'));
 
         % 3.
         %(KL) for experiment, I added additional terminate conditions
-        if t(i) <= epsilon || (i>20 && t(i-1)-t(i)<0.0001)
+        %if t(i) <= epsilon || (i>20 && t(i-1)-t(i)<0.0001)
+        if t(i) <= epsilon 
             fprintf('Terminate...\n\n');
             break;
         end
