@@ -76,10 +76,8 @@ to update-agents
     ifelse (conversation-time = 0)
     [ ;; in case the agent has no partner
 
-      find-new-spot recent-partner-color
-
       let potential-partner nobody
-      set potential-partner other turtles in-radius 1.5
+      set potential-partner other turtles in-radius 2
       set potential-partner potential-partner with [conversation-time = 0]
       if any? potential-partner
       [
@@ -109,6 +107,7 @@ to update-agents
         [
           set cumulative-conversation-time-with-same-color cumulative-conversation-time-with-same-color + duration-with-same-color
           set conversation-time 0
+		  find-new-spot recent-partner-color
         ]
       ]
       [ ;; in case the partner has the different color
@@ -116,6 +115,7 @@ to update-agents
         [
           set cumulative-conversation-time-with-different-color cumulative-conversation-time-with-different-color + duration-with-different-color
           set conversation-time 0
+		  find-new-spot recent-partner-color
         ]
       ]
     ]
