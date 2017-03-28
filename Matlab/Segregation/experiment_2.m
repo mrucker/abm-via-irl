@@ -32,34 +32,34 @@ addpath(fullfile(fileparts(which(mfilename)),'../MDPtoolbox/'));
     num_samples = 100; % Number of samples to use in feature expectations
     num_steps   = 100; % Number of steps to use in each sample
 
-    % Initial uniform state distribution
-    D = zeros(num_states,1);
-    
+        
     % Sample trajectories from expert policy.
     expert_trajectories = ReadSampleTrajectories('SampleTrajectories.csv');
     expert_trajectories = horzcat(expert_trajectories{1}, expert_trajectories{2}, expert_trajectories{3}, expert_trajectories{4}, expert_trajectories{5});       
 
-    first100 = [];
+    agent100s = [];
+    initCount = zeros(num_states,1);
+    
     for agentId = unique(expert_trajectories(:,1))'
-        rowIds = find(expert_trajectories(:,1) == agentId);
-        first100 = [first100; rowIds(1:100)];
+        agentRows = find(expert_trajectories(:,1) == agentId);
+        agent100s = [agent100s; rowIds(1:100)];
         
-        start_state = expert_trajectories(rowIds(1),[2 3 4]);
-        start_s_id  = find(all(state_space' == start_state'));
+        init_state = expert_trajectories(agentRows(1),[2 3 4]);
+        init_s_id  = find(all(state_space' == start_state'));
         
-        D(start_s_id) = D(start_s_id) + 1;
+        initCount(start_s_id) = initCount(init_s_id) + 1;
     end
     
-    expert_trajectories = expert_trajectories(first100, [2 3 4 5]);
-    D = D./sum(D);
+    expert_trajectories = expert_trajectories(agent100s, [2 3 4 5]);
+    D = initCount./sum(initCount);
     
     %P = T_2_1(num_actions, num_states); %(KL) T_2 is my understanding for transition probabilities
     P = T_SA(expert_trajectories(:, [4 1 2 3]), num_actions, num_states);
         
     mu_expert = zeros(num_features,1);
     for i = 1:num_samples
-        for t = 1:num_steps %(KL) how many steps do we need?
-            [~, state_action_ix] = ismember(expert_trajectories(t*i, :), state_action_space, 'rows');
+        for t = 1:num_steps
+            [~, state_action_ix] = ismember(expert_trajectories(t + 100*(i-1), :), state_action_space, 'rows');
             mu_expert = mu_expert + discount^(t-1) * phis(state_action_ix,:)';
         end
     end
@@ -107,10 +107,10 @@ addpath(fullfile(fileparts(which(mfilename)),'../MDPtoolbox/'));
 
         % 3.
         %(KL) for experiment, I added additional terminate conditions
-        %if t(i) <= epsilon || (i>20 && t(i-1)-t(i)<0.0001)
-        %    fprintf('Terminate...\n\n');
-        %    break;
-        %end
+        if t(i) <= epsilon || (i>20 && t(i-1)-t(i)<0.0001)
+            fprintf('Terminate...\n\n');
+            break;
+        end
 
         % 4.
         %(KL) reshape w into S*A
