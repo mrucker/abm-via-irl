@@ -1,4 +1,4 @@
-function [V, P, cpu_time]=stochastic_policy(P, R, discount, policy0, maxiter, stochasitc)
+function [P, cpu_time]=stochastic_policy(P, R, discount, policy0, maxiter, stochasitc)
 % 
 % stochastic_policy Resolution of discounted MDP 
 %                       with (stochasitc) policy iteration algorithm
@@ -17,7 +17,6 @@ function [V, P, cpu_time]=stochastic_policy(P, R, discount, policy0, maxiter, st
 %   max_iter = maximum number of iteration to be done, upper than 0, 
 %              optional (default 1000)
 %Evaluation ---------------------------------------------------------------
-%   V(S)   = value function 
 %   policy(S) = optimal policy
 %   cputime = used CPU Time
 %
