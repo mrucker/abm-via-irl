@@ -17,7 +17,7 @@ function [P, cpu_time]=stochastic_policy(P, R, discount, policy0, maxiter, stoch
 %   max_iter = maximum number of iteration to be done, upper than 0, 
 %              optional (default 1000)
 %Evaluation ---------------------------------------------------------------
-%   policy(S) = optimal policy
+%   policy(S) = stochastic policy or optimal policy
 %   cputime = used CPU Time
 %
 % initialization of optional arguments
