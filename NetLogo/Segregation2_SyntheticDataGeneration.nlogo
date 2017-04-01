@@ -20,6 +20,7 @@ turtles-own [
   people-around-to-talk?  ;whether there is a potential conversation partner
   action                  ;1: move short distance 2: move long distance 3: start conversation 4: continue conversation
   trajectory              ;list of status and actions
+  episode                 ;which episode we are currently running
 
   ;agent statistics
   cumulative-conversation-length-with-same-color
@@ -45,6 +46,7 @@ to setup
     set cumulative-conversation-length-with-same-color 0.1
     set cumulative-conversation-length-with-different-color 0.1
     set trajectory [[]]
+    set episode 1
     move 2
   ]
 
@@ -66,6 +68,24 @@ to go
   update-agents
   update-global-statistics
   tick
+  if (ticks = 120) [
+    reset-ticks
+    ask turtles [
+      set conversation-length 0
+      set people-around-to-talk? 0
+      set conversation-with-like? 0
+      set people-around nobody
+      set potential-partner nobody
+      set partner nobody
+      set action 0
+      set same-color-ratio-around-me 0
+      set cumulative-conversation-length-with-same-color 0.1
+      set cumulative-conversation-length-with-different-color 0.1
+      set episode episode + 1
+      move-to one-of patches
+      move 2
+    ]
+  ]
 end
 
 
@@ -230,7 +250,7 @@ end
 
 
 to save-trajectory
-  set trajectory lput (list who conversation-length conversation-with-like? people-around-to-talk? action) trajectory
+  set trajectory lput (list who episode conversation-length conversation-with-like? people-around-to-talk? action) trajectory
 end
 
 
@@ -276,7 +296,7 @@ to setup-file
   set trajectory-file ("trajectory.csv")
   carefully [file-delete trajectory-file] []
   file-open trajectory-file
-  file-print csv:to-row (list "AgentID" "Conversation_Length" "Conversation_With_Like" "People_Around_To_Talk" "Action")
+  file-print csv:to-row (list "AgentID" "Episode" "Conversation_Length" "Conversation_With_Like" "People_Around_To_Talk" "Action")
   file-close
 end
 
