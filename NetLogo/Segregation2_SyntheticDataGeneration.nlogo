@@ -127,13 +127,13 @@ to update-agents
       ]
       [;in case there no potential partner
         set people-around-to-talk? 0
-        set action 2
+        set action one-of [1 2]
       ]
     ]
     [;in case the agent is having a conversation
       let conv-limit one-of (list conv-length-with-same conv-length-with-different)
       ifelse conversation-length >= conv-limit [
-        set action 2
+        set action one-of [1 2]
       ]
       [;in case conversation-length < conv-limit
         set action 4
@@ -559,7 +559,6 @@ Segregation
 
 
 ## COPYRIGHT AND LICENSE
-
 @#$#@#$#@
 default
 true
