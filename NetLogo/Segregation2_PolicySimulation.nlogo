@@ -1,6 +1,10 @@
-;extensions [matlab pathdir]
+extensions [csv pathdir]
 
 globals [
+  stochastic-policy-1
+  stochastic-policy-2
+  stochastic-policy-3
+  stochastic-policy-4
 
   ;global statistics
   percent-same-color-area          ;on average, percentage of majority color agents in a 10-by-10 patch
@@ -10,13 +14,14 @@ globals [
 turtles-own [
   state
   policy
+  action                  ;1: move short distance 2: move long distance 3: start conversation 4: continue conversation
 
   conversation-length     ;number of tick during which the agent have a conversation
   conversation-with-like? ;defines the color of the recent partner
   people-around           ;list of people around
   potential-partner       ;list of people who are available to talk
+  partner                 ;current converstaion partner
   people-around-to-talk?  ;whether there is a potential conversation partner
-  action                  ;1: move short distance 2: move long distance 3: start conversation 4: continue conversation
 
   ;agent statistics
   cumulative-conversation-length-with-same-color
@@ -28,37 +33,49 @@ turtles-own [
 to setup
   clear-all
 
-  matlab:eval (word "run('"pathdir:get-current"\\initialize.m')")
+  ;matlab:eval (word "run('"pathdir:get-current"\\initialize.m')")
   set-default-shape turtles "person"
   ask n-of number-of-agents patches [ sprout 1 ]
 
   ;Solve MDP of random policy
-  matlab:eval "finished=0;"
-  matlab:eval "run('experiment_2.m');finished=1;"
-  let matlabReady false
-  while [matlabReady = false] [
-    wait 1
-    set matlabReady (matlab:get-double "finished")
-  ]
-  show "ready"
-  matlab:eval "learned_policy = Pol{selected};"
-  let matlab_policy matlab:get-double-list "learned_policy"
+  ;matlab:eval "finished=0;"
+  ;matlab:eval "run('experiment_3.m');finished=1;"
+  ;let matlabReady false
+;  while [matlabReady = false] [
+;    wait 1
+;    set matlabReady (matlab:get-double "finished")
+;  ]
+;  show "ready"
+;  matlab:eval "learned_policy = stochastic_policy;"
+;  let matlab_policy matlab:get-double-list "learned_policy"
+
+  read-policy-file
 
   ask turtles [
     set state 0
-    set policy matlab_policy
-
+    set action 0
+    set policy []
     set color one-of [ red green ] ;make approximately half the turtles red and the other half green
     set conversation-length 0
     set people-around-to-talk? 0
     set conversation-with-like? 0
     set people-around nobody
     set potential-partner nobody
-    set action 0
+    set partner nobody
     set same-color-ratio-around-me 0
     set cumulative-conversation-length-with-same-color 0.1
     set cumulative-conversation-length-with-different-color 0.1
     move 2
+  ]
+
+  ask n-of 600 turtles with [policy = []] [
+    set policy stochastic-policy-1
+  ]
+  ask n-of 50 turtles with [policy = []] [
+    set policy stochastic-policy-2
+  ]
+  ask n-of 50 turtles with [policy = []] [
+    set policy stochastic-policy-3
   ]
 
   set percent-same-color-area 0
@@ -94,9 +111,20 @@ to update-agents
     set state conversation-length * 4 + conversation-with-like? * 2 + people-around-to-talk? + 1
 
     ;look up action
-    set action item (state - 1) policy
+    let prob-actions item (state - 1) policy
+    let cum-prob reduce [lput (runresult task + ?2 last ?1) ?1] (fput (list first prob-actions) butfirst prob-actions)
+    let rand random 100 / 100
+    ifelse (rand < item 0 cum-prob) [ set action 1 ]
+    [ ifelse (rand < item 1 cum-prob) [ set action 2 ]
+    [ ifelse (rand < item 2 cum-prob) [ set action 3 ]
+    [ set action 4 ]]]
 
-    do-action
+    ;do action unless it tries illegal actions
+    ifelse (action = 3 and member? state [1 6 10 14 18 22 3 8 12 16 20 24]) or (action = 4 and member? state [1 2 3 4]) [
+      die
+    ][
+      do-action
+    ]
     update-agent-statistics
   ]
 end
@@ -107,15 +135,29 @@ end
 to do-action
 
   ifelse (action = 1) [
+    if (partner != nobody) [
+      ask partner [
+        set conversation-length 0
+        set partner nobody
+      ]
+    ]
     set conversation-length 0
+    set partner nobody
     move 1
 
   ][ifelse (action = 2) [
+    if (partner != nobody) [
+      ask partner [
+        set conversation-length 0
+        set partner nobody
+      ]
+    ]
     set conversation-length 0
+    set partner nobody
     move 2
 
   ][ifelse (action = 3) [
-    let partner one-of potential-partner
+    set partner one-of potential-partner
     face partner
     fd 0.5
     set conversation-length 1
@@ -171,6 +213,20 @@ to update-global-statistics
   set percent-same-color-area mean [same-color-ratio-around-me] of turtles
 end
 
+
+
+to read-policy-file
+  let policy-file-1 ("Segregation2_policy1.csv")
+  let policy-file-2 ("Segregation2_policy1.csv")
+  let policy-file-3 ("Segregation2_policy1.csv")
+  let policy-file-4 ("Segregation2_policy1.csv")
+  ;file-open trajectory-file
+  set stochastic-policy-1 csv:from-file policy-file-1
+  set stochastic-policy-2 csv:from-file policy-file-2
+  set stochastic-policy-3 csv:from-file policy-file-3
+  set stochastic-policy-4 csv:from-file policy-file-4
+  ;file-close
+end
 @#$#@#$#@
 GRAPHICS-WINDOW
 270
