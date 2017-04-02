@@ -1,4 +1,4 @@
-;extensions [matlab pathdir]
+extensions [matlab pathdir]
 
 globals [
 
@@ -170,7 +170,6 @@ to update-global-statistics
   set percent-same-color-conversation (total-time-with-same-color / (total-time-with-same-color + total-time-with-different-color)) * 100
   set percent-same-color-area mean [same-color-ratio-around-me] of turtles
 end
-
 @#$#@#$#@
 GRAPHICS-WINDOW
 270

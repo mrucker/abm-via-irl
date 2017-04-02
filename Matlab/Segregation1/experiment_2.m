@@ -133,24 +133,6 @@ addpath(fullfile(fileparts(which(mfilename)),'../MDPtoolbox/'));
     fprintf('Distance: %6.4f\n\n', min_distance);
     
     w_last = w(:,i);
-    
-    %(KL) mixing together policies according to the mixture weights lambda
-    fprintf('Calculating combination of mu...\n');
-    cvx_begin
-        variable lambda(i-1)
-        minimize( norm( mu*lambda - mu_expert, 2 ) )
-        subject to
-            sum(lambda) == 1;
-            lambda >= 0;
-    cvx_end
-    [~,idx] = max(lambda);
-    mu_mixed = mu*lambda;
-    
-    stochastic_policy = zeros(num_states, num_actions);
-    for i=1:length(lambda)
-        pol_idx = (Pol{i}-1)*num_states + (0:num_states-1)' + 1;
-        stochastic_policy(pol_idx) = stochastic_policy(pol_idx) + lambda(i);
-    end
 
     fprintf('Comparison between performance of expert and apprentice on found reward function:\n');
     fprintf('V(Apprentice): %6.4f\n', w(:,selected)' * mu(:, selected));
@@ -162,7 +144,12 @@ addpath(fullfile(fileparts(which(mfilename)),'../MDPtoolbox/'));
     %fprintf('V(Mixed): %6.4f\n', w_last' * mu_mixed);
     fprintf('V(Expert): %6.4f\n\n', w_last' * mu_expert);
 
-    
+
+    %fprintf('Comparison between performance of expert and apprentice on true reward function:\n');
+    %fprintf('V(Apprentice): %6.4f\n', r' * mu(:, selected));
+    %fprintf('V(Mixed): %6.4f\n', r' * mu_mixed);
+    %fprintf('V(Expert): %6.4f\n\n', r' * mu_expert);
+
     fprintf('Done\n');
     
     tts(end+1) = toc(tt);
