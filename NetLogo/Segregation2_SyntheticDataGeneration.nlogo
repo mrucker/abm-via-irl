@@ -164,29 +164,64 @@ to update-agents
   ]
 
   ask racists [
+;    set people-around other turtles in-radius proximity-radius
+;
+;    ifelse (conversation-length = 0) [;in case the agent is not having a conversation
+;      set potential-partner people-around with [conversation-length = 0 and color = [color] of myself]
+;
+;      ifelse any? potential-partner [;in case there is a potential partner
+;        set people-around-to-talk? 1
+;        set action 3
+;      ]
+;      [;in case there no potential partner
+;        set people-around-to-talk? 0
+;        set action 1
+;      ]
+;    ]
+;    [;in case the agent is having a conversation
+;      let conv-limit conv-length-with-same
+;      ifelse conversation-length >= conv-limit [
+;        set action 1
+;      ]
+;      [;in case conversation-length < conv-limit
+;        set action 4
+;      ]
+;    ]
+
     set people-around other turtles in-radius proximity-radius
 
     ifelse (conversation-length = 0) [;in case the agent is not having a conversation
-      set potential-partner people-around with [conversation-length = 0 and color = [color] of myself]
+      set potential-partner people-around with [conversation-length = 0]
 
       ifelse any? potential-partner [;in case there is a potential partner
         set people-around-to-talk? 1
         set action 3
       ]
       [;in case there no potential partner
-        set people-around-to-talk? 0
-        set action 1
+        ifelse (conversation-with-like? = 1) [;in case most recent partner had the same color
+          set people-around-to-talk? 0
+          set action 1
+        ]
+        [;in case most recent partner had different color
+          set people-around-to-talk? 0
+          set action 1
+        ]
       ]
     ]
     [;in case the agent is having a conversation
-      let conv-limit conv-length-with-same
-      ifelse conversation-length >= conv-limit [
+      ifelse conversation-with-like? = 1 [;in case the partner has the same color
+        ifelse conversation-length >= conv-length-with-same [
+          set action 1
+        ]
+        [;in case conversation-length < duration-with-same-color
+          set action 4
+        ]
+      ]
+      [;in case the partner has the different color
         set action 1
       ]
-      [;in case conversation-length < conv-limit
-        set action 4
-      ]
     ]
+
     do-action
     update-agent-statistics
   ]
