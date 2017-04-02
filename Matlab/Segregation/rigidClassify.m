@@ -28,8 +28,10 @@ for i = 1:num_agent
     if i == 0
         idx(i) = cluster_id;
         for j = i:num_agent
-            if issimilar(input(i), input(j), epsilon) 
-                idx(j) = cluster_id;
+            if idx(j) == 0
+                if issimilar(input(i), input(j), epsilon) 
+                    idx(j) = cluster_id;
+                end
             end
         end
         cluster_id = cluster_id + 1;
