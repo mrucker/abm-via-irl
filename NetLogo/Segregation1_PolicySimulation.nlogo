@@ -34,7 +34,7 @@ to setup
 
   ;Solve MDP of random policy
   matlab:eval "finished=0;"
-  matlab:eval "run('experiment_2.m');finished=1;"
+  matlab:eval "run('experiment.m');finished=1;"
   let matlabReady false
   while [matlabReady = false] [
     wait 1
