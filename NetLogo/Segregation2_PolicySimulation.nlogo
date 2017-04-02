@@ -1,153 +1,176 @@
+;extensions [matlab pathdir]
+
 globals [
-  percent-same-color-area          ;; on average, percentage of majority color agents in a 10-by-10 patch
-  percent-same-color-conversation  ;; on average, percentage of conversation time with a same color partner
+
+  ;global statistics
+  percent-same-color-area          ;on average, percentage of majority color agents in a 10-by-10 patch
+  percent-same-color-conversation  ;on average, percentage of conversation time with a same color partner
 ]
 
 turtles-own [
-  cumulative-conversation-time-with-same-color
-  cumulative-conversation-time-with-different-color
+  state
+  policy
+
+  conversation-length     ;number of tick during which the agent have a conversation
+  conversation-with-like? ;defines the color of the recent partner
+  people-around           ;list of people around
+  potential-partner       ;list of people who are available to talk
+  people-around-to-talk?  ;whether there is a potential conversation partner
+  action                  ;1: move short distance 2: move long distance 3: start conversation 4: continue conversation
+
+  ;agent statistics
+  cumulative-conversation-length-with-same-color
+  cumulative-conversation-length-with-different-color
   same-color-ratio-around-me
-  recent-partner-color ;; defines the color difference of the recent partner [1 = same color, 0 = different color]
-  conversation-time   ;; number of tick during which the agent have a conversation
 ]
 
 
 to setup
   clear-all
+
+  matlab:eval (word "run('"pathdir:get-current"\\initialize.m')")
   set-default-shape turtles "person"
-  ask n-of number patches [
-    sprout 1
+  ask n-of number-of-agents patches [ sprout 1 ]
+
+  ;Solve MDP of random policy
+  matlab:eval "finished=0;"
+  matlab:eval "run('experiment_2.m');finished=1;"
+  let matlabReady false
+  while [matlabReady = false] [
+    wait 1
+    set matlabReady (matlab:get-double "finished")
   ]
+  show "ready"
+  matlab:eval "learned_policy = Pol{selected};"
+  let matlab_policy matlab:get-double-list "learned_policy"
+
   ask turtles [
-    ;; make approximately half the turtles red and the other half green
-    set color one-of [ red green ]
-    set conversation-time 0
-    set recent-partner-color 0
+    set state 0
+    set policy matlab_policy
+
+    set color one-of [ red green ] ;make approximately half the turtles red and the other half green
+    set conversation-length 0
+    set people-around-to-talk? 0
+    set conversation-with-like? 0
+    set people-around nobody
+    set potential-partner nobody
+    set action 0
     set same-color-ratio-around-me 0
-    set cumulative-conversation-time-with-same-color 0.1
-    set cumulative-conversation-time-with-different-color 0.1
-    find-new-spot recent-partner-color
+    set cumulative-conversation-length-with-same-color 0.1
+    set cumulative-conversation-length-with-different-color 0.1
+    move 2
   ]
 
   set percent-same-color-area 0
   set percent-same-color-conversation 0
-
-  ;;update-turtles
-  ;;update-globals
 
   reset-ticks
 end
 
 
 
-
-
 to go
-  ;;if all? turtles [ happy? ] [ stop ]
-  ;;move-unhappy-turtles
-
   update-agents
-  update-globals
-
+  update-global-statistics
   tick
 end
 
 
 
 
-
-to find-new-spot [find-same-color-partner?]
-  rt random-float 360
-  fd ifelse-value (find-same-color-partner? = 1) [random-float 0.5][(random-float 0.5) + 2]
-  ;;fd ifelse-value (find-same-color-partner? = 1) [1.5][2.5]
-  if any? other turtles-here
-    [ find-new-spot find-same-color-partner? ]          ;; keep going until we find an unoccupied patch
-  ;;setxy pxcor pycor  ;; move to center of patch
-end
-
-
-
-
-
-
 to update-agents
   ask turtles [
-
-    ifelse (conversation-time = 0)
-    [ ;; in case the agent has no partner
-
-      let potential-partner nobody
-      set potential-partner other turtles in-radius 2
-      set potential-partner potential-partner with [conversation-time = 0]
-      if any? potential-partner
-      [
-        let partner nobody
-        set partner one-of potential-partner
-
-        ;;setxy [xcor + 0.5] of partner [ycor + 0.5] of partner
-        face partner
-        fd 0.5
-        set conversation-time 1
-        let same-color? ifelse-value ([color] of self = [color] of partner) [1] [0]
-        set recent-partner-color same-color?
-        ask partner
-        [
-          set conversation-time 1
-          set recent-partner-color same-color?
-        ]
-      ]
+    ;determine states
+    set people-around other turtles in-radius proximity-radius
+    if (conversation-length = 0) [
+      ifelse any? people-around [
+        set potential-partner people-around with [conversation-length = 0]
+        ifelse any? potential-partner [;in case there is a potential partner
+          set people-around-to-talk? 1
+        ][ set people-around-to-talk? 0 ]
+      ][ set people-around-to-talk? 0 ]
     ]
 
-    [ ;; in case the agent has a partner
-      set conversation-time conversation-time + 1
+    set state conversation-length * 4 + conversation-with-like? * 2 + people-around-to-talk? + 1
 
-      ifelse recent-partner-color = 1
-      [ ;; in case the partner has the same color
-        if conversation-time > duration-with-same-color
-        [
-          set cumulative-conversation-time-with-same-color cumulative-conversation-time-with-same-color + duration-with-same-color
-          set conversation-time 0
-		  find-new-spot recent-partner-color
-        ]
-      ]
-      [ ;; in case the partner has the different color
-        if conversation-time > duration-with-different-color
-        [
-          set cumulative-conversation-time-with-different-color cumulative-conversation-time-with-different-color + duration-with-different-color
-          set conversation-time 0
-		  find-new-spot recent-partner-color
-        ]
-      ]
-    ]
+    ;look up action
+    set action item (state - 1) policy
 
-    let agents-nearby other turtles in-radius 2
-    if any? agents-nearby
-    [
-      let num_same count agents-nearby with [color = [color] of myself]
-      let num_different count agents-nearby with [color != [color] of myself]
-      set same-color-ratio-around-me num_same / (num_same + num_different) * 100
-    ]
-
+    do-action
+    update-agent-statistics
   ]
 end
 
 
 
 
-to update-globals
-  ;;let similar-neighbors sum [similar-nearby] of turtles
-  ;;let total-neighbors sum [total-nearby] of turtles
-  ;;set percent-similar (similar-neighbors / total-neighbors) * 100
-  ;;set percent-unhappy (count turtles with [not happy?]) / (count turtles) * 100
+to do-action
 
-  let total-time-with-same-color sum [cumulative-conversation-time-with-same-color] of turtles
-  let total-time-with-different-color sum [cumulative-conversation-time-with-different-color] of turtles
-  set percent-same-color-conversation (total-time-with-same-color / (total-time-with-same-color + total-time-with-different-color)) * 100
+  ifelse (action = 1) [
+    set conversation-length 0
+    move 1
 
-  set percent-same-color-area mean [same-color-ratio-around-me] of turtles
+  ][ifelse (action = 2) [
+    set conversation-length 0
+    move 2
 
+  ][ifelse (action = 3) [
+    let partner one-of potential-partner
+    face partner
+    fd 0.5
+    set conversation-length 1
+    let same-color? ifelse-value ([color] of self = [color] of partner) [1] [0]
+    set conversation-with-like? same-color?
+    ask partner
+    [
+      set people-around-to-talk? 1
+      set action 3
+      set conversation-length 1
+      set conversation-with-like? same-color?
+    ]
+
+  ][ifelse (action = 4) [
+    set conversation-length conversation-length + 1
+  ][]]]]
 
 end
+
+
+
+
+to move [dist] ; 1:short distance 2:long distance
+  rt random-float 360
+  fd ifelse-value (dist = 1) [random-float 0.5 + short-distance][(random-float 0.5) + long-distance]
+  if any? other turtles-here [
+    move dist     ;keep going until we find an unoccupied patch
+  ]
+end
+
+
+
+
+to update-agent-statistics
+  if any? people-around [
+      let num_same count people-around with [color = [color] of myself]
+      let num_different count people-around with [color != [color] of myself]
+      set same-color-ratio-around-me num_same / (num_same + num_different) * 100
+  ]
+  if (action = 3 or action = 4) [
+    ifelse (conversation-with-like? = 1) [ set cumulative-conversation-length-with-same-color cumulative-conversation-length-with-same-color + 1 ]
+                                         [ set cumulative-conversation-length-with-different-color cumulative-conversation-length-with-different-color + 1 ]
+  ]
+end
+
+
+
+
+to update-global-statistics
+  let total-time-with-same-color sum [cumulative-conversation-length-with-same-color] of turtles
+  let total-time-with-different-color sum [cumulative-conversation-length-with-different-color] of turtles
+  set percent-same-color-conversation (total-time-with-same-color / (total-time-with-same-color + total-time-with-different-color)) * 100
+  set percent-same-color-area mean [same-color-ratio-around-me] of turtles
+end
+
 @#$#@#$#@
 GRAPHICS-WINDOW
 270
@@ -177,10 +200,10 @@ ticks
 15.0
 
 PLOT
-10
-205
-259
-348
+15
+300
+264
+443
 Spatial Segregation
 time
 %
@@ -195,10 +218,10 @@ PENS
 "percent" 1.0 0 -2674135 true "" "plot percent-same-color-area"
 
 PLOT
-10
-349
-259
-513
+15
+444
+264
+608
 Social Segregation
 time
 %
@@ -217,8 +240,8 @@ SLIDER
 55
 240
 88
-number
-number
+number-of-agents
+number-of-agents
 100
 1500
 700
@@ -227,26 +250,11 @@ number
 NIL
 HORIZONTAL
 
-SLIDER
-15
-95
-240
-128
-duration-with-same-color
-duration-with-same-color
-0.0
-20
-5
-1.0
-1
-NIL
-HORIZONTAL
-
 BUTTON
-34
-14
-114
-47
+15
+15
+75
+48
 setup
 setup
 NIL
@@ -260,10 +268,10 @@ NIL
 1
 
 BUTTON
-124
-14
-204
-47
+100
+15
+155
+48
 go
 go
 T
@@ -275,16 +283,46 @@ NIL
 NIL
 NIL
 0
+
+SLIDER
+15
+95
+240
+128
+short-distance
+short-distance
+0
+5
+0
+1
+1
+NIL
+HORIZONTAL
 
 SLIDER
 15
 135
 240
 168
-duration-with-different-color
-duration-with-different-color
+long-distance
+long-distance
 0
 20
+2
+1
+1
+NIL
+HORIZONTAL
+
+SLIDER
+15
+175
+240
+208
+proximity-radius
+proximity-radius
+1
+10
 2
 1
 1
