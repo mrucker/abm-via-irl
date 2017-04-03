@@ -1,4 +1,4 @@
-function [idx, C, dis] = cluster(input, k)
+function [idx, C, disD, D] = cluster(input, k)
 
 % cluster classify all agents use unsupervised learning
 % Argument----------------------------------------
@@ -21,7 +21,8 @@ elseif (~isinteger(k)) | k < 2
 end
     
     
-[idx, C, dis] = kmeans(input, k);
+[idx, C, disD, D] = kmeans(input, k);
+
 
 
 
