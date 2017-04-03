@@ -1,10 +1,10 @@
-extensions [csv]
-breed [racists racist]
-breed [biased-people biased-person]
-breed [unbiased-people unbiased-person]
+extensions [csv pathdir]
 
 globals [
-  trajectory-file                  ;csv file that has states and actions of all agents
+  stochastic-policy-1
+  stochastic-policy-2
+  stochastic-policy-3
+  stochastic-policy-4
 
   ;global statistics
   percent-same-color-area          ;on average, percentage of majority color agents in a 10-by-10 patch
@@ -12,15 +12,16 @@ globals [
 ]
 
 turtles-own [
+  state
+  policy
+  action                  ;1: move short distance 2: move long distance 3: start conversation 4: continue conversation
+
   conversation-length     ;number of tick during which the agent have a conversation
   conversation-with-like? ;defines the color of the recent partner
   people-around           ;list of people around
   potential-partner       ;list of people who are available to talk
   partner                 ;current converstaion partner
   people-around-to-talk?  ;whether there is a potential conversation partner
-  action                  ;1: move short distance 2: move long distance 3: start conversation 4: continue conversation
-  trajectory              ;list of status and actions
-  episode                 ;which episode we are currently running
 
   ;agent statistics
   cumulative-conversation-length-with-same-color
@@ -31,9 +32,29 @@ turtles-own [
 
 to setup
   clear-all
+
+  ;matlab:eval (word "run('"pathdir:get-current"\\initialize.m')")
   set-default-shape turtles "person"
   ask n-of number-of-agents patches [ sprout 1 ]
+
+  ;Solve MDP of random policy
+  ;matlab:eval "finished=0;"
+  ;matlab:eval "run('experiment_3.m');finished=1;"
+  ;let matlabReady false
+;  while [matlabReady = false] [
+;    wait 1
+;    set matlabReady (matlab:get-double "finished")
+;  ]
+;  show "ready"
+;  matlab:eval "learned_policy = stochastic_policy;"
+;  let matlab_policy matlab:get-double-list "learned_policy"
+
+  read-policy-file
+
   ask turtles [
+    set state 0
+    set action 0
+    set policy []
     set color one-of [ red green ] ;make approximately half the turtles red and the other half green
     set conversation-length 0
     set people-around-to-talk? 0
@@ -41,24 +62,25 @@ to setup
     set people-around nobody
     set potential-partner nobody
     set partner nobody
-    set action 0
     set same-color-ratio-around-me 0
     set cumulative-conversation-length-with-same-color 0.1
     set cumulative-conversation-length-with-different-color 0.1
-    set trajectory [[]]
-    set episode 1
     move 2
   ]
 
-  ;set 3 tyes of people in terms of racial bias
-  ask n-of (number-of-agents * percentage-of-racists * 0.01) turtles [set breed racists]
-  ask n-of (number-of-agents * percentage-of-unbiased * 0.01) turtles with [breed != racists] [set breed unbiased-people]
-  ask turtles with [breed != biased-people and breed != racists] [set breed biased-people]
+  ask n-of 600 turtles with [policy = []] [
+    set policy stochastic-policy-1
+  ]
+  ask n-of 50 turtles with [policy = []] [
+    set policy stochastic-policy-2
+  ]
+  ask n-of 50 turtles with [policy = []] [
+    set policy stochastic-policy-3
+  ]
 
   set percent-same-color-area 0
   set percent-same-color-conversation 0
 
-  setup-file
   reset-ticks
 end
 
@@ -68,164 +90,43 @@ to go
   update-agents
   update-global-statistics
   tick
-  if (ticks = 120) [
-    reset-ticks
-    ask turtles [
-      set conversation-length 0
-      set people-around-to-talk? 0
-      set conversation-with-like? 0
-      set people-around nobody
-      set potential-partner nobody
-      set partner nobody
-      set action 0
-      set same-color-ratio-around-me 0
-      set cumulative-conversation-length-with-same-color 0.1
-      set cumulative-conversation-length-with-different-color 0.1
-      set episode episode + 1
-      move-to one-of patches
-      move 2
-    ]
-  ]
 end
 
 
 
 
 to update-agents
-  ask biased-people [
+  ask turtles [
+    ;determine states
     set people-around other turtles in-radius proximity-radius
-
-    ifelse (conversation-length = 0) [;in case the agent is not having a conversation
-      set potential-partner people-around with [conversation-length = 0]
-
-      ifelse any? potential-partner [;in case there is a potential partner
-        set people-around-to-talk? 1
-        set action 3
-      ]
-      [;in case there no potential partner
-        ifelse (conversation-with-like? = 1) [;in case most recent partner had the same color
-          set people-around-to-talk? 0
-          set action 1
-        ]
-        [;in case most recent partner had different color
-          set people-around-to-talk? 0
-          set action 2
-        ]
-      ]
+    if (conversation-length = 0) [
+      ifelse any? people-around [
+        set potential-partner people-around with [conversation-length = 0]
+        ifelse any? potential-partner [;in case there is a potential partner
+          set people-around-to-talk? 1
+        ][ set people-around-to-talk? 0 ]
+      ][ set people-around-to-talk? 0 ]
     ]
-    [;in case the agent is having a conversation
-      ifelse conversation-with-like? = 1 [;in case the partner has the same color
-        ifelse conversation-length >= conv-length-with-same [
-          set action 1
-        ]
-        [;in case conversation-length < duration-with-same-color
-          set action 4
-        ]
-      ]
-      [;in case the partner has the different color
-        ifelse conversation-length >= conv-length-with-different [
-          set action 2
-        ]
-        [;in case conversation-length < duration-with-different-color
-          set action 4
-        ]
-      ]
+
+    set state conversation-length * 4 + conversation-with-like? * 2 + people-around-to-talk? + 1
+
+    ;look up action
+    let prob-actions item (state - 1) policy
+    let cum-prob reduce [lput (runresult task + ?2 last ?1) ?1] (fput (list first prob-actions) butfirst prob-actions)
+    let rand random 100 / 100
+    ifelse (rand < item 0 cum-prob) [ set action 1 ]
+    [ ifelse (rand < item 1 cum-prob) [ set action 2 ]
+    [ ifelse (rand < item 2 cum-prob) [ set action 3 ]
+    [ set action 4 ]]]
+
+    ;do action unless it tries illegal actions
+    ifelse (action = 3 and member? state [1 6 10 14 18 22 3 8 12 16 20 24]) or (action = 4 and member? state [1 2 3 4]) [
+      die
+    ][
+      do-action
     ]
-    do-action
     update-agent-statistics
   ]
-
-  ask unbiased-people [
-    set people-around other turtles in-radius proximity-radius
-
-    ifelse (conversation-length = 0) [;in case the agent is not having a conversation
-      set potential-partner people-around with [conversation-length = 0]
-
-      ifelse any? potential-partner [;in case there is a potential partner
-        set people-around-to-talk? 1
-        set action 3
-      ]
-      [;in case there no potential partner
-        set people-around-to-talk? 0
-        set action one-of [1 2]
-      ]
-    ]
-    [;in case the agent is having a conversation
-      let conv-limit one-of (list conv-length-with-same conv-length-with-different)
-      ifelse conversation-length >= conv-limit [
-        set action one-of [1 2]
-      ]
-      [;in case conversation-length < conv-limit
-        set action 4
-      ]
-    ]
-    do-action
-    update-agent-statistics
-  ]
-
-  ask racists [
-;    set people-around other turtles in-radius proximity-radius
-;
-;    ifelse (conversation-length = 0) [;in case the agent is not having a conversation
-;      set potential-partner people-around with [conversation-length = 0 and color = [color] of myself]
-;
-;      ifelse any? potential-partner [;in case there is a potential partner
-;        set people-around-to-talk? 1
-;        set action 3
-;      ]
-;      [;in case there no potential partner
-;        set people-around-to-talk? 0
-;        set action 1
-;      ]
-;    ]
-;    [;in case the agent is having a conversation
-;      let conv-limit conv-length-with-same
-;      ifelse conversation-length >= conv-limit [
-;        set action 1
-;      ]
-;      [;in case conversation-length < conv-limit
-;        set action 4
-;      ]
-;    ]
-
-    set people-around other turtles in-radius proximity-radius
-
-    ifelse (conversation-length = 0) [;in case the agent is not having a conversation
-      set potential-partner people-around with [conversation-length = 0]
-
-      ifelse any? potential-partner [;in case there is a potential partner
-        set people-around-to-talk? 1
-        set action 3
-      ]
-      [;in case there no potential partner
-        ifelse (conversation-with-like? = 1) [;in case most recent partner had the same color
-          set people-around-to-talk? 0
-          set action 1
-        ]
-        [;in case most recent partner had different color
-          set people-around-to-talk? 0
-          set action 1
-        ]
-      ]
-    ]
-    [;in case the agent is having a conversation
-      ifelse conversation-with-like? = 1 [;in case the partner has the same color
-        ifelse conversation-length >= conv-length-with-same [
-          set action 1
-        ]
-        [;in case conversation-length < duration-with-same-color
-          set action 4
-        ]
-      ]
-      [;in case the partner has the different color
-        set action 1
-      ]
-    ]
-
-    do-action
-    update-agent-statistics
-  ]
-
 end
 
 
@@ -234,7 +135,6 @@ end
 to do-action
 
   ifelse (action = 1) [
-    save-trajectory
     if (partner != nobody) [
       ask partner [
         set conversation-length 0
@@ -246,7 +146,6 @@ to do-action
     move 1
 
   ][ifelse (action = 2) [
-    save-trajectory
     if (partner != nobody) [
       ask partner [
         set conversation-length 0
@@ -258,7 +157,6 @@ to do-action
     move 2
 
   ][ifelse (action = 3) [
-    save-trajectory
     set partner one-of potential-partner
     face partner
     fd 0.5
@@ -269,23 +167,14 @@ to do-action
     [
       set people-around-to-talk? 1
       set action 3
-      save-trajectory
       set conversation-length 1
       set conversation-with-like? same-color?
     ]
 
   ][ifelse (action = 4) [
-    save-trajectory
     set conversation-length conversation-length + 1
   ][]]]]
 
-end
-
-
-
-
-to save-trajectory
-  set trajectory lput (list who episode conversation-length conversation-with-like? people-around-to-talk? action) trajectory
 end
 
 
@@ -326,24 +215,17 @@ end
 
 
 
-
-to setup-file
-  set trajectory-file ("Segregation2_trajectory.csv")
-  carefully [file-delete trajectory-file] []
-  file-open trajectory-file
-  file-print csv:to-row (list "AgentID" "Episode" "Conversation_Length" "Conversation_With_Like" "People_Around_To_Talk" "Action")
-  file-close
-end
-
-
-
-
-to export-trajectory
-  ask turtles [
-    file-open trajectory-file
-    foreach trajectory [file-print csv:to-row ?]
-    file-close
-  ]
+to read-policy-file
+  let policy-file-1 ("Segregation2_policy1.csv")
+  let policy-file-2 ("Segregation2_policy1.csv")
+  let policy-file-3 ("Segregation2_policy1.csv")
+  let policy-file-4 ("Segregation2_policy1.csv")
+  ;file-open trajectory-file
+  set stochastic-policy-1 csv:from-file policy-file-1
+  set stochastic-policy-2 csv:from-file policy-file-2
+  set stochastic-policy-3 csv:from-file policy-file-3
+  set stochastic-policy-4 csv:from-file policy-file-4
+  ;file-close
 end
 @#$#@#$#@
 GRAPHICS-WINDOW
@@ -375,9 +257,9 @@ ticks
 
 PLOT
 15
-345
+300
 264
-488
+443
 Spatial Segregation
 time
 %
@@ -393,9 +275,9 @@ PENS
 
 PLOT
 15
-489
+444
 264
-653
+608
 Social Segregation
 time
 %
@@ -420,21 +302,6 @@ number-of-agents
 1500
 700
 10
-1
-NIL
-HORIZONTAL
-
-SLIDER
-15
-90
-240
-123
-conv-length-with-same
-conv-length-with-same
-0.0
-20
-5
-1.0
 1
 NIL
 HORIZONTAL
@@ -475,41 +342,9 @@ NIL
 
 SLIDER
 15
-125
+95
 240
-158
-conv-length-with-different
-conv-length-with-different
-0
-20
-2
-1
-1
-NIL
-HORIZONTAL
-
-BUTTON
-180
-15
-242
-48
-save
-export-trajectory
-NIL
-1
-T
-OBSERVER
-NIL
-NIL
-NIL
-NIL
-1
-
-SLIDER
-15
-160
-240
-193
+128
 short-distance
 short-distance
 0
@@ -522,9 +357,9 @@ HORIZONTAL
 
 SLIDER
 15
-195
+135
 240
-228
+168
 long-distance
 long-distance
 0
@@ -537,9 +372,9 @@ HORIZONTAL
 
 SLIDER
 15
-230
+175
 240
-263
+208
 proximity-radius
 proximity-radius
 1
@@ -550,56 +385,48 @@ proximity-radius
 NIL
 HORIZONTAL
 
-SLIDER
-15
-265
-240
-298
-percentage-of-racists
-percentage-of-racists
-0
-50
-5
-1
-1
-NIL
-HORIZONTAL
-
-SLIDER
-15
-300
-240
-333
-percentage-of-unbiased
-percentage-of-unbiased
-0
-50
-5
-5
-1
-NIL
-HORIZONTAL
-
 @#$#@#$#@
 ## ACKNOWLEDGMENT
 
+This model is from Chapter Three of the book "Introduction to Agent-Based Modeling: Modeling Natural, Social and Engineered Complex Systems with NetLogo", by Uri Wilensky & William Rand.
+
+* Wilensky, U. & Rand, W. (2015). Introduction to Agent-Based Modeling: Modeling Natural, Social and Engineered Complex Systems with NetLogo. Cambridge, MA. MIT Press.
+
+This model is in the IABM Textbook folder of the NetLogo Models Library. The model, as well as any updates to the model, can also be found on the textbook website: http://www.intro-to-abm.com/.
 
 ## WHAT IS IT?
 
+This project models the behavior of two types of turtles in a mythical pond. The red turtles and green turtles get along with one another. But each turtle wants to make sure that it lives near some of "its own." That is, each red turtle wants to live near at least some red turtles, and each green turtle wants to live near at least some green turtles. The simulation shows how these individual preferences ripple through the pond, leading to large-scale patterns.
 
+This project was inspired by Thomas Schelling's writings about social systems (particularly with regards to housing segregation in cities).
+
+This model is a simplified version of the Segregation model that is in the Social Science section of the NetLogo models library.
 
 ## HOW TO USE IT
 
+Click the SETUP button to set up the turtles. There are equal numbers of red and green turtles. The turtles move around until there is at most one turtle on a patch.  Click GO to start the simulation. If turtles don't have enough same-color neighbors, they jump to a nearby patch.
 
+The NUMBER slider controls the total number of turtles. (It takes effect the next time you click SETUP.)  The %-SIMILAR-WANTED slider controls the percentage of same-color turtles that each turtle wants among its neighbors. For example, if the slider is set at 30, each green turtle wants at least 30% of its neighbors to be green turtles.
+
+The "PERCENT SIMILAR" monitor shows the average percentage of same-color neighbors for each turtle. It starts at about 0.5, since each turtle starts (on average) with an equal number of red and green turtles as neighbors. The "PERCENT UNHAPPY" monitor shows the percent of turtles that have fewer same-color neighbors than they want (and thus want to move).  Both monitors are also plotted.
 
 ## THINGS TO NOTICE
 
+When you execute SETUP, the red and green turtles are randomly distributed throughout the pond. But many turtles are "unhappy" since they don't have enough same-color neighbors. The unhappy turtles jump to new locations in the vicinity. But in the new locations, they might tip the balance of the local population, prompting other turtles to leave. If a few red turtles move into an area, the local green turtles might leave. But when the green turtles move to a new area, they might prompt red turtles to leave that area.
+
+Over time, the number of unhappy turtles decreases. But the pond becomes more segregated, with clusters of red turtles and clusters of green turtles.
+
+In the case where each turtle wants at least 30% same-color neighbors, the turtles end up with (on average) 70% same-color neighbors. So relatively small individual preferences can lead to significant overall segregation.
 
 ## THINGS TO TRY
 
+Try different values for %-SIMILAR-WANTED. How does the overall degree of segregation change?
+
+If each turtle wants at least 40% same-color neighbors, what percentage (on average) do they end up with?
 
 ## NETLOGO FEATURES
 
+In the UPDATE-GLOBALS procedure, note the use of SUM, COUNT and WITH to compute the percentages displayed in the monitors and plots.
 
 ## RELATED MODELS
 
@@ -607,13 +434,44 @@ Segregation
 
 ## CREDITS AND REFERENCES
 
+This model is a simplified version of:
 
+* Wilensky, U. (1997).  NetLogo Segregation model.  http://ccl.northwestern.edu/netlogo/models/Segregation.  Center for Connected Learning and Computer-Based Modeling, Northwestern University, Evanston, IL.
+
+The original work by Thomas Schelling was published in:
+Schelling, T. (1978). Micromotives and Macrobehavior. New York: Norton.
+
+See also: Rauch, J. (2002). Seeing Around Corners; The Atlantic Monthly; April 2002;Volume 289, No. 4; 35-48. http://www.theatlantic.com/magazine/archive/2002/04/seeing-around-corners/302471/
 
 ## HOW TO CITE
 
+This model is part of the textbook, “Introduction to Agent-Based Modeling: Modeling Natural, Social and Engineered Complex Systems with NetLogo.”
 
+If you mention this model or the NetLogo software in a publication, we ask that you include the citations below.
+
+For the model itself:
+
+* Wilensky, U., Rand, W. (2006).  NetLogo Segregation Simple model.  http://ccl.northwestern.edu/netlogo/models/SegregationSimple.  Center for Connected Learning and Computer-Based Modeling, Northwestern Institute on Complex Systems, Northwestern University, Evanston, IL.
+
+Please cite the NetLogo software as:
+
+* Wilensky, U. (1999). NetLogo. http://ccl.northwestern.edu/netlogo/. Center for Connected Learning and Computer-Based Modeling, Northwestern University, Evanston, IL.
+
+Please cite the textbook as:
+
+* Wilensky, U. & Rand, W. (2015). Introduction to Agent-Based Modeling: Modeling Natural, Social and Engineered Complex Systems with NetLogo. Cambridge, MA. MIT Press.
 
 ## COPYRIGHT AND LICENSE
+
+Copyright 2006 Uri Wilensky.
+
+![CC BY-NC-SA 3.0](http://ccl.northwestern.edu/images/creativecommons/byncsa.png)
+
+This work is licensed under the Creative Commons Attribution-NonCommercial-ShareAlike 3.0 License.  To view a copy of this license, visit https://creativecommons.org/licenses/by-nc-sa/3.0/ or send a letter to Creative Commons, 559 Nathan Abbott Way, Stanford, California 94305, USA.
+
+Commercial licenses are also available. To inquire about commercial licenses, please contact Uri Wilensky at uri@northwestern.edu.
+
+<!-- 2006 Cite: Wilensky, U., Rand, W. -->
 @#$#@#$#@
 default
 true
