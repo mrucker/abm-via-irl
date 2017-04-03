@@ -1,4 +1,4 @@
-function P = T_SA(SA, num_actions, num_states)
+function P = T_SA(SA, num_actions, num_states, state_space)
 %%    actions
 %     action 1, move short distance
 %     action 2, move long distance
@@ -35,7 +35,7 @@ function P = T_SA(SA, num_actions, num_states)
     P = Initialize(num_actions, num_states);
     
     % calculate transition probabilities using SA (observed state-action trajectoies)
-    P = Count(P, SA);
+    P = Count(P, SA, state_space);
     P = Normalize(P);
     
     % project the calculated transition probabilities onto the non-observed but structurally same state-actions
@@ -53,7 +53,7 @@ function P = Initialize(num_actions, num_states)
     end
 end
 
-function count = Count(P, SA); global state_space;
+function count = Count(P, SA, state_space)
     for i = 2:size(SA,1)
         last_a = SA(i-1,1);
         last_s = find(all(state_space' == SA(i-1,2:end)'));
