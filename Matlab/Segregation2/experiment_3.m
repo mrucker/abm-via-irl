@@ -51,10 +51,14 @@ addpath(fullfile(fileparts(which(mfilename)),'../MDPtoolbox/'));
         t         = zeros(0,1);
         R         = zeros(num_states,num_actions);
         
+        %(KL) Abbel and Ng 2004 suggests 10 - 100 samples is ideal for this algorithm we have 21 currently
         for episode = episodes
             sa_episode  = find(all(expert_trajectories(:,1:2)' == [agentId;episode]));
             
-            if(length(sa_episode) < num_steps); continue; end
+            if(length(sa_episode) < num_steps)
+                episodes = episodes(episodes ~= episode);
+                continue; 
+            end
             
             sa_episode = expert_trajectories(sa_episode(1:num_steps), [3 4 5 6]);
             sa_expert  = [sa_expert; sa_episode];
@@ -65,18 +69,19 @@ addpath(fullfile(fileparts(which(mfilename)),'../MDPtoolbox/'));
         end
         
         D = D./sum(D);
-
-        %P = T_2_1(num_actions, num_states); %(KL) T_2 is my understanding for transition probabilities
         P = T_SA(sa_expert(:, [4 1 2 3]), num_actions, num_states);
 
-        for t = 1:size(expert_episodes,1)
-            [~, state_action_ix] = ismember(sa_expert(t, :), state_action_space, 'rows');
-            mu_expert = mu_expert + discount^(t-1) * phis(state_action_ix,:)';
-        end
-        %(KL) I guess we need more than one trajectory for empirical estimate for mu_expert
+        for e = (0:length(episodes)-1)*num_steps
+            for t = 1:num_steps
+                [~, state_action_ix] = ismember(sa_expert(e + t, :), state_action_space, 'rows');
+                mu_expert = mu_expert + discount^(t-1) * phis(state_action_ix,:)';
+            end
+        end                
 
-        mu_expert = mu_expert./(t/num_steps);
+        mu_expert = mu_expert./length(episodes);
 
+        assert(abs(sum(mu_expert) - 63.39) < 1, 'As long as num_steps == 100 and norm(phis,1) == 1 then mu_expert should sum to 63.39')
+        
         % Projection algorithm
         % 1.
         Pol{1}  = ceil(rand(num_states,1) * num_actions);
@@ -111,8 +116,8 @@ addpath(fullfile(fileparts(which(mfilename)),'../MDPtoolbox/'));
 
             % 3.
             %(KL) for experiment, I added additional terminate conditions
-            if t(i) <= epsilon || (i>20 && t(i-1)-t(i)<0.0001)
-            %if t(i) <= epsilon 
+            %if t(i) <= epsilon || (i>20 && t(i-1)-t(i)<0.0001)
+            if t(i) <= epsilon 
                 fprintf('Terminate...\n\n');
                 break;
             end
