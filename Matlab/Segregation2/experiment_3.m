@@ -1,6 +1,6 @@
-global state_space;
+addpath(genpath(fullfile(fileparts(which(mfilename)),'../_dependencies/')));
 
-addpath(fullfile(fileparts(which(mfilename)),'../MDPtoolbox/'));
+global state_space;
 
 %(KL) I uncommented the function line in order to access the result variables after running this script
 %Run();

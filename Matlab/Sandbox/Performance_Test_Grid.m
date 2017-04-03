@@ -1,4 +1,4 @@
-addpath(fullfile(fileparts(which(mfilename)),'../MDPtoolbox/'));
+addpath(genpath(fullfile(fileparts(which(mfilename)),'../_dependencies/')));
 addpath(fullfile(fileparts(which(mfilename)),'../Gridworld/'));
 
 %% Gridworld experiment

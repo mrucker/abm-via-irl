@@ -1,7 +1,6 @@
+addpath(genpath(fullfile(fileparts(which(mfilename)),'../_dependencies/')));
+
 global state_space;
-
-addpath(fullfile(fileparts(which(mfilename)),'../MDPtoolbox/'));
-
 
 discount = 0.99;
 epsilon  = .7;
