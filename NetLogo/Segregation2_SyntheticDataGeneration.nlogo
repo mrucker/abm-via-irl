@@ -65,12 +65,12 @@ end
 
 
 to go
+  if (episode = 21) [ stop ]
   update-agents
   update-global-statistics
   tick
   if (ticks = 50) [
     set episode episode + 1
-    if (episode = 21) [ stop ]
     reset-ticks
     ask turtles [
       set conversation-length 0
