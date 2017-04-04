@@ -285,7 +285,7 @@ end
 
 
 to save-trajectory
-  set trajectory lput (list who episode conversation-length conversation-with-like? people-around-to-talk? action) trajectory
+  set trajectory lput (list who breed episode conversation-length conversation-with-like? people-around-to-talk? action) trajectory
 end
 
 
@@ -331,7 +331,7 @@ to setup-file
   set trajectory-file ("Segregation2_trajectory.csv")
   carefully [file-delete trajectory-file] []
   file-open trajectory-file
-  file-print csv:to-row (list "AgentID" "Episode" "Conversation_Length" "Conversation_With_Like" "People_Around_To_Talk" "Action")
+  file-print csv:to-row (list "AgentID" "Breed" "Episode" "Conversation_Length" "Conversation_With_Like" "People_Around_To_Talk" "Action")
   file-close
 end
 

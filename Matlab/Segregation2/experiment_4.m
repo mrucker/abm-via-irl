@@ -54,12 +54,12 @@ for agent_idx = 1:length(agentId_list)
 end
 
 %(KL) it seems odd...
-plot(elbowCalulation(mu_expert', 5))
+plot(elbowCalulation(mu_expert, 5))
 
 
 
 %(KL) trying Hierarchical Clustering
-dist = pdist(mu_expert', 'euclidean');
+dist = pdist(mu_expert', 'cosine');
 clustTree = linkage(dist, 'average');
 dendrogram(clustTree, 0);
 
