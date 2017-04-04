@@ -1,7 +1,7 @@
 addpath(genpath(fullfile(fileparts(which(mfilename)),'../_dependencies/')));
 
 discount = 0.99;
-epsilon  = .7;
+epsilon  = .8;
 
 [state_space, state_action_space] = Spaces();
 
@@ -11,132 +11,78 @@ num_state_actions = size(state_action_space,1);
 num_features      = num_state_actions;
 
 num_samples = 100; % Number of samples to use in feature expectations
-num_steps   = 100; % Number of steps to use in each sample
+num_steps   = 100; % Number of steps in each sample to use in feature expectations
+num_traj_steps = 50;  % Number of steps needed in a single trajectory
+
+phis = eye(num_features);
 
 % Sample trajectories from expert policy.
-expert_trajectories = ReadSampleTrajectories_2('SampleTrajectories_2.csv');
+expert_trajectories = ReadSampleTrajectories_2('SampleTrajectories_3.csv');
 expert_trajectories = horzcat(expert_trajectories{1}, expert_trajectories{2}, expert_trajectories{3}, expert_trajectories{4}, expert_trajectories{5}, expert_trajectories{6});
 
-agentIds = unique(expert_trajectories(:,1))';
-episodes = unique(expert_trajectories(:,2))';
+agentId_list = unique(expert_trajectories(:,1))';
+episode_list = unique(expert_trajectories(:,2))';
 
-%parpool(2);
-parfor agent_idx = 1:length(agentIds)
-    try
-        phis = eye(num_features);
+% Calulate empirical estimates of feature expectations for all agents
+mu_expert = zeros(num_features, length(agentId_list));
+for agent_idx = 1:length(agentId_list)
+    sa_episodes = cell(0,1);
+    episode_n = 0;
+    agentId   = agentId_list(agent_idx);
+    agent_trajectories = expert_trajectories(expert_trajectories(:,1) == agentId, 2:6);
 
-        sa_expert = [];
-        D         = zeros(num_states,1);
-        mu_expert = zeros(num_features,1);
-        mu        = zeros(num_features, 0);
-        mu_est    = zeros(num_features, 0);
-        w         = zeros(num_features, 0);
-        t         = zeros(0,1);
-        R         = zeros(num_states,num_actions);
-        episode_n = 0;
-        Pol       = cell(0,1);
-        agentId   = agentIds(agent_idx);
-
-        agent_trajectories = expert_trajectories(expert_trajectories(:,1) == agentId, 2:6);
-
-        %(KL) Abbel and Ng 2004 suggests 10 - 100 samples is ideal for this algorithm we have 21 currently
-        for episode = episodes
-            sa_episode  = find(agent_trajectories(:,1) == episode);
-
-            if(length(sa_episode) < num_steps)
-                continue;
-            end
-
-            episode_n = episode_n + 1;
-
-            sa_episode = agent_trajectories(sa_episode(1:num_steps), [2 3 4 5]);
-            sa_expert  = [sa_expert; sa_episode];
-
-            sa_start    = sa_episode(1,[1 2 3]);
-            sa_start    = find(all(state_space' == sa_start'));
-            D(sa_start) = D(sa_start) + 1;
+    for episode = episode_list
+        sa_step_ix  = find(agent_trajectories(:,1) == episode);
+        if(length(sa_step_ix) < num_traj_steps)
+            continue;
         end
+        episode_n = episode_n + 1;
+        sa_episodes{episode_n} = agent_trajectories(sa_step_ix(1:num_traj_steps), [2 3 4 5]);
+    end
 
-        D = D./sum(D);
-        P = T_SA(sa_expert(:, [4 1 2 3]), num_actions, num_states, state_space);
-
-        for e = (0:episode_n-1)*num_steps
-            for t = 1:num_steps
-                [~, state_action_ix] = ismember(sa_expert(e + t, :), state_action_space, 'rows');
-                mu_expert = mu_expert + discount^(t-1) * phis(state_action_ix,:)';
-            end
+    for e = (1:episode_n)
+        for t = 1:num_traj_steps
+            [~, state_action_ix] = ismember(sa_episodes{episode_n}(t,:), state_action_space, 'rows');
+            mu_expert(:,agent_idx) = mu_expert(:,agent_idx) + discount^(t-1) * phis(state_action_ix,:)';
         end
+    end
 
-        mu_expert = mu_expert./episode_n;
-
-        assert(abs(sum(mu_expert) - 63.39) < 1, 'As long as num_steps == 100 and norm(phis,1) == 1 then mu_expert should sum to 63.39')
-
-        % Projection algorithm
-        % 1.
-        Pol{1}  = ceil(rand(num_states,1) * num_actions);
-        mu(:,1) = feature_expectations_2(P, discount, D, Pol{1}, num_samples, num_steps, num_features, phis);
-        i = 2;
-
-        % 2.
-        while 1
-            if i > 2
-                a = (mu(:,i-1) - mu_est(:,i-2))' * (mu_expert - mu_est(:,i-2)); 
-                b = (mu(:,i-1) - mu_est(:,i-2))' * (mu(:,i-1) - mu_est(:,i-2));
-
-                mu_est(:,i - 1) = mu_est(:,i - 2) + (a / b) * (mu(:,i - 1) - mu_est(:,i - 2));
-            else
-                mu_est(:,1) = mu(:,1);
-            end
-            w(:,i) = mu_expert - mu_est(:,i - 1);
-            t(i)   = norm(w(:,i), 2);
-            w(:,i) = w(:,i) / t(i);
-
-            %fprintf('t(%d) = %6.4f\n', i, t(i));
-
-            % 3.
-            %(KL) for experiment, I added additional terminate conditions
-            %if t(i) <= epsilon || (i>20 && t(i-1)-t(i)<0.0001)
-            if t(i) <= epsilon 
-                break;
-            end
-
-            % 4.
-            %(KL) reshape w into S*A
-            R = reshape(w(:,i), [num_actions, num_states])';
-            [V, Pol{i}] = Value_Iteration(P, R, discount);
-
-            % 5.
-            mu(:,i) = feature_expectations_2(P, discount, D, Pol{i}, num_samples, num_steps, num_features, phis);
-
-            % 6.
-            i = i + 1;
-        end
-
-        w_last = w(:,i);
-
-        %(KL) mixing together policies according to the mixture weights lambda
-    %     fprintf('Calculating combination of mu...\n');
-    %     cvx_begin
-    %         variable lambda(i-1)
-    %         minimize( norm( mu*lambda - mu_expert, 2 ) )
-    %         subject to
-    %             sum(lambda) == 1;
-    %             lambda >= 0;
-    %     cvx_end
-    %     [~,idx] = max(lambda);
-    %     mu_mixed = mu*lambda;
-
-    %     stochastic_policy = zeros(num_states, num_actions);
-    %     for i=1:length(lambda)
-    %         pol_idx = (Pol{i}-1)*num_states + (0:num_states-1)' + 1;
-    %         stochastic_policy(pol_idx) = stochastic_policy(pol_idx) + lambda(i);
-    %     end
-
-        fprintf('%d Done\n', agent_idx);
-    catch
-        fprintf('%d Failed\n', agent_idx);
-    end    
+    mu_expert(:,agent_idx) = mu_expert(:,agent_idx)/episode_n;
 end
+
+%(KL) it seems odd...
+plot(elbowCalulation(mu_expert, 5))
+
+
+num_cluster = 
+
+
+
+
+
+
+
+
+
+
+
+
+for i=1:num_cluster
+    % Projection algorithm 
+    
+    
+    
+    
+    
+end
+
+
+
+
+
+
+
+
 
 function [V, policy] = Value_Iteration(P, R, discount)    
     [V, policy, ~, ~] = mdp_value_iteration (P, R, discount);

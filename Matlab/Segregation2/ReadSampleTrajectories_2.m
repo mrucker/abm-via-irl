@@ -27,4 +27,6 @@ function values = ReadSampleTrajectories_2(fileName)
     if(~all(ismember(values{6}, [1 2 3 4])))
         throw(MException('badActions', 'invalid action read from file'));
     end
+    
+    fclose(fid);
 end
