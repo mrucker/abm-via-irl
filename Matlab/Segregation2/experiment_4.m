@@ -54,7 +54,9 @@ for agent_idx = 1:length(agentId_list)
 end
 
 %(KL) it seems odd...
-plot(elbowCalulation(mu_expert', 5));
+
+%plot(elbowCalulation(mu_expert, 5))
+
 
 
 
@@ -63,8 +65,8 @@ dist = pdist(mu_expert', 'euclidean');
 clustTree = linkage(dist, 'average');
 dendrogram(clustTree, 0);
 
-%(KL) 2 clusters looks reasonable
-num_clusters = 2;
+%(KL) 3 clusters looks reasonable
+num_clusters = 3;
 group_idx = cell(num_clusters,1);
 [~, T] = dendrogram(clustTree, num_clusters);
 for i=1:num_clusters
