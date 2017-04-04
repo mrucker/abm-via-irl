@@ -5,6 +5,7 @@ breed [unbiased-people unbiased-person]
 
 globals [
   trajectory-file                  ;csv file that has states and actions of all agents
+  episode                          ;which episode we are currently running
 
   ;global statistics
   percent-same-color-area          ;on average, percentage of majority color agents in a 10-by-10 patch
@@ -20,7 +21,6 @@ turtles-own [
   people-around-to-talk?  ;whether there is a potential conversation partner
   action                  ;1: move short distance 2: move long distance 3: start conversation 4: continue conversation
   trajectory              ;list of status and actions
-  episode                 ;which episode we are currently running
 
   ;agent statistics
   cumulative-conversation-length-with-same-color
@@ -46,17 +46,17 @@ to setup
     set cumulative-conversation-length-with-same-color 0.1
     set cumulative-conversation-length-with-different-color 0.1
     set trajectory [[]]
-    set episode 1
     move 2
   ]
 
   ;set 3 tyes of people in terms of racial bias
   ask n-of (number-of-agents * percentage-of-racists * 0.01) turtles [set breed racists]
   ask n-of (number-of-agents * percentage-of-unbiased * 0.01) turtles with [breed != racists] [set breed unbiased-people]
-  ask turtles with [breed != biased-people and breed != racists] [set breed biased-people]
+  ask turtles with [breed != unbiased-people and breed != racists] [set breed biased-people]
 
   set percent-same-color-area 0
   set percent-same-color-conversation 0
+  set episode 1
 
   setup-file
   reset-ticks
@@ -68,7 +68,9 @@ to go
   update-agents
   update-global-statistics
   tick
-  if (ticks = 120) [
+  if (ticks = 50) [
+    set episode episode + 1
+    if (episode = 21) [ stop ]
     reset-ticks
     ask turtles [
       set conversation-length 0
@@ -81,7 +83,6 @@ to go
       set same-color-ratio-around-me 0
       set cumulative-conversation-length-with-same-color 0.1
       set cumulative-conversation-length-with-different-color 0.1
-      set episode episode + 1
       move-to one-of patches
       move 2
     ]
@@ -285,7 +286,7 @@ end
 
 
 to save-trajectory
-  set trajectory lput (list who breed episode conversation-length conversation-with-like? people-around-to-talk? action) trajectory
+  set trajectory lput (list who episode conversation-length conversation-with-like? people-around-to-talk? action breed) trajectory
 end
 
 
@@ -331,7 +332,7 @@ to setup-file
   set trajectory-file ("Segregation2_trajectory.csv")
   carefully [file-delete trajectory-file] []
   file-open trajectory-file
-  file-print csv:to-row (list "AgentID" "Breed" "Episode" "Conversation_Length" "Conversation_With_Like" "People_Around_To_Talk" "Action")
+  file-print csv:to-row (list "AgentID" "Episode" "Conversation_Length" "Conversation_With_Like" "People_Around_To_Talk" "Action" "Breed")
   file-close
 end
 
