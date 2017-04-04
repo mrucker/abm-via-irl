@@ -40,7 +40,7 @@ for agent_idx = 1:length(agentId_list)
         sa_episodes{episode_n} = agent_trajectories(sa_step_ix(1:num_traj_steps), [2 3 4 5]);
     end
 
-    for e = (1:episode_n)
+    for e = 1:episode_n
         for t = 1:num_traj_steps
             [~, state_action_ix] = ismember(sa_episodes{episode_n}(t,:), state_action_space, 'rows');
             mu_expert(:,agent_idx) = mu_expert(:,agent_idx) + discount^(t-1) * phis(state_action_ix,:)';
