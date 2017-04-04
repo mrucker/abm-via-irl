@@ -12,7 +12,7 @@ num_features      = num_state_actions;
 
 num_samples = 100; % Number of samples to use in feature expectations
 num_steps   = 100; % Number of steps in each sample to use in feature expectations
-num_traj_steps = 50;  % Number of steps needed in a single trajectory
+num_traj_steps = 50;  % Number of steps needed in an expert's trajectory
 
 phis = eye(num_features);
 
@@ -26,35 +26,50 @@ episode_list = unique(expert_trajectories(:,2))';
 % Calulate empirical estimates of feature expectations for all agents
 mu_expert = zeros(num_features, length(agentId_list));
 for agent_idx = 1:length(agentId_list)
-    sa_episodes = cell(0,1);
-    episode_n = 0;
+    episodes = cell(0,1);
+    num_valid_episode = 0; % number of valid episodes
     agentId   = agentId_list(agent_idx);
     agent_trajectories = expert_trajectories(expert_trajectories(:,1) == agentId, 2:6);
 
-    for episode = episode_list
-        sa_step_ix  = find(agent_trajectories(:,1) == episode);
+    % look for valid episodes
+    for e = episode_list
+        sa_step_ix  = find(agent_trajectories(:,1) == e);
         if(length(sa_step_ix) < num_traj_steps)
             continue;
         end
-        episode_n = episode_n + 1;
-        sa_episodes{episode_n} = agent_trajectories(sa_step_ix(1:num_traj_steps), [2 3 4 5]);
+        num_valid_episode = num_valid_episode + 1;
+        episodes{num_valid_episode} = agent_trajectories(sa_step_ix(1:num_traj_steps), [2 3 4 5]);
     end
 
-    for e = 1:episode_n
+    % calculate mu_expert in valid episodes
+    for ve = 1:num_valid_episode
         for t = 1:num_traj_steps
-            [~, state_action_ix] = ismember(sa_episodes{episode_n}(t,:), state_action_space, 'rows');
+            [~, state_action_ix] = ismember(episodes{ve}(t,:), state_action_space, 'rows');
             mu_expert(:,agent_idx) = mu_expert(:,agent_idx) + discount^(t-1) * phis(state_action_ix,:)';
         end
     end
 
-    mu_expert(:,agent_idx) = mu_expert(:,agent_idx)/episode_n;
+    mu_expert(:,agent_idx) = mu_expert(:,agent_idx)/num_valid_episode;
 end
 
 %(KL) it seems odd...
-plot(elbowCalulation(mu_expert, 5))
+plot(elbowCalulation(mu_expert', 5))
 
 
-num_cluster = 
+
+%(KL) trying Hierarchical Clustering
+dist = pdist(mu_expert', 'euclidean');
+clustTree = linkage(dist, 'average');
+dendrogram(clustTree, 0);
+
+%(KL) 2 clusters looks reasonable
+num_clusters = 2;
+group_idx = cell(num_clusters,1);
+[~, T] = dendrogram(clustTree, num_clusters);
+for i=1:num_clusters
+    group_idx{i} = find(T==i);
+end
+
 
 
 
