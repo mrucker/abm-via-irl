@@ -41,14 +41,15 @@ for agent_idx = 1:length(agentId_list)
         episodes{num_valid_episode} = agent_trajectories(sa_step_ix(1:num_traj_steps), [2 3 4 5]);
     end
 
-    % calculate mu_expert in valid episodes
+    % calculate mu_expert in each valid episode and add them
     for ve = 1:num_valid_episode
         for t = 1:num_traj_steps
             [~, state_action_ix] = ismember(episodes{ve}(t,:), state_action_space, 'rows');
             mu_expert(:,agent_idx) = mu_expert(:,agent_idx) + discount^(t-1) * phis(state_action_ix,:)';
         end
     end
-
+    
+    % get average mu_expert
     mu_expert(:,agent_idx) = mu_expert(:,agent_idx)/num_valid_episode;
 end
 
