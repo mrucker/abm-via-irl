@@ -54,7 +54,9 @@ for agent_idx = 1:length(agentId_list)
 end
 
 %(KL) it seems odd...
+
 %plot(elbowCalulation(mu_expert, 5))
+
 
 
 
@@ -83,7 +85,7 @@ end
 
 
 
-for i=1:num_cluster
+for i=1:num_clusters
     % Projection algorithm 
     
     

@@ -35,14 +35,15 @@ for i = 1:k
 % calculate the within group variances
     D = min(D, [], 2);
     for n = 1:k
-        k_v(n) = sum((D(find(idx == i)) - k_mean(n)) .^ 2) / sum(idx == n);
+        k_v(n) = sum((D(find(idx == i)) - k_mean(n)) .^ 2);
     end
+    e_v = sum(k_v);
         
 % calculate the grand variance
-    grand_v = sum((D - mean(D)) .^ 2) ./ total_num;
+    grand_v = sum((D - mean(D)) .^ 2);
 
 % calculate the percentage of variances explained
-    P(i) = sum(k_v) / grand_v;
+    P(i) = e_v / grand_v;
 end
 end
 
