@@ -82,7 +82,7 @@ end
 
 
 
-for i=1:num_cluster
+for i=1:num_clusters
     % Projection algorithm 
     
     
