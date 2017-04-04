@@ -54,7 +54,7 @@ for agent_idx = 1:length(agentId_list)
 end
 
 %(KL) it seems odd...
-plot(elbowCalulation(mu_expert', 5))
+plot(elbowCalulation(mu_expert', 5));
 
 
 
