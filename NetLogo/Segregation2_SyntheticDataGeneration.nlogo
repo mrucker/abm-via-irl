@@ -13,6 +13,7 @@ globals [
 ]
 
 turtles-own [
+  breed_no
   conversation-length     ;number of tick during which the agent have a conversation
   conversation-with-like? ;defines the color of the recent partner
   people-around           ;list of people around
@@ -50,9 +51,9 @@ to setup
   ]
 
   ;set 3 tyes of people in terms of racial bias
-  ask n-of (number-of-agents * percentage-of-racists * 0.01) turtles [set breed racists]
-  ask n-of (number-of-agents * percentage-of-unbiased * 0.01) turtles with [breed != racists] [set breed unbiased-people]
-  ask turtles with [breed != unbiased-people and breed != racists] [set breed biased-people]
+  ask n-of (number-of-agents * percentage-of-racists * 0.01) turtles [set breed racists set breed_no 3]
+  ask n-of (number-of-agents * percentage-of-unbiased * 0.01) turtles with [breed != racists] [set breed unbiased-people set breed_no 1]
+  ask turtles with [breed != unbiased-people and breed != racists] [set breed biased-people set breed_no 2]
 
   set percent-same-color-area 0
   set percent-same-color-conversation 0
@@ -286,7 +287,7 @@ end
 
 
 to save-trajectory
-  set trajectory lput (list who episode conversation-length conversation-with-like? people-around-to-talk? action breed) trajectory
+  set trajectory lput (list who episode conversation-length conversation-with-like? people-around-to-talk? action breed_no) trajectory
 end
 
 
