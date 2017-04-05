@@ -54,7 +54,7 @@ addpath(fullfile(fileparts(which(mfilename)),'../MDPtoolbox/'));
     D = initCount./sum(initCount);
     
     %P = T_2_1(num_actions, num_states); %(KL) T_2 is my understanding for transition probabilities
-    P = T_SA(expert_trajectories(:, [4 1 2 3]), num_actions, num_states);
+    P = T_SA(expert_trajectories(:, [4 1 2 3]), num_actions, num_states, state_space);
         
     mu_expert = zeros(num_features,1);
     for i = 1:num_samples
