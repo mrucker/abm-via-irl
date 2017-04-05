@@ -195,8 +195,8 @@ end
 % w_last{3}
 % 
 % w_selected{1}
-% w_selected{1}
-% w_selected{1}
+% w_selected{2}
+% w_selected{3}
 
 
 
