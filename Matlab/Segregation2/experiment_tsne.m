@@ -14,7 +14,8 @@ num_samples = 100; % Number of samples to use in feature expectations
 num_steps   = 100; % Number of steps to use in each sample
 
 % Sample trajectories from expert policy.
-expert_trajectories = ReadSampleTrajectories_2('SampleTrajectories_2.csv');
+expert_trajectories = ReadSampleTrajectories_2('SampleTrajectories_5.csv');
+expert_lbls         = containers.Map(expert_trajectories{1}, expert_trajectories{7});
 expert_trajectories = horzcat(expert_trajectories{1}, expert_trajectories{2}, expert_trajectories{3}, expert_trajectories{4}, expert_trajectories{5}, expert_trajectories{6});
 
 agentIds = unique(expert_trajectories(:,1))';
@@ -23,9 +24,11 @@ episodes = unique(expert_trajectories(:,2))';
 m = zeros(length(agentIds),num_features);
 o = zeros(length(agentIds),num_features);
 r = zeros(length(agentIds),num_features);
+l = repmat({''},length(agentIds),1);
 
 %parpool(2);
-parfor agent_idx = 1:length(agentIds)
+for agent_idx = 1:length(agentIds)
+
     try
         phis = eye(num_features);
 
@@ -99,8 +102,8 @@ parfor agent_idx = 1:length(agentIds)
 
             % 3.
             %(KL) for experiment, I added additional terminate conditions
-            %if t(i) <= epsilon || (i>20 && t(i-1)-t(i)<0.0001)
-            if t(i) <= epsilon 
+            if t(i) <= epsilon || (i>20 && t(i-1)-t(i)<0.00001)
+            %if t(i) <= epsilon 
                 break;
             end
 
@@ -116,11 +119,11 @@ parfor agent_idx = 1:length(agentIds)
             i = i + 1;
         end
 
-        fprintf('Selecting feature expectations closest to expert...\n');
+        %fprintf('Selecting feature expectations closest to expert...\n');
         distances = bsxfun(@minus, mu, mu_expert);
         distances = sqrt(sum(distances .^ 2));
         [min_distance, selected] = min(distances);
-        fprintf('Distance: %6.4f\n\n', min_distance);
+        %fprintf('Distance: %6.4f\n\n', min_distance);
         
         w_last = w(:,i);
 
@@ -143,18 +146,19 @@ parfor agent_idx = 1:length(agentIds)
     %     end
     
     m(agent_idx, :) = horzcat(mu_expert');    %expect
-    %o(agent_idx, :) = horzcat(w(:,selected)');%weight
+    o(agent_idx, :) = horzcat(w(:,selected)');%weight
     r(agent_idx, :) = horzcat(w(:,selected)');%reward
-        fprintf('%d Done\n', agent_idx);
+    l{agent_idx}    = expert_lbls(agentId);
+    
+    fprintf('%d Done\n', agent_idx);
+    
     catch
         fprintf('%d Failed\n', agent_idx);
     end        
 end
 
-plot_3d(tsne(m,[], 3, 30, 30), [], 'mu');
-plot_3d(tsne(r,[], 3, 30, 30), [], 'reward');
-
-csvwrite('out.csv',o);
+plot_3d(tsne(m,[], 3, 50, 30), l, 'mu');
+plot_3d(tsne(r,[], 3, 50, 30), l, 'reward');
 
 function [V, policy] = Value_Iteration(P, R, discount)    
     [V, policy, ~, ~] = mdp_value_iteration (P, R, discount);
