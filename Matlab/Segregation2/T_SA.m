@@ -6,6 +6,7 @@ function P = T_SA(SA, num_actions, num_states, state_space)
 %     action 4, continue conversation
 %
 %%    state space
+%      id  convo  like  near
 %      1     0     0     0
 %      2     0     0     1
 %      3     0     1     0
@@ -40,7 +41,7 @@ function P = T_SA(SA, num_actions, num_states, state_space)
     
     % project the calculated transition probabilities onto the non-observed but structurally same state-actions
     % and assign transition probabilities for illegal actions and unreachable states
-    P = Assign(P);
+    P = Assign(P, num_actions, num_states);
     
     Validate(P, num_actions, num_states);
 end
@@ -53,7 +54,7 @@ function P = Initialize(num_actions, num_states)
     end
 end
 
-function count = Count(P, SA, state_space)
+function p = Count(P, SA, state_space)
     for i = 2:size(SA,1)
         last_a = SA(i-1,1);
         last_s = find(all(state_space' == SA(i-1,2:end)'));
@@ -62,76 +63,68 @@ function count = Count(P, SA, state_space)
         P{last_a}(last_s,this_s) = P{last_a}(last_s, this_s) + 1;
     end
     
-    count = P;
+    p = P;
 end
 
-function normal = Normalize(P)
+function p = Normalize(P)
    for a = 1:size(P,1)
        P{a} = diag(1./sum(P{a},2))*P{a};
    end
    
-   normal = P;
+   p = P;
 end
 
-function projection = Assign(P)
-    num_actions = size(P,1);
-    num_states  = size(P{1},1);
-    
-    % model probability: action 1 in state 3
-    % -> assign to [action, state] = [2,3] [1,4] [2,4]
-    a_in_s = [[2,3]; [1,4]; [2,4]];
-    for i=1:size(a_in_s, 1)
-        [a, s] = deal(a_in_s(i,1), a_in_s(i,2));
-        P{a}(s,:) = P{1}(3,:);
-    end
-    
-    % model probability: action 1 in state 24
-    % -> assign to [action, state] = [1,8] [2,8] [1,12] [2,12] [1,16] [2,16] [1,20] [2,20] [2,24] [4,24]
-    a_in_s = [[1,8]; [2,8]; [1,12]; [2,12]; [1,16]; [2,16]; [1,20]; [2,20]; [2,24]; [4,24]];
-    for i=1:size(a_in_s, 1)
-        [a, s] = deal(a_in_s(i,1), a_in_s(i,2));
-        P{a}(s,:) = P{1}(24,:);
-    end
-    
-    % model probability: action 2 in state 1
-    % -> assign to [action, state] = [1,1] [1,2] [2,2]
-    a_in_s = [[1,1]; [1,2]; [2,2]];
-    for i=1:size(a_in_s, 1)
-        [a, s] = deal(a_in_s(i,1), a_in_s(i,2));
-        P{a}(s,:) = P{2}(1,:);
-    end
-    
-    % model probability: action 2 in state 10
-    % -> assign to [action, state] = [1,6] [2,6] [1,10] [1,14] [2,14] [1,18] [2,18] [1,22] [2,22] [4 22]
-    a_in_s = [[1,6]; [2,6]; [1,10]; [1,14]; [2,14]; [1,18]; [2,18]; [1,22]; [2,22]; [4 22]];
-    for i=1:size(a_in_s, 1)
-        [a, s] = deal(a_in_s(i,1), a_in_s(i,2));
-        P{a}(s,:) = P{2}(10,:);
-    end
-    
-    % model probability: action 4 in state 6
-    % -> assign to [action, state] = [4,10] [4,14] [4,18]
-    a_in_s = [[4,10]; [4,14]; [4,18]];
-    for i=1:size(a_in_s, 1)
-        [a, s] = deal(a_in_s(i,1), a_in_s(i,2));
-        P{a}(s,:) = P{4}(6,:);
-    end
-    
-    % assign probability for illegal actions
-    action = 3; from = [1,6,10,14,18,22,3,8,12,16,20,24];    to = [25];  prob = 1;
-    P{action}(from, to) = prob;
+function p = Assign(P, num_actions, num_states)
 
-    action = 4; from = [1,2,3,4];   to = [25];  prob = 1;
-    P{action}(from, to) = prob;
+    P = Copy_Identical(P, [[1,1]; [2,1]]);
+    P = Copy_Identical(P, [[1,3]; [2,3]; [1,4]; [2,4]]);    
+    P = Copy_Identical(P, [[1,24]; [1,8]; [2,8]; [1,12]; [2,12]; [1,16]; [2,16]; [1,20]; [2,20]; [2,24]; [4,24]]);
+    P = Copy_Identical(P, [[2,1]; [1,1]; [1,2]; [2,2]]);
+    P = Copy_Identical(P, [[2,10]; [1,6]; [2,6]; [1,10]; [1,14]; [2,14]; [1,18]; [2,18]; [1,22]; [2,22]; [4,22]]);
+    P = Copy_Identical(P, [[4,6]; [4,10]; [4,14]; [4,18]]);   
+        
+    % assign probability for illegal actions    
+    P{1}([5,7,9,11,13,15,17,19,21,23,25], 25) = 1;
+    P{2}([5,7,9,11,13,15,17,19,21,23,25], 25) = 1;
+    P{3}([1,3,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25], 25) = 1;
+    P{4}([1,2,3,4,5,9,11,13,15,17,19,21,23,25], 25) = 1;
 
-    % assign probability for unreachable state
-    action = [1,2,3,4]; 
-    from = [5,9,13,17,21,7,11,15,19,23,25];   to = [25];  prob = 1;
-    for a = 1:length(action)
-        P{a}(from, to) = prob;
+    % any remaining, undefined transitions send to the limbo state
+    for s=1:num_states
+        for a=1:num_actions
+            if sum(P{a}(s, :)) == 0
+                P{a}(s,25) = 1;
+            end
+        end
     end
     
-    projection = P;
+    p = P;
+end
+
+function p = Copy_Identical(P, actions_states)
+
+    copy = 0;
+
+    %find first non-zero state-action transitions
+    for as = actions_states'
+        a = as(1);
+        s = as(2);
+        
+        if abs(sum(P{a}(s,:)) - 1) < .001
+            copy = P{a}(s,:);
+            break;
+        end
+    end
+    
+    %copy the found transitions to all other state actions
+    for as = actions_states'
+        a = as(1);
+        s = as(2);
+
+        P{a}(s,:) = copy;
+    end
+    
+    p = P;
 end
 
 function Validate(P, num_actions, num_states)
