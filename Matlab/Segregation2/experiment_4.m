@@ -198,6 +198,10 @@ end
 % w_selected{2}
 % w_selected{3}
 
+% Save environment information and stochastic policies to csv file
+file_name = 'Segregation2_learned_policies.csv';
+save_learned_policy(file_name, num_clusters, group_idx, stochastic_pol_selected);
+
 
 
 

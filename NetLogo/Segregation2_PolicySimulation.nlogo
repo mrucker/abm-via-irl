@@ -1,10 +1,11 @@
 extensions [csv pathdir]
 
 globals [
-  stochastic-policy-1
-  stochastic-policy-2
-  stochastic-policy-3
-  stochastic-policy-4
+  aline
+  num-clusters
+  num-agents                       ;list, number of agents in each cluster
+  num-states                       ;number of states
+  policy-sets
 
   ;global statistics
   percent-same-color-area          ;on average, percentage of majority color agents in a 10-by-10 patch
@@ -33,23 +34,17 @@ turtles-own [
 to setup
   clear-all
 
-  ;matlab:eval (word "run('"pathdir:get-current"\\initialize.m')")
+  ;Initialize global variables
+  set num-states 25
+  set percent-same-color-area 0
+  set percent-same-color-conversation 0
+
+  ;Read policy file
+  read-policy-file
+
+
   set-default-shape turtles "person"
   ask n-of number-of-agents patches [ sprout 1 ]
-
-  ;Solve MDP of random policy
-  ;matlab:eval "finished=0;"
-  ;matlab:eval "run('experiment_3.m');finished=1;"
-  ;let matlabReady false
-;  while [matlabReady = false] [
-;    wait 1
-;    set matlabReady (matlab:get-double "finished")
-;  ]
-;  show "ready"
-;  matlab:eval "learned_policy = stochastic_policy;"
-;  let matlab_policy matlab:get-double-list "learned_policy"
-
-  read-policy-file
 
   ask turtles [
     set state 0
@@ -68,18 +63,15 @@ to setup
     move 2
   ]
 
-  ask n-of 600 turtles with [policy = []] [
-    set policy stochastic-policy-1
-  ]
-  ask n-of 50 turtles with [policy = []] [
-    set policy stochastic-policy-2
-  ]
-  ask n-of 50 turtles with [policy = []] [
-    set policy stochastic-policy-3
-  ]
+  let c 0
+  while [c < num-clusters]
+  [
+    ask n-of (item c num-agents) turtles with [policy = []] [
+      set policy item c policy-sets
+    ]
 
-  set percent-same-color-area 0
-  set percent-same-color-conversation 0
+    set c c + 1
+  ]
 
   reset-ticks
 end
@@ -216,16 +208,37 @@ end
 
 
 to read-policy-file
-  let policy-file-1 ("Segregation2_policy1.csv")
-  let policy-file-2 ("Segregation2_policy1.csv")
-  let policy-file-3 ("Segregation2_policy1.csv")
-  let policy-file-4 ("Segregation2_policy1.csv")
-  ;file-open trajectory-file
-  set stochastic-policy-1 csv:from-file policy-file-1
-  set stochastic-policy-2 csv:from-file policy-file-2
-  set stochastic-policy-3 csv:from-file policy-file-3
-  set stochastic-policy-4 csv:from-file policy-file-4
-  ;file-close
+  let policy-file ("Segregation2_learned_policies.csv")
+  file-open policy-file
+  let dummy []
+  set dummy csv:from-row file-read-line ;read title
+  set dummy csv:from-row file-read-line ;read space line
+  set dummy csv:from-row file-read-line ;read head
+  set num-clusters item 0 csv:from-row file-read-line ;read number of clusters
+  set dummy csv:from-row file-read-line ;read space line
+  set dummy csv:from-row file-read-line ;read head
+  set num-agents csv:from-row file-read-line ;read number of agents in clusters
+
+  set policy-sets []
+  let c 0
+  while [c < num-clusters]
+  [
+    set dummy csv:from-row file-read-line ;read space line
+    set dummy csv:from-row file-read-line ;read head
+
+    let l 0
+    let a-policy-set []
+    while [l < num-states]
+    [
+      set a-policy-set lput csv:from-row file-read-line a-policy-set
+      set l l + 1
+    ]
+    set policy-sets lput a-policy-set policy-sets
+
+    set c c + 1
+  ]
+
+  file-close
 end
 @#$#@#$#@
 GRAPHICS-WINDOW
