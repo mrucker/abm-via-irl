@@ -68,7 +68,7 @@ end
 D = initCount./sum(initCount);
 
 %(KL) trying Hierarchical Clustering
-dist = pdist(mu_expert', 'euclidean');
+dist = pdist(mu_expert', 'cosine');
 clustTree = linkage(dist, 'average');
 figure('visible', 'on');
 dendrogram(clustTree, 0);
