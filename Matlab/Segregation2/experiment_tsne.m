@@ -14,7 +14,7 @@ num_samples = 100; % Number of samples to use in feature expectations
 num_steps   = 100; % Number of steps to use in each sample
 
 % Sample trajectories from expert policy.
-expert_trajectories = ReadSampleTrajectories_2('SampleTrajectories_5.csv');
+expert_trajectories = ReadSampleTrajectories_tsne('SampleTrajectories_tsne.csv');
 expert_lbls         = containers.Map(expert_trajectories{1}, expert_trajectories{7});
 expert_trajectories = horzcat(expert_trajectories{1}, expert_trajectories{2}, expert_trajectories{3}, expert_trajectories{4}, expert_trajectories{5}, expert_trajectories{6});
 
@@ -22,7 +22,6 @@ agentIds = unique(expert_trajectories(:,1))';
 episodes = unique(expert_trajectories(:,2))';
 
 num_agents = length(agentIds);
-%num_agents = 100;
 
 m = zeros(num_agents,num_features);
 o = zeros(num_agents,num_features);
@@ -149,14 +148,14 @@ for agent_idx = 1:num_agents
     %         pol_idx = (Pol{i}-1)*num_states + (0:num_states-1)' + 1;
     %         stochastic_policy(pol_idx) = stochastic_policy(pol_idx) + lambda(i);
     %     end
-    
+
     m(agent_idx, :) = horzcat(mu_expert');    %expect
     o(agent_idx, :) = horzcat(w(:,selected)');%weight
     r(agent_idx, :) = horzcat(w(:,selected)');%reward
     l{agent_idx}    = expert_lbls(agentId);
-    
+
     fprintf('%d Done t(%d) = %6.4f\n', agent_idx, i-1, t(i-1));
-    
+
     catch ME
         fprintf('%d Failed (%s)\n', agent_idx, ME.message);
     end        
