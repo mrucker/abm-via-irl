@@ -1,16 +1,17 @@
 function plot_3d(data, lbls, figureName)
 
-    red   = [1 .5 .5];
-    black = [0  0  0];
-    green = [.5 1 .5];
+    red     = [1 .5 .5];    
+    magenta = [1  0  1];
+    green   = [.5 .8 .5];
+    black   = [0  0  0];
 
-    colors = [red;black;green];
+    colors = [red;green;black;magenta];
     
     figure('Name', figureName);
     hold on;
 
     u_lbls = unique(lbls);
-    u_lbls = {u_lbls{~strcmp(u_lbls,'')}};
+    u_lbls = u_lbls(~strcmp(u_lbls,''));
     
     for i = 1:length(u_lbls)
         lbl = u_lbls{i};
