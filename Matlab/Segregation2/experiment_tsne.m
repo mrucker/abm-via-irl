@@ -1,7 +1,7 @@
 addpath(genpath(fullfile(fileparts(which(mfilename)),'../_dependencies/')));
 
 discount = 0.99;
-epsilon  = .7;
+epsilon  = .5;
 
 [state_space, state_action_space] = Spaces();
 
@@ -21,13 +21,18 @@ expert_trajectories = horzcat(expert_trajectories{1}, expert_trajectories{2}, ex
 agentIds = unique(expert_trajectories(:,1))';
 episodes = unique(expert_trajectories(:,2))';
 
-m = zeros(length(agentIds),num_features);
-o = zeros(length(agentIds),num_features);
-r = zeros(length(agentIds),num_features);
-l = repmat({''},length(agentIds),1);
+num_agents = length(agentIds);
+%num_agents = 100;
 
-%parpool(2);
-for agent_idx = 1:length(agentIds)
+m = zeros(num_agents,num_features);
+o = zeros(num_agents,num_features);
+r = zeros(num_agents,num_features);
+l = repmat({''},num_agents,1);
+
+%delete(gcp('nocreate'));
+%parpool(3);
+tic
+for agent_idx = 1:num_agents
 
     try
         phis = eye(num_features);
@@ -80,7 +85,7 @@ for agent_idx = 1:length(agentIds)
         
         % Projection algorithm
         % 1.
-        Pol{1}  = ceil(rand(num_states,1) * num_actions);
+        Pol{1}  = Init_Policy(P);
         mu(:,1) = feature_expectations_2(P, discount, D, Pol{1}, num_samples, num_steps, num_features, phis);
         i = 2;
 
@@ -102,7 +107,7 @@ for agent_idx = 1:length(agentIds)
 
             % 3.
             %(KL) for experiment, I added additional terminate conditions
-            if t(i) <= epsilon || (i>20 && t(i-1)-t(i)<0.00001)
+            if i > 30 && (t(i) <= epsilon || (t(i-1)-t(i)<0.00001))
             %if t(i) <= epsilon 
                 break;
             end
@@ -150,15 +155,23 @@ for agent_idx = 1:length(agentIds)
     r(agent_idx, :) = horzcat(w(:,selected)');%reward
     l{agent_idx}    = expert_lbls(agentId);
     
-    fprintf('%d Done\n', agent_idx);
+    fprintf('%d Done t(%d) = %6.4f\n', agent_idx, i-1, t(i-1));
     
-    catch
-        fprintf('%d Failed\n', agent_idx);
+    catch ME
+        fprintf('%d Failed (%s)\n', agent_idx, ME.message);
     end        
 end
+toc
 
-plot_3d(tsne(m,[], 3, 50, 30), l, 'mu');
-plot_3d(tsne(r,[], 3, 50, 30), l, 'reward');
+non_failures = ~strcmp(l, '');
+
+m = m(non_failures,:);
+o = o(non_failures,:);
+r = r(non_failures,:);
+l = l(non_failures);
+
+plot_3d(tsne(m,[], 3, min(30,size(m,1)), 30), l, 'mu');
+plot_3d(tsne(r,[], 3, min(30,size(r,1)), 30), l, 'reward');
 
 function [V, policy] = Value_Iteration(P, R, discount)    
     [V, policy, ~, ~] = mdp_value_iteration (P, R, discount);
@@ -174,4 +187,25 @@ function [state_space, state_action_space] = Spaces()
     state_space = vertcat(state_space, [9,9,9]); %limbo state
 
     state_action_space = horzcat(sortrows(repmat(state_space,4,1), 1:3), repmat(action', 25,1));
+end
+
+function Pol = Init_Policy(P)
+    num_states = size(P{1},1);
+    num_actions = size(P,1);
+    
+    actions = 1:num_actions;
+    states = 1:num_states;
+    
+    Pol = zeros(num_states,1);
+    
+    for s = states
+        valid_for_state         = arrayfun(@(a) sum(P{a}(s,:)) ~= 0, actions);
+        actions_valid_for_state = actions(valid_for_state);
+        
+        if isempty(actions_valid_for_state)
+            Pol(s) = 0; %because we have no transition probabilities for this state that means it is impossible to reach using P so we don't need an action defined.
+        else
+            Pol(s) = actions_valid_for_state(randperm(length(actions_valid_for_state),1));
+        end
+    end
 end
