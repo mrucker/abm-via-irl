@@ -1,7 +1,7 @@
 addpath(genpath(fullfile(fileparts(which(mfilename)),'../_dependencies/')));
 
 discount = 0.99;
-epsilon  = .6;
+epsilon  = .9;
 
 [state_space, state_action_space] = Spaces();
 
@@ -68,7 +68,7 @@ end
 D = initCount./sum(initCount);
 
 %(KL) trying Hierarchical Clustering
-dist = pdist(mu_expert', 'euclidean');
+dist = pdist(mu_expert', 'cosine');
 clustTree = linkage(dist, 'average');
 figure('visible', 'on');
 dendrogram(clustTree, 0);
@@ -130,7 +130,7 @@ for c=1:num_clusters
         fprintf('[Cluster %d] t(%d) = %6.4f\n', c, i, t(i));
 
         % 3.
-        if t(i) <= epsilon || i>200 % condition for experiment
+        if i > 30 && (t(i) <= epsilon || (t(i-5)-t(i)<0.00001)) % condition for experiment
             fprintf('[Cluster %d] Terminate...\n\n', c);
             break;
         end
@@ -177,7 +177,7 @@ for c=1:num_clusters
     
     fprintf('[Cluster %d] Done\n', c);
     tts(end+1) = toc(tt);
-    fprintf('[Cluster %d] Elapsed time is %s seconds\n', num2str(sum(tts)));
+    fprintf('[Cluster %d] Elapsed time is %s seconds\n', c, num2str(sum(tts)));
     
 end
 

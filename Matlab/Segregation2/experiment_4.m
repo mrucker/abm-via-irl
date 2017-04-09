@@ -68,7 +68,7 @@ end
 D = initCount./sum(initCount);
 
 %(KL) trying Hierarchical Clustering
-dist = pdist(mu_expert', 'euclidean');
+dist = pdist(mu_expert', 'cosine');
 clustTree = linkage(dist, 'average');
 figure('visible', 'on');
 dendrogram(clustTree, 0);
@@ -177,7 +177,7 @@ for c=1:num_clusters
     
     fprintf('[Cluster %d] Done\n', c);
     tts(end+1) = toc(tt);
-    fprintf('[Cluster %d] Elapsed time is %s seconds\n', num2str(sum(tts)));
+    fprintf('[Cluster %d] Elapsed time is %s seconds\n', c, num2str(sum(tts)));
     
 end
 

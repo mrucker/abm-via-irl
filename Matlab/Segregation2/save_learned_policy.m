@@ -34,12 +34,12 @@ end
 function new_file(output_file)
     [fid, message] = fopen(output_file, 'w');
     if fid < 0; disp(message); end
-    fprintf(fid, 'Stochastic policy for each cluster\n');
+    fprintf(fid, 'Stochastic policy for each cluster\r\n');
     fclose(fid);
 end
 
 function write_head(output_file, head)
     fid = fopen(output_file, 'a');
-    fprintf(fid, '\n%s\n', head);
+    fprintf(fid, '\r\n%s\r\n', head);
     fclose(fid);
 end
