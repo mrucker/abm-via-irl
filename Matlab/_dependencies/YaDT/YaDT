@@ -1,0 +1,4 @@
+#!/bin/tcsh
+setenv PATH .:$PATH
+cd bin
+java -Xmx1024m -jar YaDTgui.jar
