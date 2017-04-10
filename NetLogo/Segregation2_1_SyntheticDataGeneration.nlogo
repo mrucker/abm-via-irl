@@ -72,7 +72,7 @@ to go
   update-agents
   update-global-statistics
   tick
-  if (ticks = 50) [
+  if (ticks = 60) [
     set episode episode + 1
     reset-ticks
     ask turtles [
@@ -333,7 +333,7 @@ end
 
 
 to save-trajectory
-  set trajectory lput (list who episode conversation-length recent-partner people-around-to-talk? action breed_no) trajectory
+  set trajectory lput (list who episode conversation-length recent-partner previous-partner people-around-to-talk? action breed_no) trajectory
 end
 
 
@@ -379,7 +379,7 @@ to setup-file
   set trajectory-file ("Segregation2_1_trajectory.csv")
   carefully [file-delete trajectory-file] []
   file-open trajectory-file
-  file-print csv:to-row (list "AgentID" "Episode" "Conversation_Length" "Conversation_With_Like" "People_Around_To_Talk" "Action" "Breed")
+  file-print csv:to-row (list "AgentID" "Episode" "Conversation_Length" "Recent_Partner_Like_Me" "Previous_Partner_Like_Me" "People_Around_To_Talk" "Action" "Breed")
   file-close
 end
 
