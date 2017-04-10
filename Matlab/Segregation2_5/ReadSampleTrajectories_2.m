@@ -21,10 +21,14 @@ function values = ReadSampleTrajectories_2(fileName)
     end
     
     if(~all(ismember(values{5}, [0 1])))
+        throw(MException('badSimilarityBinary', 'invalid indication of similarity with conversant'));
+    end
+    
+    if(~all(ismember(values{6}, [0 1])))
         throw(MException('badNeighborsBinary', 'invalid indication of neighbors to talk with'));
     end
     
-    if(~all(ismember(values{6}, [1 2 3 4])))
+    if(~all(ismember(values{7}, [1 2 3 4])))
         throw(MException('badActions', 'invalid action read from file'));
     end
     

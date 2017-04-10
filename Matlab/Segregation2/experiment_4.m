@@ -3,9 +3,9 @@ addpath(genpath(fullfile(fileparts(which(mfilename)),'../_dependencies/')));
 discount = 0.99;
 epsilon  = .6;
 
-[state_space, state_action_space] = Spaces();
+[state_space, state_action_space, action_space] = Spaces();
 
-num_actions       = size(state_action_space,2);
+num_actions       = size(action_space,1);
 num_states        = size(state_space,1);
 num_state_actions = size(state_action_space,1);
 num_features      = num_state_actions;
@@ -219,7 +219,7 @@ function [V, policy] = Value_Iteration(P, R, discount)
 end
 
 
-function [state_space, state_action_space] = Spaces()
+function [state_space, state_action_space, action_space] = Spaces()
     conversation_length = 0:5;
     similar_partner_yn  = 0:1;
     people_around_yn    = 0:1;
@@ -229,4 +229,5 @@ function [state_space, state_action_space] = Spaces()
     state_space = vertcat(state_space, [9,9,9]); %limbo state
 
     state_action_space = horzcat(sortrows(repmat(state_space,4,1), 1:3), repmat(action', 25,1));
+    action_space = action;
 end
