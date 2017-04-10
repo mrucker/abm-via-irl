@@ -1,0 +1,37 @@
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<HTML><HEAD></HEAD><BODY>
+<OBJECT type="text/site properties">
+<param name="FrameName" value="right">
+</OBJECT>
+<UL>
+<LI><OBJECT type="text/sitemap"><param name="Name" value="YaDT: Yet another Decision Tree builder"><param name="Local" value="main.html"><param name="ImageNumber" value="11"></OBJECT>
+<LI><OBJECT type="text/sitemap"><param name="Name" value="YaDT from a Java GUI"><param name="Local" value="gui.html"><param name="ImageNumber" value="11"></OBJECT>
+  <UL>
+  </UL>
+<LI><OBJECT type="text/sitemap"><param name="Name" value="YaDT from command line"><param name="Local" value="cmdline.html"><param name="ImageNumber" value="11"></OBJECT>
+  <UL>
+  </UL>
+<LI><OBJECT type="text/sitemap"><param name="Name" value="YaDT licence"><param name="Local" value="licence.html"><param name="ImageNumber" value="11"></OBJECT>
+  <UL>
+  </UL>
+<LI><OBJECT type="text/sitemap"><param name="Name" value="Class List"><param name="ImageNumber" value="1"></OBJECT>
+  <UL>
+  <LI><OBJECT type="text/sitemap"><param name="Name" value="yadt::conf_matrix"><param name="Local" value="classyadt_1_1conf__matrix.html"><param name="ImageNumber" value="11"></OBJECT>
+  <LI><OBJECT type="text/sitemap"><param name="Name" value="yadt::datasource"><param name="Local" value="classyadt_1_1datasource.html"><param name="ImageNumber" value="11"></OBJECT>
+  <LI><OBJECT type="text/sitemap"><param name="Name" value="yadt::dtree"><param name="Local" value="classyadt_1_1dtree.html"><param name="ImageNumber" value="11"></OBJECT>
+  <LI><OBJECT type="text/sitemap"><param name="Name" value="yadt::table::subset"><param name="Local" value="classyadt_1_1table_1_1subset.html"><param name="ImageNumber" value="11"></OBJECT>
+  <LI><OBJECT type="text/sitemap"><param name="Name" value="yadt::table"><param name="Local" value="classyadt_1_1table.html"><param name="ImageNumber" value="11"></OBJECT>
+  </UL>
+<LI><OBJECT type="text/sitemap"><param name="Name" value="Class Members"><param name="Local" value="functions.html"><param name="ImageNumber" value="11"></OBJECT>
+<LI><OBJECT type="text/sitemap"><param name="Name" value="Namespace List"><param name="ImageNumber" value="1"></OBJECT>
+  <UL>
+  <LI><OBJECT type="text/sitemap"><param name="Name" value="yadt"><param name="Local" value="namespaceyadt.html"><param name="ImageNumber" value="11"></OBJECT>
+  </UL>
+<LI><OBJECT type="text/sitemap"><param name="Name" value="Namespace Members"><param name="Local" value="namespacemembers.html"><param name="ImageNumber" value="11"></OBJECT>
+<LI><OBJECT type="text/sitemap"><param name="Name" value="File List"><param name="ImageNumber" value="1"></OBJECT>
+  <UL>
+  <LI><OBJECT type="text/sitemap"><param name="Name" value="YaDT.h"><param name="Local" value="YaDT_8h.html"><param name="ImageNumber" value="11"></OBJECT>
+  </UL>
+</UL>
+</BODY>
+</HTML>

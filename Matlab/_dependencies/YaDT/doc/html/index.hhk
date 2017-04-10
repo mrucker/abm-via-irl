@@ -1,0 +1,224 @@
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<HTML><HEAD></HEAD><BODY>
+<OBJECT type="text/site properties">
+<param name="FrameName" value="right">
+</OBJECT>
+<UL>
+  <LI><OBJECT type="text/sitemap"><param name="Local" value="classyadt_1_1dtree.html"><param name="Name" value="build"></OBJECT>
+  <LI><OBJECT type="text/sitemap"><param name="Local" value="classyadt_1_1conf__matrix.html"><param name="Name" value="cases"></OBJECT>
+  <LI><OBJECT type="text/sitemap"><param name="Local" value="classyadt_1_1conf__matrix.html"><param name="Name" value="clone"></OBJECT>
+  <UL>
+    <LI><OBJECT type="text/sitemap"><param name="Local" value="classyadt_1_1conf__matrix.html"><param name="Name" value="yadt::conf_matrix"></OBJECT>
+    <LI><OBJECT type="text/sitemap"><param name="Local" value="classyadt_1_1dtree.html"><param name="Name" value="yadt::dtree"></OBJECT>
+  </UL>
+  <LI><OBJECT type="text/sitemap"><param name="Local" value="classyadt_1_1conf__matrix.html"><param name="Name" value="conf_matrix"></OBJECT>
+  <LI><OBJECT type="text/sitemap"><param name="Local" value="classyadt_1_1datasource.html"><param name="Name" value="datasource"></OBJECT>
+  <LI><OBJECT type="text/sitemap"><param name="Local" value="classyadt_1_1dtree.html"><param name="Name" value="depth"></OBJECT>
+  <LI><OBJECT type="text/sitemap"><param name="Local" value="classyadt_1_1dtree.html"><param name="Name" value="dtree"></OBJECT>
+  <LI><OBJECT type="text/sitemap"><param name="Local" value="classyadt_1_1dtree.html"><param name="Name" value="evaluate"></OBJECT>
+  <LI><OBJECT type="text/sitemap"><param name="Local" value="classyadt_1_1dtree.html"><param name="Name" value="fromBinary"></OBJECT>
+  <UL>
+    <LI><OBJECT type="text/sitemap"><param name="Local" value="classyadt_1_1dtree.html"><param name="Name" value="yadt::dtree"></OBJECT>
+    <LI><OBJECT type="text/sitemap"><param name="Local" value="classyadt_1_1table.html"><param name="Name" value="yadt::table"></OBJECT>
+  </UL>
+  <LI><OBJECT type="text/sitemap"><param name="Local" value="classyadt_1_1table_1_1subset.html"><param name="Name" value="get"></OBJECT>
+  <LI><OBJECT type="text/sitemap"><param name="Local" value="namespaceyadt.html"><param name="Name" value="get_build"></OBJECT>
+  <UL>
+    <LI><OBJECT type="text/sitemap"><param name="Local" value="namespaceyadt.html"><param name="Name" value="yadt"></OBJECT>
+    <LI><OBJECT type="text/sitemap"><param name="Local" value="namespaceyadt.html"><param name="Name" value="YaDT.h"></OBJECT>
+  </UL>
+  <LI><OBJECT type="text/sitemap"><param name="Local" value="classyadt_1_1table.html"><param name="Name" value="get_class"></OBJECT>
+  <LI><OBJECT type="text/sitemap"><param name="Local" value="namespaceyadt.html"><param name="Name" value="get_copyright"></OBJECT>
+  <UL>
+    <LI><OBJECT type="text/sitemap"><param name="Local" value="namespaceyadt.html"><param name="Name" value="yadt"></OBJECT>
+    <LI><OBJECT type="text/sitemap"><param name="Local" value="namespaceyadt.html"><param name="Name" value="YaDT.h"></OBJECT>
+  </UL>
+  <LI><OBJECT type="text/sitemap"><param name="Local" value="classyadt_1_1conf__matrix.html"><param name="Name" value="get_elapsed"></OBJECT>
+  <UL>
+    <LI><OBJECT type="text/sitemap"><param name="Local" value="classyadt_1_1conf__matrix.html"><param name="Name" value="yadt::conf_matrix"></OBJECT>
+    <LI><OBJECT type="text/sitemap"><param name="Local" value="classyadt_1_1dtree.html"><param name="Name" value="yadt::dtree"></OBJECT>
+    <LI><OBJECT type="text/sitemap"><param name="Local" value="classyadt_1_1table.html"><param name="Name" value="yadt::table"></OBJECT>
+  </UL>
+  <LI><OBJECT type="text/sitemap"><param name="Local" value="classyadt_1_1conf__matrix.html"><param name="Name" value="get_element"></OBJECT>
+  <LI><OBJECT type="text/sitemap"><param name="Local" value="classyadt_1_1table.html"><param name="Name" value="get_name"></OBJECT>
+  <LI><OBJECT type="text/sitemap"><param name="Local" value="classyadt_1_1table.html"><param name="Name" value="get_no_columns"></OBJECT>
+  <LI><OBJECT type="text/sitemap"><param name="Local" value="classyadt_1_1table.html"><param name="Name" value="get_no_rows"></OBJECT>
+  <LI><OBJECT type="text/sitemap"><param name="Local" value="classyadt_1_1dtree.html"><param name="Name" value="get_prediction"></OBJECT>
+  <LI><OBJECT type="text/sitemap"><param name="Local" value="namespaceyadt.html"><param name="Name" value="get_version"></OBJECT>
+  <UL>
+    <LI><OBJECT type="text/sitemap"><param name="Local" value="namespaceyadt.html"><param name="Name" value="yadt"></OBJECT>
+    <LI><OBJECT type="text/sitemap"><param name="Local" value="namespaceyadt.html"><param name="Name" value="YaDT.h"></OBJECT>
+  </UL>
+  <LI><OBJECT type="text/sitemap"><param name="Local" value="classyadt_1_1table.html"><param name="Name" value="get_weight"></OBJECT>
+  <LI><OBJECT type="text/sitemap"><param name="Local" value="classyadt_1_1table.html"><param name="Name" value="get_wsubset_all"></OBJECT>
+  <LI><OBJECT type="text/sitemap"><param name="Local" value="classyadt_1_1table.html"><param name="Name" value="get_wsubset_difference"></OBJECT>
+  <LI><OBJECT type="text/sitemap"><param name="Local" value="classyadt_1_1table.html"><param name="Name" value="get_wsubset_first_n"></OBJECT>
+  <LI><OBJECT type="text/sitemap"><param name="Local" value="classyadt_1_1table.html"><param name="Name" value="get_wsubset_random"></OBJECT>
+  <LI><OBJECT type="text/sitemap"><param name="Local" value="classyadt_1_1table.html"><param name="Name" value="load_data"></OBJECT>
+  <LI><OBJECT type="text/sitemap"><param name="Local" value="classyadt_1_1table.html"><param name="Name" value="load_meta_data"></OBJECT>
+  <LI><OBJECT type="text/sitemap"><param name="Local" value="classyadt_1_1conf__matrix.html"><param name="Name" value="mis_perc"></OBJECT>
+  <LI><OBJECT type="text/sitemap"><param name="Local" value="classyadt_1_1conf__matrix.html"><param name="Name" value="operator="></OBJECT>
+  <UL>
+    <LI><OBJECT type="text/sitemap"><param name="Local" value="classyadt_1_1conf__matrix.html"><param name="Name" value="yadt::conf_matrix"></OBJECT>
+    <LI><OBJECT type="text/sitemap"><param name="Local" value="classyadt_1_1dtree.html"><param name="Name" value="yadt::dtree"></OBJECT>
+    <LI><OBJECT type="text/sitemap"><param name="Local" value="classyadt_1_1table.html"><param name="Name" value="yadt::table"></OBJECT>
+    <LI><OBJECT type="text/sitemap"><param name="Local" value="classyadt_1_1table_1_1subset.html"><param name="Name" value="yadt::table::subset"></OBJECT>
+  </UL>
+  <LI><OBJECT type="text/sitemap"><param name="Local" value="classyadt_1_1dtree.html"><param name="Name" value="predict"></OBJECT>
+  <LI><OBJECT type="text/sitemap"><param name="Local" value="classyadt_1_1dtree.html"><param name="Name" value="PRUNING_C45"></OBJECT>
+  <LI><OBJECT type="text/sitemap"><param name="Local" value="classyadt_1_1dtree.html"><param name="Name" value="PRUNING_DT"></OBJECT>
+  <LI><OBJECT type="text/sitemap"><param name="Local" value="classyadt_1_1dtree.html"><param name="Name" value="PRUNING_NO"></OBJECT>
+  <LI><OBJECT type="text/sitemap"><param name="Local" value="classyadt_1_1table_1_1subset.html"><param name="Name" value="push_back"></OBJECT>
+  <LI><OBJECT type="text/sitemap"><param name="Local" value="classyadt_1_1table_1_1subset.html"><param name="Name" value="reserve"></OBJECT>
+  <LI><OBJECT type="text/sitemap"><param name="Local" value="classyadt_1_1table_1_1subset.html"><param name="Name" value="resize"></OBJECT>
+  <LI><OBJECT type="text/sitemap"><param name="Local" value="classyadt_1_1table_1_1subset.html"><param name="Name" value="set"></OBJECT>
+  <LI><OBJECT type="text/sitemap"><param name="Local" value="classyadt_1_1dtree.html"><param name="Name" value="SET_ABSOLUTE_CORRECTION"></OBJECT>
+  <LI><OBJECT type="text/sitemap"><param name="Local" value="classyadt_1_1dtree.html"><param name="Name" value="set_conf_level"></OBJECT>
+  <LI><OBJECT type="text/sitemap"><param name="Local" value="classyadt_1_1table.html"><param name="Name" value="set_log"></OBJECT>
+  <LI><OBJECT type="text/sitemap"><param name="Local" value="classyadt_1_1dtree.html"><param name="Name" value="set_min_obj"></OBJECT>
+  <LI><OBJECT type="text/sitemap"><param name="Local" value="classyadt_1_1dtree.html"><param name="Name" value="set_option"></OBJECT>
+  <LI><OBJECT type="text/sitemap"><param name="Local" value="classyadt_1_1dtree.html"><param name="Name" value="set_pruning_strategy"></OBJECT>
+  <LI><OBJECT type="text/sitemap"><param name="Local" value="classyadt_1_1dtree.html"><param name="Name" value="set_split_type"></OBJECT>
+  <LI><OBJECT type="text/sitemap"><param name="Local" value="classyadt_1_1table.html"><param name="Name" value="set_verbosity"></OBJECT>
+  <LI><OBJECT type="text/sitemap"><param name="Local" value="classyadt_1_1dtree.html"><param name="Name" value="SET_WEIGHTED_CORRECTION"></OBJECT>
+  <LI><OBJECT type="text/sitemap"><param name="Local" value="classyadt_1_1conf__matrix.html"><param name="Name" value="size"></OBJECT>
+  <UL>
+    <LI><OBJECT type="text/sitemap"><param name="Local" value="classyadt_1_1conf__matrix.html"><param name="Name" value="yadt::conf_matrix"></OBJECT>
+    <LI><OBJECT type="text/sitemap"><param name="Local" value="classyadt_1_1dtree.html"><param name="Name" value="yadt::dtree"></OBJECT>
+    <LI><OBJECT type="text/sitemap"><param name="Local" value="classyadt_1_1table_1_1subset.html"><param name="Name" value="yadt::table::subset"></OBJECT>
+  </UL>
+  <LI><OBJECT type="text/sitemap"><param name="Local" value="classyadt_1_1dtree.html"><param name="Name" value="ST_GAIN"></OBJECT>
+  <LI><OBJECT type="text/sitemap"><param name="Local" value="classyadt_1_1dtree.html"><param name="Name" value="ST_GAIN_RATIO"></OBJECT>
+  <LI><OBJECT type="text/sitemap"><param name="Local" value="classyadt_1_1table_1_1subset.html"><param name="Name" value="subset"></OBJECT>
+  <LI><OBJECT type="text/sitemap"><param name="Local" value="classyadt_1_1table.html"><param name="Name" value="table"></OBJECT>
+  <LI><OBJECT type="text/sitemap"><param name="Local" value="classyadt_1_1dtree.html"><param name="Name" value="toBinary"></OBJECT>
+  <UL>
+    <LI><OBJECT type="text/sitemap"><param name="Local" value="classyadt_1_1dtree.html"><param name="Name" value="yadt::dtree"></OBJECT>
+    <LI><OBJECT type="text/sitemap"><param name="Local" value="classyadt_1_1table.html"><param name="Name" value="yadt::table"></OBJECT>
+  </UL>
+  <LI><OBJECT type="text/sitemap"><param name="Local" value="classyadt_1_1dtree.html"><param name="Name" value="toDOT"></OBJECT>
+  <LI><OBJECT type="text/sitemap"><param name="Local" value="classyadt_1_1conf__matrix.html"><param name="Name" value="toTEXT"></OBJECT>
+  <UL>
+    <LI><OBJECT type="text/sitemap"><param name="Local" value="classyadt_1_1conf__matrix.html"><param name="Name" value="yadt::conf_matrix"></OBJECT>
+    <LI><OBJECT type="text/sitemap"><param name="Local" value="classyadt_1_1dtree.html"><param name="Name" value="yadt::dtree"></OBJECT>
+  </UL>
+  <LI><OBJECT type="text/sitemap"><param name="Local" value="classyadt_1_1conf__matrix.html"><param name="Name" value="toXML"></OBJECT>
+  <UL>
+    <LI><OBJECT type="text/sitemap"><param name="Local" value="classyadt_1_1conf__matrix.html"><param name="Name" value="yadt::conf_matrix"></OBJECT>
+    <LI><OBJECT type="text/sitemap"><param name="Local" value="classyadt_1_1dtree.html"><param name="Name" value="yadt::dtree"></OBJECT>
+  </UL>
+  <LI><OBJECT type="text/sitemap"><param name="Local" value="classyadt_1_1table.html"><param name="Name" value="toXML_data_dictionary"></OBJECT>
+  <LI><OBJECT type="text/sitemap"><param name="Local" value="classyadt_1_1table.html"><param name="Name" value="toXML_mining_schema"></OBJECT>
+  <LI><OBJECT type="text/sitemap"><param name="Local" value="classyadt_1_1dtree.html"><param name="Name" value="training_n_rows"></OBJECT>
+  <LI><OBJECT type="text/sitemap"><param name="Local" value="namespaceyadt.html"><param name="Name" value="yadt"></OBJECT>
+  <LI><OBJECT type="text/sitemap"><param name="Local" value="gui.html"><param name="Name" value="YaDT from a Java GUI"></OBJECT>
+  <LI><OBJECT type="text/sitemap"><param name="Local" value="cmdline.html"><param name="Name" value="YaDT from command line"></OBJECT>
+  <LI><OBJECT type="text/sitemap"><param name="Local" value="licence.html"><param name="Name" value="YaDT licence"></OBJECT>
+  <LI><OBJECT type="text/sitemap"><param name="Local" value="YaDT_8h.html"><param name="Name" value="YaDT.h"></OBJECT>
+  <UL>
+    <LI><OBJECT type="text/sitemap"><param name="Local" value="YaDT_8h.html"><param name="Name" value="get_build"></OBJECT>
+    <LI><OBJECT type="text/sitemap"><param name="Local" value="YaDT_8h.html"><param name="Name" value="get_copyright"></OBJECT>
+    <LI><OBJECT type="text/sitemap"><param name="Local" value="YaDT_8h.html"><param name="Name" value="get_version"></OBJECT>
+  </UL>
+  <LI><OBJECT type="text/sitemap"><param name="Local" value="classyadt_1_1conf__matrix.html"><param name="Name" value="yadt::conf_matrix"></OBJECT>
+  <UL>
+    <LI><OBJECT type="text/sitemap"><param name="Local" value="classyadt_1_1conf__matrix.html"><param name="Name" value="cases"></OBJECT>
+    <LI><OBJECT type="text/sitemap"><param name="Local" value="classyadt_1_1conf__matrix.html"><param name="Name" value="clone"></OBJECT>
+    <LI><OBJECT type="text/sitemap"><param name="Local" value="classyadt_1_1conf__matrix.html"><param name="Name" value="conf_matrix"></OBJECT>
+    <LI><OBJECT type="text/sitemap"><param name="Local" value="classyadt_1_1conf__matrix.html"><param name="Name" value="get_elapsed"></OBJECT>
+    <LI><OBJECT type="text/sitemap"><param name="Local" value="classyadt_1_1conf__matrix.html"><param name="Name" value="get_element"></OBJECT>
+    <LI><OBJECT type="text/sitemap"><param name="Local" value="classyadt_1_1conf__matrix.html"><param name="Name" value="mis_perc"></OBJECT>
+    <LI><OBJECT type="text/sitemap"><param name="Local" value="classyadt_1_1conf__matrix.html"><param name="Name" value="operator="></OBJECT>
+    <LI><OBJECT type="text/sitemap"><param name="Local" value="classyadt_1_1conf__matrix.html"><param name="Name" value="size"></OBJECT>
+    <LI><OBJECT type="text/sitemap"><param name="Local" value="classyadt_1_1conf__matrix.html"><param name="Name" value="toTEXT"></OBJECT>
+    <LI><OBJECT type="text/sitemap"><param name="Local" value="classyadt_1_1conf__matrix.html"><param name="Name" value="toXML"></OBJECT>
+    <LI><OBJECT type="text/sitemap"><param name="Local" value="classyadt_1_1conf__matrix.html"><param name="Name" value="~conf_matrix"></OBJECT>
+  </UL>
+  <LI><OBJECT type="text/sitemap"><param name="Local" value="classyadt_1_1datasource.html"><param name="Name" value="yadt::datasource"></OBJECT>
+  <UL>
+    <LI><OBJECT type="text/sitemap"><param name="Local" value="classyadt_1_1datasource.html"><param name="Name" value="datasource"></OBJECT>
+    <LI><OBJECT type="text/sitemap"><param name="Local" value="classyadt_1_1datasource.html"><param name="Name" value="~datasource"></OBJECT>
+  </UL>
+  <LI><OBJECT type="text/sitemap"><param name="Local" value="classyadt_1_1dtree.html"><param name="Name" value="yadt::dtree"></OBJECT>
+  <UL>
+    <LI><OBJECT type="text/sitemap"><param name="Local" value="classyadt_1_1dtree.html"><param name="Name" value="build"></OBJECT>
+    <LI><OBJECT type="text/sitemap"><param name="Local" value="classyadt_1_1dtree.html"><param name="Name" value="clone"></OBJECT>
+    <LI><OBJECT type="text/sitemap"><param name="Local" value="classyadt_1_1dtree.html"><param name="Name" value="depth"></OBJECT>
+    <LI><OBJECT type="text/sitemap"><param name="Local" value="classyadt_1_1dtree.html"><param name="Name" value="dtree"></OBJECT>
+    <LI><OBJECT type="text/sitemap"><param name="Local" value="classyadt_1_1dtree.html"><param name="Name" value="evaluate"></OBJECT>
+    <LI><OBJECT type="text/sitemap"><param name="Local" value="classyadt_1_1dtree.html"><param name="Name" value="fromBinary"></OBJECT>
+    <LI><OBJECT type="text/sitemap"><param name="Local" value="classyadt_1_1dtree.html"><param name="Name" value="get_elapsed"></OBJECT>
+    <LI><OBJECT type="text/sitemap"><param name="Local" value="classyadt_1_1dtree.html"><param name="Name" value="get_prediction"></OBJECT>
+    <LI><OBJECT type="text/sitemap"><param name="Local" value="classyadt_1_1dtree.html"><param name="Name" value="operator="></OBJECT>
+    <LI><OBJECT type="text/sitemap"><param name="Local" value="classyadt_1_1dtree.html"><param name="Name" value="predict"></OBJECT>
+    <LI><OBJECT type="text/sitemap"><param name="Local" value="classyadt_1_1dtree.html"><param name="Name" value="PRUNING_C45"></OBJECT>
+    <LI><OBJECT type="text/sitemap"><param name="Local" value="classyadt_1_1dtree.html"><param name="Name" value="PRUNING_DT"></OBJECT>
+    <LI><OBJECT type="text/sitemap"><param name="Local" value="classyadt_1_1dtree.html"><param name="Name" value="PRUNING_NO"></OBJECT>
+    <LI><OBJECT type="text/sitemap"><param name="Local" value="classyadt_1_1dtree.html"><param name="Name" value="SET_ABSOLUTE_CORRECTION"></OBJECT>
+    <LI><OBJECT type="text/sitemap"><param name="Local" value="classyadt_1_1dtree.html"><param name="Name" value="set_conf_level"></OBJECT>
+    <LI><OBJECT type="text/sitemap"><param name="Local" value="classyadt_1_1dtree.html"><param name="Name" value="set_min_obj"></OBJECT>
+    <LI><OBJECT type="text/sitemap"><param name="Local" value="classyadt_1_1dtree.html"><param name="Name" value="set_option"></OBJECT>
+    <LI><OBJECT type="text/sitemap"><param name="Local" value="classyadt_1_1dtree.html"><param name="Name" value="set_pruning_strategy"></OBJECT>
+    <LI><OBJECT type="text/sitemap"><param name="Local" value="classyadt_1_1dtree.html"><param name="Name" value="set_split_type"></OBJECT>
+    <LI><OBJECT type="text/sitemap"><param name="Local" value="classyadt_1_1dtree.html"><param name="Name" value="SET_WEIGHTED_CORRECTION"></OBJECT>
+    <LI><OBJECT type="text/sitemap"><param name="Local" value="classyadt_1_1dtree.html"><param name="Name" value="size"></OBJECT>
+    <LI><OBJECT type="text/sitemap"><param name="Local" value="classyadt_1_1dtree.html"><param name="Name" value="ST_GAIN"></OBJECT>
+    <LI><OBJECT type="text/sitemap"><param name="Local" value="classyadt_1_1dtree.html"><param name="Name" value="ST_GAIN_RATIO"></OBJECT>
+    <LI><OBJECT type="text/sitemap"><param name="Local" value="classyadt_1_1dtree.html"><param name="Name" value="toBinary"></OBJECT>
+    <LI><OBJECT type="text/sitemap"><param name="Local" value="classyadt_1_1dtree.html"><param name="Name" value="toDOT"></OBJECT>
+    <LI><OBJECT type="text/sitemap"><param name="Local" value="classyadt_1_1dtree.html"><param name="Name" value="toTEXT"></OBJECT>
+    <LI><OBJECT type="text/sitemap"><param name="Local" value="classyadt_1_1dtree.html"><param name="Name" value="toXML"></OBJECT>
+    <LI><OBJECT type="text/sitemap"><param name="Local" value="classyadt_1_1dtree.html"><param name="Name" value="training_n_rows"></OBJECT>
+    <LI><OBJECT type="text/sitemap"><param name="Local" value="classyadt_1_1dtree.html"><param name="Name" value="~dtree"></OBJECT>
+  </UL>
+  <LI><OBJECT type="text/sitemap"><param name="Local" value="classyadt_1_1table.html"><param name="Name" value="yadt::table"></OBJECT>
+  <LI><OBJECT type="text/sitemap"><param name="Local" value="classyadt_1_1table_1_1subset.html"><param name="Name" value="yadt::table::subset"></OBJECT>
+  <UL>
+    <LI><OBJECT type="text/sitemap"><param name="Local" value="classyadt_1_1table_1_1subset.html"><param name="Name" value="get"></OBJECT>
+    <LI><OBJECT type="text/sitemap"><param name="Local" value="classyadt_1_1table_1_1subset.html"><param name="Name" value="operator="></OBJECT>
+    <LI><OBJECT type="text/sitemap"><param name="Local" value="classyadt_1_1table_1_1subset.html"><param name="Name" value="push_back"></OBJECT>
+    <LI><OBJECT type="text/sitemap"><param name="Local" value="classyadt_1_1table_1_1subset.html"><param name="Name" value="reserve"></OBJECT>
+    <LI><OBJECT type="text/sitemap"><param name="Local" value="classyadt_1_1table_1_1subset.html"><param name="Name" value="resize"></OBJECT>
+    <LI><OBJECT type="text/sitemap"><param name="Local" value="classyadt_1_1table_1_1subset.html"><param name="Name" value="set"></OBJECT>
+    <LI><OBJECT type="text/sitemap"><param name="Local" value="classyadt_1_1table_1_1subset.html"><param name="Name" value="size"></OBJECT>
+    <LI><OBJECT type="text/sitemap"><param name="Local" value="classyadt_1_1table_1_1subset.html"><param name="Name" value="subset"></OBJECT>
+    <LI><OBJECT type="text/sitemap"><param name="Local" value="classyadt_1_1table_1_1subset.html"><param name="Name" value="~subset"></OBJECT>
+  </UL>
+  <LI><OBJECT type="text/sitemap"><param name="Local" value="classyadt_1_1table.html"><param name="Name" value="yadt::table"></OBJECT>
+  <UL>
+    <LI><OBJECT type="text/sitemap"><param name="Local" value="classyadt_1_1table.html"><param name="Name" value="fromBinary"></OBJECT>
+    <LI><OBJECT type="text/sitemap"><param name="Local" value="classyadt_1_1table.html"><param name="Name" value="get_class"></OBJECT>
+    <LI><OBJECT type="text/sitemap"><param name="Local" value="classyadt_1_1table.html"><param name="Name" value="get_elapsed"></OBJECT>
+    <LI><OBJECT type="text/sitemap"><param name="Local" value="classyadt_1_1table.html"><param name="Name" value="get_name"></OBJECT>
+    <LI><OBJECT type="text/sitemap"><param name="Local" value="classyadt_1_1table.html"><param name="Name" value="get_no_columns"></OBJECT>
+    <LI><OBJECT type="text/sitemap"><param name="Local" value="classyadt_1_1table.html"><param name="Name" value="get_no_rows"></OBJECT>
+    <LI><OBJECT type="text/sitemap"><param name="Local" value="classyadt_1_1table.html"><param name="Name" value="get_weight"></OBJECT>
+    <LI><OBJECT type="text/sitemap"><param name="Local" value="classyadt_1_1table.html"><param name="Name" value="get_wsubset_all"></OBJECT>
+    <LI><OBJECT type="text/sitemap"><param name="Local" value="classyadt_1_1table.html"><param name="Name" value="get_wsubset_difference"></OBJECT>
+    <LI><OBJECT type="text/sitemap"><param name="Local" value="classyadt_1_1table.html"><param name="Name" value="get_wsubset_first_n"></OBJECT>
+    <LI><OBJECT type="text/sitemap"><param name="Local" value="classyadt_1_1table.html"><param name="Name" value="get_wsubset_random"></OBJECT>
+    <LI><OBJECT type="text/sitemap"><param name="Local" value="classyadt_1_1table.html"><param name="Name" value="load_data"></OBJECT>
+    <LI><OBJECT type="text/sitemap"><param name="Local" value="classyadt_1_1table.html"><param name="Name" value="load_meta_data"></OBJECT>
+    <LI><OBJECT type="text/sitemap"><param name="Local" value="classyadt_1_1table.html"><param name="Name" value="operator="></OBJECT>
+    <LI><OBJECT type="text/sitemap"><param name="Local" value="classyadt_1_1table.html"><param name="Name" value="set_log"></OBJECT>
+    <LI><OBJECT type="text/sitemap"><param name="Local" value="classyadt_1_1table.html"><param name="Name" value="set_verbosity"></OBJECT>
+    <LI><OBJECT type="text/sitemap"><param name="Local" value="classyadt_1_1table.html"><param name="Name" value="table"></OBJECT>
+    <LI><OBJECT type="text/sitemap"><param name="Local" value="classyadt_1_1table.html"><param name="Name" value="toBinary"></OBJECT>
+    <LI><OBJECT type="text/sitemap"><param name="Local" value="classyadt_1_1table.html"><param name="Name" value="toXML_data_dictionary"></OBJECT>
+    <LI><OBJECT type="text/sitemap"><param name="Local" value="classyadt_1_1table.html"><param name="Name" value="toXML_mining_schema"></OBJECT>
+    <LI><OBJECT type="text/sitemap"><param name="Local" value="classyadt_1_1table.html"><param name="Name" value="~table"></OBJECT>
+  </UL>
+  <LI><OBJECT type="text/sitemap"><param name="Local" value="namespaceyadt.html"><param name="Name" value="yadt"></OBJECT>
+  <UL>
+    <LI><OBJECT type="text/sitemap"><param name="Local" value="namespaceyadt.html"><param name="Name" value="get_build"></OBJECT>
+    <LI><OBJECT type="text/sitemap"><param name="Local" value="namespaceyadt.html"><param name="Name" value="get_copyright"></OBJECT>
+    <LI><OBJECT type="text/sitemap"><param name="Local" value="namespaceyadt.html"><param name="Name" value="get_version"></OBJECT>
+  </UL>
+  <LI><OBJECT type="text/sitemap"><param name="Local" value="classyadt_1_1conf__matrix.html"><param name="Name" value="~conf_matrix"></OBJECT>
+  <LI><OBJECT type="text/sitemap"><param name="Local" value="classyadt_1_1datasource.html"><param name="Name" value="~datasource"></OBJECT>
+  <LI><OBJECT type="text/sitemap"><param name="Local" value="classyadt_1_1dtree.html"><param name="Name" value="~dtree"></OBJECT>
+  <LI><OBJECT type="text/sitemap"><param name="Local" value="classyadt_1_1table_1_1subset.html"><param name="Name" value="~subset"></OBJECT>
+  <LI><OBJECT type="text/sitemap"><param name="Local" value="classyadt_1_1table.html"><param name="Name" value="~table"></OBJECT>
+</UL>
+</BODY>
+</HTML>
