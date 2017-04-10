@@ -204,13 +204,13 @@ save_learned_policy(file_name, num_clusters, group_idx, stochastic_pol_selected)
 
 
 
-h = colormap([0    0.5000    0.5000; 0.5000    1.0000    1.0000]);
-HeatMap(stochastic_pol_selected{1}', 'colormap', h)
+%h = colormap([0    0.5000    0.5000; 0.5000    1.0000    1.0000]);
+%HeatMap(stochastic_pol_selected{1}', 'colormap', h)
 
 HeatMap(stochastic_pol_selected{2}', 'ColumnLabels', 1:45, 'RowLabels', 1:4)
 HeatMap(stochastic_pol_selected{1}', 'ColumnLabels', 1:45, 'RowLabels', 1:4)
 
-expert_trajectories(expert_trajectories(:,1) == group_idx{1}, 3,4,5,6,7)
+%expert_trajectories(expert_trajectories(:,1) == group_idx{1}, 3,4,5,6,7)
 
 
 
