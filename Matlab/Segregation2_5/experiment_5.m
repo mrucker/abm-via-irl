@@ -17,12 +17,12 @@ num_traj_steps = 50;  % Number of steps needed in an expert's trajectory
 phis = eye(num_features);
 
 % Sample trajectories from expert policy.
-expert_trajectories = ReadSampleTrajectories_2('SampleTrajectories_3.csv');
-expert_trajectories = horzcat(expert_trajectories{1}, expert_trajectories{2}, expert_trajectories{3}, expert_trajectories{4}, expert_trajectories{5}, expert_trajectories{6}, expert_trajectories{7});
+expert_trajectories = ReadSampleTrajectories_2('SampleTrajectories_5.csv');
+expert_trajectories = horzcat(expert_trajectories{1}, expert_trajectories{2}, expert_trajectories{3}, expert_trajectories{4}, expert_trajectories{5}, expert_trajectories{6}, expert_trajectories{7}, expert_trajectories{8});
 
 % get transition probabilities
 fprintf('Getting transition probabilities...\n');
-P = T_SA(expert_trajectories(:, [6 3 4 5]), num_actions, num_states, state_space);
+P = T_5(expert_trajectories(:, [7 3 4 5 6]), num_actions, num_states, state_space);
 
 % Calulate empirical estimates of feature expectations for all agents
 fprintf('Calulating empirical estimates of feature expectations...\n');
@@ -36,7 +36,7 @@ for agent_idx = 1:length(agentId_list)
     episodes = cell(0,1);
     %num_valid_episode = 0; % number of valid episodes
     agentId   = agentId_list(agent_idx);
-    agent_trajectories = expert_trajectories(expert_trajectories(:,1) == agentId, 2:6);
+    agent_trajectories = expert_trajectories(expert_trajectories(:,1) == agentId, 2:7);
 
     % look for valid episodes
     for e = episode_list
@@ -45,9 +45,9 @@ for agent_idx = 1:length(agentId_list)
             continue;
         end
         num_valid_episode(agent_idx) = num_valid_episode(agent_idx) + 1;
-        episodes{num_valid_episode(agent_idx)} = agent_trajectories(sa_step_ix(1:num_traj_steps), [2 3 4 5]);
+        episodes{num_valid_episode(agent_idx)} = agent_trajectories(sa_step_ix(1:num_traj_steps), [2 3 4 5 6]);
         % count initial state visit for D
-        init_state = agent_trajectories(1,[2 3 4]);
+        init_state = agent_trajectories(1,[2 3 4 5]);
         init_s_id  = find(all(state_space' == init_state'));
         initCount(init_s_id) = initCount(init_s_id) + 1;
     end

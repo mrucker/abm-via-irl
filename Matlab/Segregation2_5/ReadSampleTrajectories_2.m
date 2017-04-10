@@ -4,7 +4,7 @@ function values = ReadSampleTrajectories_2(fileName)
     fid = fopen(fileName);
 
     try
-        values = textscan(fid, '%f %f %f %f %f %f %d', 'HeaderLines', 1, 'Delimiter', ',');
+        values = textscan(fid, '%d %d %d %d %d %d %d %d', 'HeaderLines', 1, 'Delimiter', ',');
     catch ME
     end
     
