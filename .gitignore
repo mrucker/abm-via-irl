@@ -1,3 +1,4 @@
+*.vs
 *.m~
 *.asv
 .DS_Store
