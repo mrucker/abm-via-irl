@@ -207,16 +207,27 @@ file_name = 'Segregation2_learned_policies.csv';
 save_learned_policy(file_name, num_clusters, group_idx, stochastic_pol_selected);
 
 
-x_label = 1:45;
-y_label = {'action1', 'action2', 'action3', 'action4'};
+determ_pol = cell(num_clusters, 1);
+for c=1:num_clusters
+    determ_pol{c} = zeros(num_states, num_actions);
+    for s=1:num_states
+        determ_pol{c}(s, pol_selected{c}(s)) = 1;
+    end
+end
 
+x_scale = 1:25;
+y_scale = {'action1', 'action2', 'action3', 'action4'};
 figure
-subplot(2,1,1);
-heatmap(stochastic_pol_selected{1}', x_label, y_label, '%0.2f', 'Colorbar', true);
-subplot(2,1,2);
-heatmap(SAF{1}', x_label, y_label, '%0.2f', 'Colorbar', true, 'NaNColor', [0 0 0]);
-
-
+subplot(3,1,1);
+heatmap(SAF{1}', x_scale, y_scale, '%0.2f', 'Colorbar', true, 'NaNColor', [0 0 0]);
+title('Original State Action Frequency');
+subplot(3,1,2);
+heatmap(determ_pol{1}', x_scale, y_scale, '%0.2f', 'Colorbar', true, 'NaNColor', [0 0 0]);
+title('Deterministic Policy learned from IRL');
+subplot(3,1,3);
+heatmap(stochastic_pol_selected{1}', x_scale, y_scale, '%0.2f', 'Colorbar', true);
+title('Stochastic Policy learned from IRL');
+xlabel('STATES');
 
 
 
