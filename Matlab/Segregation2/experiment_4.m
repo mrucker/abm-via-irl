@@ -79,6 +79,7 @@ group_idx = cell(num_clusters,1);
 figure('visible', 'off');
 [~, T] = dendrogram(clustTree, num_clusters);
 
+
 % Calculate mu_expert for each cluster
 mu_expert_cluster = cell(num_clusters, 1);
 for c=1:num_clusters
@@ -87,6 +88,9 @@ for c=1:num_clusters
                           ./sum(num_valid_episode(group_idx{c})); 
 end
 
+
+% Calculate state_action_frequency
+SAF = state_action_frequency(num_clusters, expert_trajectories, group_idx, num_states, num_actions, state_space);
 
 % Initialize result variables
 pol_selected = cell(num_clusters, 1);
@@ -202,7 +206,26 @@ end
 file_name = 'Segregation2_learned_policies.csv';
 save_learned_policy(file_name, num_clusters, group_idx, stochastic_pol_selected);
 
+determ_pol = cell(num_clusters, 1);
+for c=1:num_clusters
+    determ_pol{c} = zeros(num_states, num_actions);
+    for s=1:num_states
+        determ_pol{c}(s, pol_selected{c}(s)) = 1;
+    end
+end
 
+x_label = 1:25;
+y_label = {'action1', 'action2', 'action3', 'action4'};
+figure
+subplot(3,1,1);
+heatmap(SAF{1}', x_label, y_label, '%0.2f', 'Colorbar', true, 'NaNColor', [0 0 0]);
+title('Original State Action Frequency');
+subplot(3,1,2);
+heatmap(determ_pol{1}', x_label, y_label, '%0.2f', 'Colorbar', true, 'NaNColor', [0 0 0]);
+title('Deterministic Policy learned from IRL');
+subplot(3,1,3);
+heatmap(stochastic_pol_selected{1}', x_label, y_label, '%0.2f', 'Colorbar', true);
+title('Stochastic Policy learned from IRL');
 
 
 
@@ -229,5 +252,5 @@ function [state_space, state_action_space, action_space] = Spaces()
     state_space = vertcat(state_space, [9,9,9]); %limbo state
 
     state_action_space = horzcat(sortrows(repmat(state_space,4,1), 1:3), repmat(action', 25,1));
-    action_space = action;
+    action_space = action';
 end

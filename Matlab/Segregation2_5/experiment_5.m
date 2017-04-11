@@ -5,7 +5,7 @@ epsilon  = .9;
 
 [state_space, state_action_space, action_space] = Spaces();
 
-num_actions       = size(action_space,2);
+num_actions       = size(action_space,1);
 num_states        = size(state_space,1);
 num_state_actions = size(state_action_space,1);
 num_features      = num_state_actions;
@@ -203,14 +203,18 @@ file_name = 'Segregation2_learned_policies.csv';
 save_learned_policy(file_name, num_clusters, group_idx, stochastic_pol_selected);
 
 
+SAF = state_action_frequency(num_clusters, expert_trajectories, group_idx, num_states, num_actions, state_space);
 
-%h = colormap([0    0.5000    0.5000; 0.5000    1.0000    1.0000]);
-%HeatMap(stochastic_pol_selected{1}', 'colormap', h)
+x_label = 1:45;
+y_label = {'action1', 'action2', 'action3', 'action4'};
 
-HeatMap(stochastic_pol_selected{2}', 'ColumnLabels', 1:45, 'RowLabels', 1:4)
-HeatMap(stochastic_pol_selected{1}', 'ColumnLabels', 1:45, 'RowLabels', 1:4)
+figure
+subplot(2,1,1);
+heatmap(stochastic_pol_selected{1}', x_label, y_label, '%0.2f', 'Colorbar', true);
+subplot(2,1,2);
+heatmap(SAF{1}', x_label, y_label, '%0.2f', 'Colorbar', true, 'NaNColor', [0 0 0]);
 
-%expert_trajectories(expert_trajectories(:,1) == group_idx{1}, 3,4,5,6,7)
+
 
 
 
@@ -238,5 +242,5 @@ function [state_space, state_action_space, action_space] = Spaces()
     
     state_space = state_space(:,2:5);
     state_action_space = state_action_space(:,2:6);
-    action_space = action;
+    action_space = action';
 end
