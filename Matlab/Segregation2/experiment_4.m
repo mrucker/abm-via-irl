@@ -26,7 +26,7 @@ P = T_SA(expert_trajectories(:, [6 3 4 5]), num_actions, num_states, state_space
 
 % Calulate empirical estimates of feature expectations for all agents
 fprintf('Calulating empirical estimates of feature expectations...\n');
-agentId_list = unique(expert_trajectories(:,1))';
+agentId_list = unique(expert_trajectories(:,1));
 num_agents = length(agentId_list);
 episode_list = unique(expert_trajectories(:,2))';
 mu_expert = zeros(num_features, length(agentId_list));
@@ -88,9 +88,16 @@ for c=1:num_clusters
                           ./sum(num_valid_episode(group_idx{c})); 
 end
 
+% % Test stat_action_frequency
+% grp = cell(1,1);
+% grp{1} = (1:23)';
+% SAF = state_action_frequency(1, expert_trajectories, grp, agentId_list, num_states, num_actions, state_space);
+% figure
+% heatmap(SAF{1}', x_label, y_label, '%0.2f', 'Colorbar', true, 'NaNColor', [0 0 0]);
+
 
 % Calculate state_action_frequency
-SAF = state_action_frequency(num_clusters, expert_trajectories, group_idx, num_states, num_actions, state_space);
+SAF = state_action_frequency(num_clusters, expert_trajectories, group_idx, agentId_list, num_states, num_actions, state_space);
 
 % Initialize result variables
 pol_selected = cell(num_clusters, 1);
@@ -218,13 +225,13 @@ x_label = 1:25;
 y_label = {'action1', 'action2', 'action3', 'action4'};
 figure
 subplot(3,1,1);
-heatmap(SAF{1}', x_label, y_label, '%0.2f', 'Colorbar', true, 'NaNColor', [0 0 0]);
+heatmap(SAF{3}', x_label, y_label, '%0.2f', 'Colorbar', true, 'NaNColor', [0 0 0]);
 title('Original State Action Frequency');
 subplot(3,1,2);
-heatmap(determ_pol{1}', x_label, y_label, '%0.2f', 'Colorbar', true, 'NaNColor', [0 0 0]);
+heatmap(determ_pol{3}', x_label, y_label, '%0.2f', 'Colorbar', true, 'NaNColor', [0 0 0]);
 title('Deterministic Policy learned from IRL');
 subplot(3,1,3);
-heatmap(stochastic_pol_selected{1}', x_label, y_label, '%0.2f', 'Colorbar', true);
+heatmap(stochastic_pol_selected{3}', x_label, y_label, '%0.2f', 'Colorbar', true);
 title('Stochastic Policy learned from IRL');
 
 

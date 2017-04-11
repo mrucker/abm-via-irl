@@ -26,7 +26,7 @@ P = T_5(expert_trajectories(:, [7 3 4 5 6]), num_actions, num_states, state_spac
 
 % Calulate empirical estimates of feature expectations for all agents
 fprintf('Calulating empirical estimates of feature expectations...\n');
-agentId_list = unique(expert_trajectories(:,1))';
+agentId_list = unique(expert_trajectories(:,1));
 num_agents = length(agentId_list);
 episode_list = unique(expert_trajectories(:,2))';
 mu_expert = zeros(num_features, length(agentId_list));
@@ -86,6 +86,10 @@ for c=1:num_clusters
     mu_expert_cluster{c} = mu_expert(:,group_idx{c})*num_valid_episode(group_idx{c})...
                           ./sum(num_valid_episode(group_idx{c})); 
 end
+
+
+% Calculate state_action_frequency
+SAF = state_action_frequency(num_clusters, expert_trajectories, group_idx, agentId_list, num_states, num_actions, state_space);
 
 
 % Initialize result variables
@@ -202,8 +206,6 @@ end
 file_name = 'Segregation2_learned_policies.csv';
 save_learned_policy(file_name, num_clusters, group_idx, stochastic_pol_selected);
 
-
-SAF = state_action_frequency(num_clusters, expert_trajectories, group_idx, num_states, num_actions, state_space);
 
 x_label = 1:45;
 y_label = {'action1', 'action2', 'action3', 'action4'};
