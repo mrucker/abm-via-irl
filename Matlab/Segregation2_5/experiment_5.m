@@ -97,6 +97,7 @@ pol_selected = cell(num_clusters, 1);
 stochastic_pol_selected = cell(num_clusters, 1);
 w_last = cell(num_clusters, 1);
 w_selected = cell(num_clusters, 1);
+V_selected = cell(num_clusters,1);
 
 for c=1:num_clusters
     fprintf('[Cluster %d] Starting projection algorithm...\n', c);
@@ -110,6 +111,7 @@ for c=1:num_clusters
     % Projection algorithm
     % 1.
     Pol{1}  = ceil(rand(num_states,1) * num_actions);
+    V{1} = zeros(num_states,1);
     mu(:,1) = feature_expectations_2(P, discount, D, Pol{1}, num_samples, num_steps, num_features, phis);
     i = 2;
 
@@ -141,7 +143,7 @@ for c=1:num_clusters
 
         % 4.
         R = reshape(w(:,i), [num_actions, num_states])'; %reshape w into S*A
-        [V, Pol{i}, iter, cpu_time] = mdp_value_iteration(P, R, discount);
+        [V{i}, Pol{i}, iter, cpu_time] = mdp_value_iteration(P, R, discount);
 
         % 5.
         mu(:,i) = feature_expectations_2(P, discount, D, Pol{i}, num_samples, num_steps, num_features, phis);
@@ -160,6 +162,7 @@ for c=1:num_clusters
     w_last{c} = w(:,i);
     w_selected{c} = w(:,selected);
     pol_selected{c} = Pol{selected};
+    V_selected{c} = V{selected};
     
     %(KL) mixing together policies according to the mixture weights lambda
     fprintf('[Cluster %d] Calculating combination of mu...\n', c);
@@ -215,20 +218,21 @@ for c=1:num_clusters
     end
 end
 
-x_scale = 1:25;
+x_scale = 1:45;
 y_scale = {'action1', 'action2', 'action3', 'action4'};
-figure
-subplot(3,1,1);
-heatmap(SAF{1}', x_scale, y_scale, '%0.2f', 'Colorbar', true, 'NaNColor', [0 0 0]);
-title('Original State Action Frequency');
-subplot(3,1,2);
-heatmap(determ_pol{1}', x_scale, y_scale, '%0.2f', 'Colorbar', true, 'NaNColor', [0 0 0]);
-title('Deterministic Policy learned from IRL');
-subplot(3,1,3);
-heatmap(stochastic_pol_selected{1}', x_scale, y_scale, '%0.2f', 'Colorbar', true);
-title('Stochastic Policy learned from IRL');
-xlabel('STATES');
-
+for c=1:num_clusters
+    figure
+    subplot(3,1,1);
+    heatmap(SAF{c}', x_scale, y_scale, '%0.2f', 'Colorbar', true, 'NaNColor', [0 0 0]);
+    title('Original State Action Frequency');
+    subplot(3,1,2);
+    heatmap(determ_pol{c}', x_scale, y_scale, '%0.2f', 'Colorbar', true, 'NaNColor', [0 0 0]);
+    title('Deterministic Policy learned from IRL');
+    subplot(3,1,3);
+    heatmap(stochastic_pol_selected{c}', x_scale, y_scale, '%0.2f', 'Colorbar', true);
+    title('Stochastic Policy learned from IRL');
+    xlabel('STATES');
+end
 
 
 
