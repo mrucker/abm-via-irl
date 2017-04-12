@@ -6,7 +6,7 @@
 #install.packages("randomForest")
 
 library(MASS) #lda(), head(), tail()
-library(randomForest) #randomForest
+library(randomForest) #randomForest()
 
 data = read.csv("./SampleTrajectories.csv")
 
