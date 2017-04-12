@@ -26,7 +26,7 @@ P = T_5(expert_trajectories(:, [7 3 4 5 6]), num_actions, num_states, state_spac
 
 % Calulate empirical estimates of feature expectations for all agents
 fprintf('Calulating empirical estimates of feature expectations...\n');
-agentId_list = unique(expert_trajectories(:,1))';
+agentId_list = unique(expert_trajectories(:,1));
 num_agents = length(agentId_list);
 episode_list = unique(expert_trajectories(:,2))';
 mu_expert = zeros(num_features, length(agentId_list));
@@ -88,11 +88,16 @@ for c=1:num_clusters
 end
 
 
+% Calculate state_action_frequency
+SAF = state_action_frequency(num_clusters, expert_trajectories, group_idx, agentId_list, num_states, num_actions, state_space);
+
+
 % Initialize result variables
 pol_selected = cell(num_clusters, 1);
 stochastic_pol_selected = cell(num_clusters, 1);
 w_last = cell(num_clusters, 1);
 w_selected = cell(num_clusters, 1);
+V_selected = cell(num_clusters,1);
 
 for c=1:num_clusters
     fprintf('[Cluster %d] Starting projection algorithm...\n', c);
@@ -106,6 +111,7 @@ for c=1:num_clusters
     % Projection algorithm
     % 1.
     Pol{1}  = ceil(rand(num_states,1) * num_actions);
+    V{1} = zeros(num_states,1);
     mu(:,1) = feature_expectations_2(P, discount, D, Pol{1}, num_samples, num_steps, num_features, phis);
     i = 2;
 
@@ -137,7 +143,7 @@ for c=1:num_clusters
 
         % 4.
         R = reshape(w(:,i), [num_actions, num_states])'; %reshape w into S*A
-        [V, Pol{i}, iter, cpu_time] = mdp_value_iteration(P, R, discount);
+        [V{i}, Pol{i}, iter, cpu_time] = mdp_value_iteration(P, R, discount);
 
         % 5.
         mu(:,i) = feature_expectations_2(P, discount, D, Pol{i}, num_samples, num_steps, num_features, phis);
@@ -156,6 +162,7 @@ for c=1:num_clusters
     w_last{c} = w(:,i);
     w_selected{c} = w(:,selected);
     pol_selected{c} = Pol{selected};
+    V_selected{c} = V{selected};
     
     %(KL) mixing together policies according to the mixture weights lambda
     fprintf('[Cluster %d] Calculating combination of mu...\n', c);
@@ -197,27 +204,48 @@ end
 % w_selected{1}
 % w_selected{2}
 % w_selected{3}
+%
+% V_selected{1}
+% V_selected{2}
+% V_selected{3}
+%
+
 
 % Save environment information and stochastic policies to csv file
 file_name = 'Segregation2_learned_policies.csv';
 save_learned_policy(file_name, num_clusters, group_idx, stochastic_pol_selected);
 
 
-SAF = state_action_frequency(num_clusters, expert_trajectories, group_idx, num_states, num_actions, state_space);
+determ_pol = cell(num_clusters, 1);
+for c=1:num_clusters
+    determ_pol{c} = zeros(num_states, num_actions);
+    for s=1:num_states
+        determ_pol{c}(s, pol_selected{c}(s)) = 1;
+    end
+end
 
-x_label = 1:45;
-y_label = {'action1', 'action2', 'action3', 'action4'};
+x_scale = 1:45;
+y_scale = {'action1', 'action2', 'action3', 'action4'};
+for c=1:num_clusters
+    figure
+    subplot(3,1,1);
+    heatmap(SAF{c}', x_scale, y_scale, '%0.2f', 'Colorbar', true, 'NaNColor', [0 0 0]);
+    title('Original State Action Frequency');
+    subplot(3,1,2);
+    heatmap(determ_pol{c}', x_scale, y_scale, '%0.2f', 'Colorbar', true, 'NaNColor', [0 0 0]);
+    title('Deterministic Policy learned from IRL');
+    subplot(3,1,3);
+    heatmap(stochastic_pol_selected{c}', x_scale, y_scale, '%0.2f', 'Colorbar', true);
+    title('Stochastic Policy learned from IRL');
+    xlabel('STATES');
+end
 
 figure
-subplot(2,1,1);
-heatmap(stochastic_pol_selected{1}', x_label, y_label, '%0.2f', 'Colorbar', true);
-subplot(2,1,2);
-heatmap(SAF{1}', x_label, y_label, '%0.2f', 'Colorbar', true, 'NaNColor', [0 0 0]);
-
-
-
-
-
+for c=1:num_clusters
+    subplot(3,1,c);
+    heatmap(reshape(w_selected{c}, [num_actions, num_states]), x_scale, y_scale, '%0.2f', 'Colormap', 'money', 'Colorbar', true);
+    title(sprintf('Rewards function for group %d', c));
+end
 
 
 %% Local functions
