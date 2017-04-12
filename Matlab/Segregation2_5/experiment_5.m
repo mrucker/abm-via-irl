@@ -204,6 +204,12 @@ end
 % w_selected{1}
 % w_selected{2}
 % w_selected{3}
+%
+% V_selected{1}
+% V_selected{2}
+% V_selected{3}
+%
+
 
 % Save environment information and stochastic policies to csv file
 file_name = 'Segregation2_learned_policies.csv';
@@ -234,7 +240,12 @@ for c=1:num_clusters
     xlabel('STATES');
 end
 
-
+figure
+for c=1:num_clusters
+    subplot(3,1,c);
+    heatmap(reshape(w_selected{c}, [num_actions, num_states]), x_scale, y_scale, '%0.2f', 'Colormap', 'money', 'Colorbar', true);
+    title(sprintf('Rewards function for group %d', c));
+end
 
 
 %% Local functions
