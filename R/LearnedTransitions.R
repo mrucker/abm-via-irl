@@ -17,7 +17,7 @@ nrow(data[data$Breed == "racists",])
 unique(data[data$Breed == "racists", ]$AgentID)
 
 #get the racists ready to examine
-racists = data[data$Breed == "racists",-c(1,2,7)] #all racists without AgentID, Episode and Breed
+racists = data[data$Breed == "racists" & data$AgentID == 390,-c(1,2,7)] #all racists without AgentID, Episode and Breed
 racists$length_change = c(tail(racists, -1)$Conversation_Length - head(racists,-1)$Conversation_Length,NA)
 racists = head(racists,-1) # all but the last row since it doesn't transition
 racists[racists$length_change < 0, ]$length_change = -100 #treat all negatives as the same since they all reset to 0
@@ -26,7 +26,7 @@ racists$length_change = as.factor(racists$length_change) # make our observed cha
 unique(racists$length_change)
 
 lda.fit = lda(length_change~., data=racists)
-qda.fit = qda(length_change~., data=racists) #doesn't work
+qda.fit = qda(length_change~., data=racists) #doesn't work. Not sure why... I sure think we have enough examples to learn from.
 rfo.fit = randomForest(length_change~.,data=racists)
 
 #look at improperly classified state actions change values
@@ -37,4 +37,3 @@ sum(predict(qda.fit, newdata=racists)$class == racists[,"length_change"])
 test = data.frame(Conversation_Length=c(4), Conversation_With_Like=c(0), People_Around_To_Talk=c(1), Action=c(2))
 predict(rfo.fit, newdata=test, type="prob")
 predict(lda.fit, newdata=test)$posterior
-
