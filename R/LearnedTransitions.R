@@ -34,6 +34,7 @@ racists[(predict(lda.fit, newdata=racists)$class != racists[,"length_change"]),]
 sum(predict(lda.fit, newdata=racists)$class == racists[,"length_change"])
 sum(predict(qda.fit, newdata=racists)$class == racists[,"length_change"])
 
-test = data.frame(Conversation_Length=c(4), Conversation_With_Like=c(0), People_Around_To_Talk=c(1), Action=c(2))
+#test out the learned transition probabilities for various states
+test = data.frame(Conversation_Length=c(4), Conversation_With_Like=c(0), People_Around_To_Talk=c(0), Action=c(2))
 predict(rfo.fit, newdata=test, type="prob")
 predict(lda.fit, newdata=test)$posterior
