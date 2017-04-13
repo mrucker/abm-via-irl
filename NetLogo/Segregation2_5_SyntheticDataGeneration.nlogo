@@ -376,7 +376,7 @@ end
 
 
 to setup-file
-  set trajectory-file ("Segregation2_1_trajectory.csv")
+  set trajectory-file ("Segregation2_5_trajectory.csv")
   carefully [file-delete trajectory-file] []
   file-open trajectory-file
   file-print csv:to-row (list "AgentID" "Episode" "Conversation_Length" "Recent_Partner_Like_Me" "Previous_Partner_Like_Me" "People_Around_To_Talk" "Action" "Breed")
