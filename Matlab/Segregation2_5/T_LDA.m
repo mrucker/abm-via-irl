@@ -33,6 +33,8 @@ function P = T_LDA(AS, num_actions, num_states, state_space)
 %     24     5     1     1
 %     25     limbo
 
+    AS = double(AS);
+
     dlt_predictors = PredictorDeltas(AS);
     cls_predictors = PredictorClasses(dlt_predictors);
     fit_predictors = PredictorFits(AS, dlt_predictors);
