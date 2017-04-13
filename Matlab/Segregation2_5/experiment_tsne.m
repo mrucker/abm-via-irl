@@ -1,4 +1,5 @@
 addpath(genpath(fullfile(fileparts(which(mfilename)),'../_dependencies/')));
+addpath(genpath(fullfile(fileparts(which(mfilename)),'../_utilities/')));
 
 discount = 0.99;
 epsilon  = .5;
@@ -69,7 +70,7 @@ for agent_idx = 1:num_agents
         end
 
         D = D./sum(D);
-        P = T_SA(sa_expert(:, [4 1 2 3]), num_actions, num_states, state_space);
+        P = T_LDA(sa_expert(:, [4 1 2 3]), num_actions, num_states, state_space);
 
         for e = (0:episode_n-1)*num_steps
             for t = 1:num_steps
@@ -182,7 +183,7 @@ function [state_space, state_action_space] = Spaces()
     people_around_yn    = 0:1;
     action              = 1:4;
 
-    state_space = sortrows(combvec(conversation_length, similar_partner_yn, people_around_yn)', 1:3);
+    state_space = sortrows(cartesian(conversation_length, similar_partner_yn, people_around_yn), 1:3);
     state_space = vertcat(state_space, [9,9,9]); %limbo state
 
     state_action_space = horzcat(sortrows(repmat(state_space,4,1), 1:3), repmat(action', 25,1));
