@@ -80,7 +80,10 @@ function ts = Transitions(a, s, fit_predictors, cls_predictors)
                 end
             end
             
-            ts(:, 2:end) = ts(:, 2:end) + s';
+            ts(:, 2:end) = ts(:, 2:end) + s';            
+            
+            ts(ts(:,2) > 5, 2) = 5;
+            ts(ts(:,2) < 0, 2) = 0;
 end
 
 function P = Initialize(num_actions, num_states)
@@ -95,22 +98,20 @@ function P = Predict(p, num_actions, state_space, fit_predictors, cls_predictors
     for a = 1:num_actions 
         for s = state_space'
             
-            ts = Transitions(a, s, fit_predictors, cls_predictors);
+            ts = Transitions(a, s, fit_predictors, cls_predictors);            
             
             for t = ts'
-            
-                if t(2) < 0
-                    t(2) = 0;
-                end
                 
                 this_s_i = all(state_space' == s);
                 next_s_i = all(state_space' == t(2:end));
                 
-                p{a}(this_s_i, next_s_i) = t(1);
+                p{a}(this_s_i, next_s_i) = p{a}(this_s_i, next_s_i) + round(t(1),1);
                 
             end
             
-            assert(sum(p{a}(this_s_i, :)) < 1, 'illegal transition probabilities');
+            if ~all(s==9)
+                %assert(abs(sum(p{a}(this_s_i, :)) -1) < .3, sprintf('probability for state %d, action %d is wrong', find(this_s_i), a));
+            end
         end
     end
     
@@ -126,9 +127,9 @@ function P = Normalize(p)
 end
 
 function P = Validate(p, num_actions, num_states)
-    for i=1:num_states
+    for i=1:(num_states-1)
         for a=1:num_actions
-            assert(abs(sum(p{a}(i, :)) - 1) < .000001, sprintf('probability for state %d, action %d is wrong\n', i, a));
+            assert(abs(sum(p{a}(i, :)) - 1) < .000001, sprintf('probability for state %d, action %d is wrong', i, a));
         end
     end
     
