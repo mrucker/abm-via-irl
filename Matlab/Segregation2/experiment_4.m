@@ -225,13 +225,13 @@ x_scale = 1:25;
 y_scale = {'action1', 'action2', 'action3', 'action4'};
 figure
 subplot(3,1,1);
-heatmap(SAF{3}', x_scale, y_scale, '%0.2f', 'Colorbar', true, 'NaNColor', [0 0 0]);
+heatmap(SAF{2}', x_scale, y_scale, '%0.2f', 'Colorbar', true, 'NaNColor', [0 0 0]);
 title('Original State Action Frequency');
 subplot(3,1,2);
-heatmap(determ_pol{3}', x_scale, y_scale, '%0.2f', 'Colorbar', true, 'NaNColor', [0 0 0]);
+heatmap(determ_pol{2}', x_scale, y_scale, '%0.2f', 'Colorbar', true, 'NaNColor', [0 0 0]);
 title('Deterministic Policy learned from IRL');
 subplot(3,1,3);
-heatmap(stochastic_pol_selected{3}', x_scale, y_scale, '%0.2f', 'Colorbar', true);
+heatmap(stochastic_pol_selected{2}', x_scale, y_scale, '%0.2f', 'Colorbar', true);
 title('Stochastic Policy learned from IRL');
 xlabel('STATES');
 
