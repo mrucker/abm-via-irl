@@ -19,11 +19,8 @@ function mu = feature_expectations_2(P, discount, D, policy, num_samples, num_st
             cumprob = cumsum(P{a}(s,:));
             r = rand();
             s_next = find(cumprob > r, 1);
-            
-            %calculate state_action_space index
-            as_ix = (s-1)*4 + a;
 
-            Mu(i,:) = Mu(i,:) + discount^(t-1) * phis(as_ix,:);
+            Mu(i,:) = Mu(i,:) + discount^(t-1) * phis(s_next,:);
 
             s = s_next;
         end
