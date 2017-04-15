@@ -7,7 +7,6 @@ epsilon  = .2;
 
 num_actions       = size(action_space,1);
 num_states        = size(state_space,1);
-%num_state_actions = size(state_action_space,1);
 num_features      = num_states;
 
 num_samples = 100; % Number of samples to use in feature expectations
@@ -88,14 +87,6 @@ for c=1:num_clusters
     mu_expert_cluster{c} = mu_expert(:,group_idx{c})*num_valid_episode(group_idx{c})...
                           ./sum(num_valid_episode(group_idx{c})); 
 end
-
-% % Test stat_action_frequency
-% grp = cell(1,1);
-% grp{1} = (1:23)';
-% SAF = state_action_frequency(1, expert_trajectories, grp, agentId_list, num_states, num_actions, state_space);
-% figure
-% heatmap(SAF{1}', x_label, y_label, '%0.2f', 'Colorbar', true, 'NaNColor', [0 0 0]);
-
 
 % Calculate state_action_frequency
 SAF = state_action_frequency(num_clusters, expert_trajectories, group_idx, agentId_list, num_states, num_actions, state_space);
@@ -263,9 +254,7 @@ function [state_space, action_space] = Spaces()
     state_space = combvec(conversation_length, recent_partner, any_partner, familiar_env)';
     state_space = vertcat([0,0,0,0], [0,0,1,0], [0,0,0,1], [0,0,1,1], [0,1,0,0], [0,1,1,0], [0,1,0,1], [0,1,1,1], state_space, [10,10,10,10]);
     state_space = horzcat((1:length(state_space))', state_space);
-    %state_space = sortrows(combvec(conversation_length, recent_partner, any_partner, familiar_env)', 1:3);
     state_space = state_space(:,2:5);
 
-    %state_action_space = horzcat(sortrows(repmat(state_space,4,1), 1:3), repmat(action', length(state_space),1));
     action_space = action';
 end
