@@ -230,8 +230,12 @@ for c=1:num_clusters
     xlabel('STATES');
 end
 
-
-
+figure
+for c=1:num_clusters
+    subplot(3,1,c);
+    heatmap(w_selected{c}', x_scale, [], '%0.2f', 'Colormap', 'money', 'Colorbar', true);
+    title(sprintf('Rewards function for group %d', c));
+end
 
 
 
