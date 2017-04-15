@@ -1,4 +1,4 @@
-function P = T_SA(SA, num_actions, num_states, state_space)
+function P = T_SA(SA, skip_line, num_actions, num_states, state_space)
 %%    actions
 %     action 1, move short distance
 %     action 2, move long distance
@@ -6,42 +6,47 @@ function P = T_SA(SA, num_actions, num_states, state_space)
 %     action 4, continue conversation
 %
 %%    state space
-%      id  convo  like  near
-%      1     0     0     0
-%      2     0     0     1
-%      3     0     1     0
-%      4     0     1     1
-%      5     1     0     0
-%      6     1     0     1
-%      7     1     1     0
-%      8     1     1     1
-%      9     2     0     0
-%     10     2     0     1
-%     11     2     1     0
-%     12     2     1     1
-%     13     3     0     0
-%     14     3     0     1
-%     15     3     1     0
-%     16     3     1     1
-%     17     4     0     0
-%     18     4     0     1
-%     19     4     1     0
-%     20     4     1     1
-%     21     5     0     0
-%     22     5     0     1
-%     23     5     1     0
-%     24     5     1     1
-%     25     limbo
+%      id convo recent partner familiar 
+%      1     0     0     0     0
+%      2     0     0     1     0
+%      3     0     0     0     1
+%      4     0     0     1     1
+%      5     0     1     0     0
+%      6     0     1     1     0
+%      7     0     1     0     1
+%      8     0     1     1     1
+%      9     1     0     1     1
+%     10     2     0     1     1
+%     11     3     0     1     1
+%     12     4     0     1     1
+%     13     5     0     1     1
+%     14     6     0     1     1
+%     15     7     0     1     1
+%     16     8     0     1     1
+%     17     9     0     1     1
+%     18    10     0     1     1
+%     19     1     1     1     1
+%     20     2     1     1     1
+%     21     3     1     1     1
+%     22     4     1     1     1
+%     23     5     1     1     1
+%     24     6     1     1     1
+%     25     7     1     1     1
+%     26     8     1     1     1
+%     27     9     1     1     1
+%     28    10     1     1     1
+%     29    10    10    10    10 (limbo)
 
     P = Initialize(num_actions, num_states);
     
     % calculate transition probabilities using SA (observed state-action trajectoies)
-    P = Count(P, SA, state_space);
+    P = Count(P, SA, skip_line, state_space);
+    
     P = Normalize(P);
     
     % project the calculated transition probabilities onto the non-observed but structurally same state-actions
     % and assign transition probabilities for illegal actions and unreachable states
-    P = Assign(P, num_actions, num_states);
+    P = Assign(P, num_actions, num_states, state_space);
     
     Validate(P, num_actions, num_states);
 end
@@ -50,21 +55,25 @@ function P = Initialize(num_actions, num_states)
     P = cell(num_actions,1);
 
     for a = 1:num_actions
-        P{a} = sparse(num_states,num_states);
+        P{a} = zeros(num_states,num_states);
     end
 end
 
-function p = Count(P, SA, state_space)
+function p = Count(P, SA, skip_line, state_space)
     for i = 2:size(SA,1)
+        if(ismember(i, skip_line))
+            continue;
+        end
+        
         last_a = SA(i-1,1);
         last_s = find(all(state_space' == SA(i-1,2:end)'));
         this_s = find(all(state_space' == SA(i-0,2:end)'));
-
         P{last_a}(last_s,this_s) = P{last_a}(last_s, this_s) + 1;
     end
     
     p = P;
 end
+
 
 function p = Normalize(P)
    for a = 1:size(P,1)
@@ -74,38 +83,65 @@ function p = Normalize(P)
    p = P;
 end
 
-function p = Assign(P, num_actions, num_states)
-
-    P = Copy_Identical(P, [[1,1]; [2,1]]);
-    P = Copy_Identical(P, [[1,3]; [2,3]; [1,4]; [2,4]]);    
-    P = Copy_Identical(P, [[1,24]; [1,8]; [2,8]; [1,12]; [2,12]; [1,16]; [2,16]; [1,20]; [2,20]; [2,24]]);
-    P = Copy_Identical(P, [[2,1]; [1,1]; [1,2]; [2,2]]);
-    P = Copy_Identical(P, [[2,10]; [1,6]; [2,6]; [1,10]; [1,14]; [2,14]; [1,18]; [2,18]; [1,22]; [2,22]]);
-    %P = Copy_Identical(P, [[4,6]; [4,10]; [4,14]; [4,18]]);  
+function p = Assign(P, num_actions, num_states, state_space)
+    
+    % model probability: action 1 in state(0,0,0,1)
+    P = Copy_Identical(P, [[1,3]; [1,1]; [1,2]; [1,4]]);
+    % model probability: action 1 in state(0,1,0,1)
+    P = Copy_Identical(P, [[1,7]; [1,5]; [1,6]; [1,8]]);
+    % model probability: action 1 in state(1,0,1,1)
+    P = Copy_Identical(P, [[1,9]; [1,10]; [1,11]; [1,12]; [1,13]; [1,14]; [1,15]; [1,16]; [1,17]; [1,18]]);
+    % model probability: action 1 in state(5,1,1,1)
+    P = Copy_Identical(P, [[1,23]; [1,19]; [1,20]; [1,21]; [1,22]; [1,24]; [1,25]; [1,26]; [1,27]; [1,28]]);
+    
+    % model probability: action 2 in state(0,0,0,0)
+    P = Copy_Identical(P, [[2,1]; [2,2]; [2,3]; [2,4]]);
+    % model probability: action 2 in state(0,1,0,0)
+    P = Copy_Identical(P, [[2,5]; [2,6]; [2,7]; [2,8]]);
+    % model probability: action 2 in state(2,0,1,1)
+    P = Copy_Identical(P, [[2,10]; [2,9]; [2,11]; [2,12]; [2,13]; [2,14]; [2,15]; [2,16]; [2,17]; [2,18]]);
+    % model probability: action 2 in state(1,1,1,1)
+    P = Copy_Identical(P, [[1,19]; [1,20]; [1,21]; [1,22]; [1,23]; [1,24]; [1,25]; [1,26]; [1,27]; [1,28]]);
     
     
     % assign probability for definite actions
-    from_to = [[6,10]; [10,14]; [14,18]; [18,22]; [8,12]; [12,16]; [16,20]; [20,24]];
-    for i=1:length(from_to)
-        P{4}(from_to(i,1), :) = 0;
-        P{4}(from_to(i,1), from_to(i,2)) = 1;
+    for from = [9:17, 19:27]
+        to = from + 1;
+        P{4}(from, :) = 0;
+        P{4}(from, to) = 1;
     end
+    
+    
+    % assign probability for illegal actions    
+    % 1. continue conversation while not having a conversation
+    P{4}(find(state_space(:,1) == 0), :) = 0;
+    P{4}(find(state_space(:,1) == 0), 29) = 1;
+    % 2. start or continue a conversation when there's no potential partner
+    P{3}(find(state_space(:,3) == 0), :) = 0;
+    P{4}(find(state_space(:,3) == 0), :) = 0;
+    P{3}(find(state_space(:,3) == 0), 29) = 1;
+    P{4}(find(state_space(:,3) == 0), 29) = 1;
+    % 3. start or continue a conversation when it reaches the maximum conversation length
+    P{3}(find(state_space(:,1) == 10), :) = 0;
+    P{4}(find(state_space(:,1) == 10), :) = 0;
+    P{3}(find(state_space(:,1) == 10), 29) = 1;
+    P{4}(find(state_space(:,1) == 10), 29) = 1;
+    % 4. start a conversation when having a conversation
+    P{3}(find(state_space(:,1) ~= 0), :) = 0;
+    P{3}(find(state_space(:,1) ~= 0), 29) = 1;
+
  
         
-    % assign probability for illegal actions    
-    P{1}([5,7,9,11,13,15,17,19,21,23,25], 25) = 1;
-    P{2}([5,7,9,11,13,15,17,19,21,23,25], 25) = 1;
-    P{3}([1,3,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25], 25) = 1;
-    P{4}([1,2,3,4,5,9,11,13,15,17,19,21,22,23,24,25], 25) = 1;
+    
 
     % any remaining, undefined transitions send to the limbo state
-    for s=1:num_states
-        for a=1:num_actions
-            if sum(P{a}(s, :)) == 0
-                P{a}(s,25) = 1;
-            end
-        end
-    end
+%     for s=1:num_states
+%         for a=1:num_actions
+%             if sum(P{a}(s, :)) == 0
+%                 P{a}(s,25) = 1;
+%             end
+%         end
+%     end
     
     p = P;
 end
@@ -137,9 +173,14 @@ function p = Copy_Identical(P, actions_states)
 end
 
 function Validate(P, num_actions, num_states)
+    count = 0;
     for i=1:num_states
         for a=1:num_actions
-            assert(abs(sum(P{a}(i, :)) - 1) < .000001, sprintf('probability for state %d, action %d is wrong\n', i, a));
+            assert(abs(sum(P{a}(i, :)) - 1) < .000001, sprintf('probability for state %d, action %d is wrong (sum: %f)\n', i, a,sum(P{a}(i, :))));
+%             if abs(sum(P{a}(i, :)) - 1) > .000001
+%                 count = count + 1;
+%             end
         end
     end
+%     fprintf('\n%d\n', count);
 end

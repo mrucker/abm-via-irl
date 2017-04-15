@@ -1,14 +1,14 @@
-addpath(genpath(fullfile(fileparts(which(mfilename)),'../_dependencies/')));
+%addpath(genpath(fullfile(fileparts(which(mfilename)),'../_dependencies/')));
 
 discount = 0.99;
-epsilon  = .6;
+epsilon  = .2;
 
-[state_space, state_action_space, action_space] = Spaces();
+[state_space, action_space] = Spaces();
 
 num_actions       = size(action_space,1);
 num_states        = size(state_space,1);
-num_state_actions = size(state_action_space,1);
-num_features      = num_state_actions;
+%num_state_actions = size(state_action_space,1);
+num_features      = num_states;
 
 num_samples = 100; % Number of samples to use in feature expectations
 num_steps   = 50; % Number of steps in each sample to use in feature expectations
@@ -18,11 +18,12 @@ phis = eye(num_features);
 
 % Sample trajectories from expert policy.
 expert_trajectories = ReadSampleTrajectories_2('SampleTrajectories_3.csv');
-expert_trajectories = horzcat(expert_trajectories{1}, expert_trajectories{2}, expert_trajectories{3}, expert_trajectories{4}, expert_trajectories{5}, expert_trajectories{6}, expert_trajectories{7});
+expert_trajectories = horzcat(expert_trajectories{1}, expert_trajectories{2}, expert_trajectories{3}, expert_trajectories{4}, expert_trajectories{5}, expert_trajectories{6}, expert_trajectories{7}, expert_trajectories{8});
 
 % get transition probabilities
 fprintf('Getting transition probabilities...\n');
-P = T_SA(expert_trajectories(:, [6 3 4 5]), num_actions, num_states, state_space);
+skip_line = find(expert_trajectories(:, 2) ~= [zeros(1,1);expert_trajectories(1:end-1, 2)]);
+P = T_4(expert_trajectories(:, [7 3 4 5 6]), skip_line, num_actions, num_states, state_space);
 
 % Calulate empirical estimates of feature expectations for all agents
 fprintf('Calulating empirical estimates of feature expectations...\n');
@@ -47,7 +48,7 @@ for agent_idx = 1:length(agentId_list)
         num_valid_episode(agent_idx) = num_valid_episode(agent_idx) + 1;
         episodes{num_valid_episode(agent_idx)} = agent_trajectories(sa_step_ix(1:num_traj_steps), [2 3 4 5]);
         % count initial state visit for D
-        init_state = agent_trajectories(1,[2 3 4]);
+        init_state = agent_trajectories(1,[2 3 4 5]);
         init_s_id  = find(all(state_space' == init_state'));
         initCount(init_s_id) = initCount(init_s_id) + 1;
     end
@@ -55,8 +56,8 @@ for agent_idx = 1:length(agentId_list)
     % calculate mu_expert in each valid episode and add them
     for ve = 1:num_valid_episode(agent_idx)
         for t = 1:num_traj_steps
-            [~, state_action_ix] = ismember(episodes{ve}(t,:), state_action_space, 'rows');
-            mu_expert(:,agent_idx) = mu_expert(:,agent_idx) + discount^(t-1) * phis(state_action_ix,:)';
+            [~, state_ix] = ismember(episodes{ve}(t,:), state_space, 'rows');
+            mu_expert(:,agent_idx) = mu_expert(:,agent_idx) + discount^(t-1) * phis(state_ix,:)';
         end
     end
     
@@ -141,13 +142,14 @@ for c=1:num_clusters
         fprintf('[Cluster %d] t(%d) = %6.4f\n', c, i, t(i));
 
         % 3.
-        if t(i) <= epsilon || i>200 % condition for experiment
+        if i > 30 && (t(i) <= epsilon || (t(i-10)-t(i)<0.00001)) % condition for experiment
             fprintf('[Cluster %d] Terminate...\n\n', c);
             break;
         end
 
         % 4.
-        R = reshape(w(:,i), [num_actions, num_states])'; %reshape w into S*A
+        %R = reshape(w(:,i), [num_actions, num_states])'; %reshape w into S*A
+        R = repmat(w(:,i), 1, num_actions);
         [V, Pol{i}, iter, cpu_time] = mdp_value_iteration(P, R, discount);
 
         % 5.
@@ -221,19 +223,21 @@ for c=1:num_clusters
     end
 end
 
-x_scale = 1:25;
+x_scale = 1:29;
 y_scale = {'action1', 'action2', 'action3', 'action4'};
-figure
-subplot(3,1,1);
-heatmap(SAF{2}', x_scale, y_scale, '%0.2f', 'Colorbar', true, 'NaNColor', [0 0 0]);
-title('Original State Action Frequency');
-subplot(3,1,2);
-heatmap(determ_pol{2}', x_scale, y_scale, '%0.2f', 'Colorbar', true, 'NaNColor', [0 0 0]);
-title('Deterministic Policy learned from IRL');
-subplot(3,1,3);
-heatmap(stochastic_pol_selected{2}', x_scale, y_scale, '%0.2f', 'Colorbar', true);
-title('Stochastic Policy learned from IRL');
-xlabel('STATES');
+for c=1:num_clusters
+    figure
+    subplot(3,1,1);
+    heatmap(SAF{c}', x_scale, y_scale, '%0.2f', 'Colorbar', true, 'NaNColor', [0 0 0]);
+    title('Original State Action Frequency');
+    subplot(3,1,2);
+    heatmap(determ_pol{c}', x_scale, y_scale, '%0.2f', 'Colorbar', true, 'NaNColor', [0 0 0]);
+    title('Deterministic Policy learned from IRL');
+    subplot(3,1,3);
+    heatmap(stochastic_pol_selected{c}', x_scale, y_scale, '%0.2f', 'Colorbar', true);
+    title('Stochastic Policy learned from IRL');
+    xlabel('STATES');
+end
 
 
 
@@ -249,15 +253,19 @@ function [V, policy] = Value_Iteration(P, R, discount)
 end
 
 
-function [state_space, state_action_space, action_space] = Spaces()
-    conversation_length = 0:5;
-    similar_partner_yn  = 0:1;
-    people_around_yn    = 0:1;
-    action              = 1:4;
+function [state_space, action_space] = Spaces()
+    conversation_length = 1:10;
+    recent_partner = 0:1;
+    any_partner = 1;
+    familiar_env = 1;
+    action = 1:4;
 
-    state_space = sortrows(combvec(conversation_length, similar_partner_yn, people_around_yn)', 1:3);
-    state_space = vertcat(state_space, [9,9,9]); %limbo state
+    state_space = combvec(conversation_length, recent_partner, any_partner, familiar_env)';
+    state_space = vertcat([0,0,0,0], [0,0,1,0], [0,0,0,1], [0,0,1,1], [0,1,0,0], [0,1,1,0], [0,1,0,1], [0,1,1,1], state_space, [10,10,10,10]);
+    state_space = horzcat((1:length(state_space))', state_space);
+    %state_space = sortrows(combvec(conversation_length, recent_partner, any_partner, familiar_env)', 1:3);
+    state_space = state_space(:,2:5);
 
-    state_action_space = horzcat(sortrows(repmat(state_space,4,1), 1:3), repmat(action', 25,1));
+    %state_action_space = horzcat(sortrows(repmat(state_space,4,1), 1:3), repmat(action', length(state_space),1));
     action_space = action';
 end

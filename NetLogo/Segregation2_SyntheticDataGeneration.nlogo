@@ -14,19 +14,19 @@ globals [
 
 turtles-own [
   breed_no
-  conversation-length     ;number of tick during which the agent have a conversation
-  conversation-with-like? ;defines the color of the recent partner
-  people-around           ;list of people around
-  potential-partner       ;list of people who are available to talk
-  partner                 ;current converstaion partner
-  people-around-to-talk?  ;whether there is a potential conversation partner
-  action                  ;1: move short distance 2: move long distance 3: start conversation 4: continue conversation
-  trajectory              ;list of status and actions
+  conversation-length       ;number of tick during which the agent have a conversation
+  recent-partner-like-me?   ;1: same character 0: different character
+  people-around             ;list of people around
+  potential-partner         ;list of people who are available to talk
+  any-partner-to-talk?      ;1: there is a potential partner: no potential partner
+  partner                   ;current converstaion partner
+  action                    ;1: move short distance 2: move long distance 3: start conversation 4: continue conversation
+  trajectory                ;list of status and actions
 
   ;agent statistics
   cumulative-conversation-length-with-same-color
   cumulative-conversation-length-with-different-color
-  same-color-ratio-around-me
+  same-people-ratio-around-me
 ]
 
 
@@ -37,13 +37,13 @@ to setup
   ask turtles [
     set color one-of [ red green ] ;make approximately half the turtles red and the other half green
     set conversation-length 0
-    set people-around-to-talk? 0
-    set conversation-with-like? 0
-    set people-around nobody
-    set potential-partner nobody
+    set any-partner-to-talk? 0
+    set recent-partner-like-me? 0
+    set people-around []
+    set potential-partner []
     set partner nobody
     set action 0
-    set same-color-ratio-around-me 0
+    set same-people-ratio-around-me 0
     set cumulative-conversation-length-with-same-color 0.1
     set cumulative-conversation-length-with-different-color 0.1
     set trajectory [[]]
@@ -66,22 +66,22 @@ end
 
 
 to go
-  if (episode = 21) [ stop ]
+  if (episode = 2) [ stop ]
   update-agents
   update-global-statistics
   tick
-  if (ticks = 50) [
+  if (ticks = 60) [
     set episode episode + 1
     reset-ticks
     ask turtles [
       set conversation-length 0
-      set people-around-to-talk? 0
-      set conversation-with-like? 0
+      set any-partner-to-talk? 0
+      set recent-partner-like-me? 0
       set people-around nobody
       set potential-partner nobody
       set partner nobody
       set action 0
-      set same-color-ratio-around-me 0
+      set same-people-ratio-around-me 0
       set cumulative-conversation-length-with-same-color 0.1
       set cumulative-conversation-length-with-different-color 0.1
       move-to one-of patches
@@ -96,39 +96,37 @@ end
 to update-agents
   ask biased-people [
     set people-around other turtles in-radius proximity-radius
+    set potential-partner people-around with [ conversation-length = 0 ]
 
     ifelse (conversation-length = 0) [;in case the agent is not having a conversation
-      set potential-partner people-around with [conversation-length = 0]
-
-      ifelse any? potential-partner [;in case there is a potential partner
-        set people-around-to-talk? 1
+      ifelse (any? potential-partner or partner != nobody) [;in case there is a potential partner or the other agent has picked me as a partner
+        set any-partner-to-talk? 1
         set action 3
       ]
       [;in case there no potential partner
-        ifelse (conversation-with-like? = 1) [;in case most recent partner had the same color
-          set people-around-to-talk? 0
+        set any-partner-to-talk? 0
+        ifelse (recent-partner-like-me? = 1) [;in case most recent partner had the same color
           set action 1
         ]
         [;in case most recent partner had different color
-          set people-around-to-talk? 0
           set action 2
         ]
       ]
     ]
     [;in case the agent is having a conversation
-      ifelse conversation-with-like? = 1 [;in case the partner has the same color
-        ifelse conversation-length >= conv-length-with-same [
+      ifelse recent-partner-like-me? = 1 [;in case the partner has the same color
+        ifelse (conversation-length >= long-conv-length or partner = nobody) [
           set action 1
         ]
-        [;in case conversation-length < duration-with-same-color
+        [;in case conversation-length < duration-with-same-color and partner != nobody
           set action 4
         ]
       ]
       [;in case the partner has the different color
-        ifelse conversation-length >= conv-length-with-different [
+        ifelse (conversation-length >= short-conv-length or partner = nobody) [
           set action 2
         ]
-        [;in case conversation-length < duration-with-different-color
+        [;in case conversation-length < duration-with-different-color and partner != nobody
           set action 4
         ]
       ]
@@ -139,26 +137,26 @@ to update-agents
 
   ask unbiased-people [
     set people-around other turtles in-radius proximity-radius
+    set potential-partner people-around with [ conversation-length = 0 ]
 
     ifelse (conversation-length = 0) [;in case the agent is not having a conversation
-      set potential-partner people-around with [conversation-length = 0]
-
-      ifelse any? potential-partner [;in case there is a potential partner
-        set people-around-to-talk? 1
+      ifelse (any? potential-partner or partner != nobody) [;in case there is a potential partner or the other agent has picked me as a partner
+        set any-partner-to-talk? 1
         set action 3
       ]
       [;in case there no potential partner
-        set people-around-to-talk? 0
+        set any-partner-to-talk? 0
         set action one-of [1 2]
       ]
     ]
     [;in case the agent is having a conversation
-      let conv-limit one-of (list conv-length-with-same conv-length-with-different)
-      ifelse conversation-length >= conv-limit [
+      let conv-limit long-conv-length ;* 2
+      ifelse (conversation-length >= conv-limit or partner = nobody) [
         set action one-of [1 2]
       ]
-      [;in case conversation-length < conv-limit
-        set action 4
+      [;in case conversation-length < conv-limit and partner != nobody
+        let move-action one-of [1 2]
+        set action one-of (list move-action 4)
       ]
     ]
     do-action
@@ -166,56 +164,31 @@ to update-agents
   ]
 
   ask racists [
-;    set people-around other turtles in-radius proximity-radius
-;
-;    ifelse (conversation-length = 0) [;in case the agent is not having a conversation
-;      set potential-partner people-around with [conversation-length = 0 and color = [color] of myself]
-;
-;      ifelse any? potential-partner [;in case there is a potential partner
-;        set people-around-to-talk? 1
-;        set action 3
-;      ]
-;      [;in case there no potential partner
-;        set people-around-to-talk? 0
-;        set action 1
-;      ]
-;    ]
-;    [;in case the agent is having a conversation
-;      let conv-limit conv-length-with-same
-;      ifelse conversation-length >= conv-limit [
-;        set action 1
-;      ]
-;      [;in case conversation-length < conv-limit
-;        set action 4
-;      ]
-;    ]
-
     set people-around other turtles in-radius proximity-radius
+    set potential-partner people-around with [ conversation-length = 0 ]
 
     ifelse (conversation-length = 0) [;in case the agent is not having a conversation
-      set potential-partner people-around with [conversation-length = 0]
-
-      ifelse any? potential-partner [;in case there is a potential partner
-        set people-around-to-talk? 1
+      ifelse (any? potential-partner or partner != nobody) [;in case there is a potential partner or the other agent has picked me as a partner
+        set any-partner-to-talk? 1
         set action 3
       ]
       [;in case there no potential partner
-        ifelse (conversation-with-like? = 1) [;in case most recent partner had the same color
-          set people-around-to-talk? 0
+        set any-partner-to-talk? 0
+        ifelse (recent-partner-like-me? = 1) [;in case most recent partner had the same color
           set action 1
         ]
         [;in case most recent partner had different color
-          set people-around-to-talk? 0
           set action 1
         ]
       ]
     ]
     [;in case the agent is having a conversation
-      ifelse conversation-with-like? = 1 [;in case the partner has the same color
-        ifelse conversation-length >= conv-length-with-same [
+      ifelse recent-partner-like-me? = 1 [;in case the partner has the same color
+        let conv-limit long-conv-length ;* 2
+        ifelse (conversation-length >= conv-limit or partner = nobody) [
           set action 1
         ]
-        [;in case conversation-length < duration-with-same-color
+        [;in case conversation-length < conv-limit and partner != nobody)
           set action 4
         ]
       ]
@@ -223,7 +196,6 @@ to update-agents
         set action 1
       ]
     ]
-
     do-action
     update-agent-statistics
   ]
@@ -239,7 +211,6 @@ to do-action
     save-trajectory
     if (partner != nobody) [
       ask partner [
-        set conversation-length 0
         set partner nobody
       ]
     ]
@@ -251,7 +222,6 @@ to do-action
     save-trajectory
     if (partner != nobody) [
       ask partner [
-        set conversation-length 0
         set partner nobody
       ]
     ]
@@ -261,19 +231,16 @@ to do-action
 
   ][ifelse (action = 3) [
     save-trajectory
-    set partner one-of potential-partner
+    if (partner = nobody) [
+      set partner one-of potential-partner
+    ]
     face partner
     fd 0.5
     set conversation-length 1
     let same-color? ifelse-value ([color] of self = [color] of partner) [1] [0]
-    set conversation-with-like? same-color?
-    ask partner
-    [
-      set people-around-to-talk? 1
-      set action 3
-      save-trajectory
-      set conversation-length 1
-      set conversation-with-like? same-color?
+    set recent-partner-like-me? same-color?
+    ask partner [
+      set partner myself
     ]
 
   ][ifelse (action = 4) [
@@ -287,7 +254,7 @@ end
 
 
 to save-trajectory
-  set trajectory lput (list who episode conversation-length conversation-with-like? people-around-to-talk? action breed_no) trajectory
+  set trajectory lput (list who episode conversation-length recent-partner-like-me? any-partner-to-talk?) trajectory
 end
 
 
@@ -308,11 +275,11 @@ to update-agent-statistics
   if any? people-around [
       let num_same count people-around with [color = [color] of myself]
       let num_different count people-around with [color != [color] of myself]
-      set same-color-ratio-around-me num_same / (num_same + num_different) * 100
+      set same-people-ratio-around-me num_same / (num_same + num_different) * 100
   ]
   if (action = 3 or action = 4) [
-    ifelse (conversation-with-like? = 1) [ set cumulative-conversation-length-with-same-color cumulative-conversation-length-with-same-color + 1 ]
-                                         [ set cumulative-conversation-length-with-different-color cumulative-conversation-length-with-different-color + 1 ]
+    ifelse (recent-partner-like-me? = 1) [ set cumulative-conversation-length-with-same-color cumulative-conversation-length-with-same-color + 1 ]
+                                [ set cumulative-conversation-length-with-different-color cumulative-conversation-length-with-different-color + 1 ]
   ]
 end
 
@@ -323,17 +290,17 @@ to update-global-statistics
   let total-time-with-same-color sum [cumulative-conversation-length-with-same-color] of turtles
   let total-time-with-different-color sum [cumulative-conversation-length-with-different-color] of turtles
   set percent-same-color-conversation (total-time-with-same-color / (total-time-with-same-color + total-time-with-different-color)) * 100
-  set percent-same-color-area mean [same-color-ratio-around-me] of turtles
+  set percent-same-color-area mean [same-people-ratio-around-me] of turtles
 end
 
 
 
 
 to setup-file
-  set trajectory-file ("Segregation2_trajectory.csv")
+  set trajectory-file ("Segregation2_2_trajectory.csv")
   carefully [file-delete trajectory-file] []
   file-open trajectory-file
-  file-print csv:to-row (list "AgentID" "Episode" "Conversation_Length" "Conversation_With_Like" "People_Around_To_Talk" "Action" "Breed")
+  file-print csv:to-row (list "AgentID" "Episode" "Conversation_Length" "Recent_Partner_Like_Me" "Any_Partner_To_Talk" "Action" "Breed")
   file-close
 end
 
@@ -431,8 +398,8 @@ SLIDER
 90
 240
 123
-conv-length-with-same
-conv-length-with-same
+long-conv-length
+long-conv-length
 0.0
 20
 5
@@ -480,8 +447,8 @@ SLIDER
 125
 240
 158
-conv-length-with-different
-conv-length-with-different
+short-conv-length
+short-conv-length
 0
 20
 2
@@ -531,7 +498,7 @@ long-distance
 long-distance
 0
 20
-2
+3
 1
 1
 NIL
