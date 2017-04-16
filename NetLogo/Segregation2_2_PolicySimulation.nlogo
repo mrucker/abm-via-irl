@@ -2,9 +2,11 @@ extensions [csv pathdir]
 
 globals [
   aline
+  num-states
+  num-state-variables
+  state-space
   num-clusters
   num-agents                       ;list, number of agents in each cluster
-  num-states                       ;number of states
   policy-sets
 
   ;global statistics
@@ -35,7 +37,6 @@ to setup
   clear-all
 
   ;Initialize global variables
-  set num-states 25
   set percent-same-color-area 0
   set percent-same-color-conversation 0
 
@@ -181,6 +182,13 @@ to move [dist] ; 1:short distance 2:long distance
 end
 
 
+to-report get-state-number [ conv-len rcnt_prtnr any_prtnr fmlr_env ]
+  let state-num 0
+
+  report state-num
+end
+
+
 
 
 to update-agent-statistics
@@ -208,28 +216,43 @@ end
 
 
 to read-policy-file
-  let policy-file ("Segregation2_learned_policies.csv")
+  let policy-file ("Segregation2_2_learned_policies.csv")
   file-open policy-file
   let dummy []
   set dummy csv:from-row file-read-line ;read title
+
+  set dummy csv:from-row file-read-line ;read space line
+  set dummy csv:from-row file-read-line ;read head
+  set num-states item 0 csv:from-row file-read-line ;read number of states
+
+  set dummy csv:from-row file-read-line ;read space line
+  set dummy csv:from-row file-read-line ;read head
+  set num-state-variables item 0 csv:from-row file-read-line ;read number of states
+
+  set state-space []
+  let s 0
+  while [s < num-states] [
+    set state-space lput csv:from-row file-read-line state-space
+    set s s + 1
+  ]
+
   set dummy csv:from-row file-read-line ;read space line
   set dummy csv:from-row file-read-line ;read head
   set num-clusters item 0 csv:from-row file-read-line ;read number of clusters
+
   set dummy csv:from-row file-read-line ;read space line
   set dummy csv:from-row file-read-line ;read head
   set num-agents csv:from-row file-read-line ;read number of agents in clusters
 
   set policy-sets []
   let c 0
-  while [c < num-clusters]
-  [
+  while [c < num-clusters] [
     set dummy csv:from-row file-read-line ;read space line
     set dummy csv:from-row file-read-line ;read head
 
     let l 0
     let a-policy-set []
-    while [l < num-states]
-    [
+    while [l < num-states] [
       set a-policy-set lput csv:from-row file-read-line a-policy-set
       set l l + 1
     ]
