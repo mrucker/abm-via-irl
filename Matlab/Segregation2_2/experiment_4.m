@@ -1,4 +1,4 @@
-%addpath(genpath(fullfile(fileparts(which(mfilename)),'../_dependencies/')));
+addpath(genpath(fullfile(fileparts(which(mfilename)),'../_dependencies/')));
 
 discount = 0.99;
 epsilon  = .2;
@@ -216,15 +216,26 @@ end
 
 x_scale = 1:29;
 y_scale = {'action1', 'action2', 'action3', 'action4'};
+% for c=1:num_clusters
+%     figure
+%     subplot(3,1,1);
+%     heatmap(SAF{c}', x_scale, y_scale, '%0.2f', 'Colorbar', true, 'NaNColor', [0 0 0]);
+%     title('Original State Action Frequency');
+%     subplot(3,1,2);
+%     heatmap(determ_pol{c}', x_scale, y_scale, '%0.2f', 'Colorbar', true, 'NaNColor', [0 0 0]);
+%     title('Deterministic Policy learned from IRL');
+%     subplot(3,1,3);
+%     heatmap(stochastic_pol_selected{c}', x_scale, y_scale, '%0.2f', 'Colorbar', true);
+%     title('Stochastic Policy learned from IRL');
+%     xlabel('STATES');
+% end
+
 for c=1:num_clusters
     figure
-    subplot(3,1,1);
+    subplot(2,1,1);
     heatmap(SAF{c}', x_scale, y_scale, '%0.2f', 'Colorbar', true, 'NaNColor', [0 0 0]);
     title('Original State Action Frequency');
-    subplot(3,1,2);
-    heatmap(determ_pol{c}', x_scale, y_scale, '%0.2f', 'Colorbar', true, 'NaNColor', [0 0 0]);
-    title('Deterministic Policy learned from IRL');
-    subplot(3,1,3);
+    subplot(2,1,2);
     heatmap(stochastic_pol_selected{c}', x_scale, y_scale, '%0.2f', 'Colorbar', true);
     title('Stochastic Policy learned from IRL');
     xlabel('STATES');
