@@ -86,7 +86,7 @@ function [ps, ss] = Transitions(a, s, fit_predictors, cls_predictors)
         assert(size(classes,1) == size(chances,1), 'incorrect class probabilities returned');
 
         for j = 1:size(classes,1)            
-            ps(ts(:,i) == classes{j}) = ps(ts(:,i) == classes{j}) * chances(j);
+            ps(ts(:,i) == classes(j)) = ps(ts(:,i) == classes(j)) * chances(j);
         end
     end
 
@@ -120,7 +120,7 @@ function P = Predict(p, num_actions, state_space, fit_predictors, cls_predictors
                 
             end
             
-            %assert(abs(sum(p{a}(this_s_i, :)) -1) < .3, sprintf('probability for state %d, action %d is wrong', find(this_s_i), a));
+            assert(abs(sum(p{a}(this_s_i, :)) -1) <= .3, sprintf('probability for state %d, action %d is wrong', find(this_s_i), a));
 
         end
     end
@@ -166,6 +166,10 @@ function [classes, chances] = Prediction(fit, predictors)
     [~, score, ~] = predict(fit, predictors);
     classes = fit.ClassNames;
     chances = score';
+    
+    if iscell(classes)
+        classes = cell2mat(classes);
+    end
 end
 
 function class = Class(i, v, v_)
@@ -181,11 +185,11 @@ function class = Class(i, v, v_)
 end
 
 function change = Change(predictor_i, predictor_v, class)
-    if predictor_i == 1 && class == 'z'
-        change = 0;
-    elseif predictor_i == 1 && class == 1 && predictor_v == 5
+    if predictor_i == 1 && class == '1' && predictor_v == 5
         change = 5;
-    elseif ismember(predictor_i, [2 3]) && class == 'f'
+    elseif class == 'z'
+        change = 0;
+    elseif class == 'f'
         change = abs(predictor_v - 1);
     else
         change = predictor_v + str2double(class);
