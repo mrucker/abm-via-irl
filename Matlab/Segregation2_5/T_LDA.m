@@ -35,25 +35,26 @@ function P = T_LDA(AS, num_actions, num_states, state_space)
 
     AS = double(AS);
 
-    dlt_predictors = PredictorDeltas(AS);
+    dlt_predictors = PredictorDeltas(AS);    
     cls_predictors = PredictorClasses(dlt_predictors);
     fit_predictors = PredictorFits(AS, dlt_predictors);
-    
-    P = Initialize(num_actions, num_states);
-    P = Predict(P, num_actions, state_space, fit_predictors, cls_predictors);
+
+    P = Initialize(num_actions, num_states);    
+    P = Predict(P, num_actions, state_space, fit_predictors, cls_predictors);    
     P = Normalize(P); %We normalize because some predicted transitions go to illegal states cause less than 1 probabilities.
     P = Validate(P, num_actions, num_states);
 end
 
 function dlt_predictors = PredictorDeltas(AS)
-    dlt_predictors = AS(2:end, 2:end) - AS(1:end-1, 2:end);
-    lt0_1_predictors = dlt_predictors(:,1) <= 0;
-    nt0_2_predictors = dlt_predictors(:,2) ~= 0;
-    nt0_3_predictors = dlt_predictors(:,3) ~= 0;
+    dlt_predictors = zeros(size(AS,1)-1, size(AS,2)-1);
     
-    dlt_predictors(lt0_1_predictors, 1) = -100;
-    dlt_predictors(nt0_2_predictors, 2) = 1; 
-    dlt_predictors(nt0_3_predictors, 3) = 1; 
+    for r = 1:(size(AS,1)-1)
+        for c = 1:(size(AS,2)-1)
+            dlt_predictors(r,c) = Class(c, AS(r,c+1), AS(r+1,c+1));
+        end
+    end
+    
+    dlt_predictors = char(dlt_predictors);
 end
 
 function cls_predictors = PredictorClasses(dlt_predictors)
@@ -70,30 +71,30 @@ function fit_predictors = PredictorFits(AS, dlt_predictors)
     fit_predictors = cell(1,num_predicotrs);
 
     for i = 1:num_predicotrs
-        fit_predictors{i} = LDA(AS(1:end-1, :), dlt_predictors(:,i));
+        fit_predictors{i} = TREE(AS(1:end-1, :), dlt_predictors(:,i));
     end
 end
 
-function ts = Transitions(a, s, fit_predictors, cls_predictors)
-    ts = cartesian(1, cls_predictors{:});
+function [ps, ss] = Transitions(a, s, fit_predictors, cls_predictors)    
+    ts = cartesian(cls_predictors{:});
+    ss = ones(size(ts));
+    ps = ones(size(ts,1), 1);
 
     for i = 1:numel(s)
-        for c = fit_predictors{i}([a, s'])                    
-            ts(ts(:,i+1) == c(1), 1) = ts(ts(:,i+1) == c(1), 1) * c(2);
+        [classes, chances] = fit_predictors{i}([a, s']);        
+
+        assert(size(classes,1) == size(chances,1), 'incorrect class probabilities returned');
+
+        for j = 1:size(classes,1)            
+            ps(ts(:,i) == classes{j}) = ps(ts(:,i) == classes{j}) * chances(j);
         end
     end
 
     for r = 1:size(ts,1)
-        for c = 2:size(ts,2)
-            ts(r,c) = Change(c-1, s(c-1), ts(r,c));
+        for c = 1:size(ts,2)
+            ss(r,c) = Change(c, s(c), ts(r,c));
         end
     end
-    
-%     ts(:, 2:end) = ts(:, 2:end) + s';
-% 
-%     ts(ts(:,2) > 5, 2) = 5;
-%     ts(ts(:,2) < 0, 2) = 0;
-
 end
 
 function P = Initialize(num_actions, num_states)
@@ -108,9 +109,9 @@ function P = Predict(p, num_actions, state_space, fit_predictors, cls_predictors
     for a = 1:num_actions 
         for s = state_space'
             
-            ts = Transitions(a, s, fit_predictors, cls_predictors);            
+            [ps, ss] = Transitions(a, s, fit_predictors, cls_predictors);            
             
-            for t = ts'
+            for t = horzcat(ps,ss)'
                 
                 this_s_i = all(state_space' == s);
                 next_s_i = all(state_space' == t(2:end));
@@ -119,9 +120,8 @@ function P = Predict(p, num_actions, state_space, fit_predictors, cls_predictors
                 
             end
             
-            if ~all(s==9)
-                %assert(abs(sum(p{a}(this_s_i, :)) -1) < .3, sprintf('probability for state %d, action %d is wrong', find(this_s_i), a));
-            end
+            %assert(abs(sum(p{a}(this_s_i, :)) -1) < .3, sprintf('probability for state %d, action %d is wrong', find(this_s_i), a));
+
         end
     end
     
@@ -137,7 +137,7 @@ function P = Normalize(p)
 end
 
 function P = Validate(p, num_actions, num_states)
-    for i=1:(num_states-1)
+    for i=1:num_states
         for a=1:num_actions
             assert(abs(sum(p{a}(i, :)) - 1) < .000001, sprintf('probability for state %d, action %d is wrong', i, a));
         end
@@ -151,19 +151,43 @@ function lda = LDA(training, responses)
     lda = @(predictors) Prediction(fit, predictors);
 end
 
-function prediction = Prediction(fit, predictors)
+function qda = QDA(training, responses)
+    fit = fitcdiscr(training, responses, 'DiscrimType', 'pseudoQuadratic');
+    %fit = fitcdiscr(training, responses, 'DiscrimType', 'diagQuadratic'); Puts lots of NaNs into the transitions
+    qda = @(predictors) Prediction(fit, predictors);
+end
+
+function tree = TREE(training, responses)
+    fit = TreeBagger(50, training, responses, 'Method','classification');
+    tree = @(predictors) Prediction(fit, predictors);
+end
+
+function [classes, chances] = Prediction(fit, predictors)
     [~, score, ~] = predict(fit, predictors);
-    prediction = vertcat(fit.ClassNames', score);
+    classes = fit.ClassNames;
+    chances = score';
+end
+
+function class = Class(i, v, v_)
+
+    if i == 1 && v_ == 0
+        class = 'z';
+    elseif ismember(i, [2 3]) && v ~= v_
+        class = 'f';
+    else
+        class = num2str(v_ - v);
+    end
+
 end
 
 function change = Change(predictor_i, predictor_v, class)
-    if predictor_i == 1 && class == -100
+    if predictor_i == 1 && class == 'z'
         change = 0;
     elseif predictor_i == 1 && class == 1 && predictor_v == 5
-        change = 5;     
-    elseif ismember(predictor_i, [2 3]) && class == 1
+        change = 5;
+    elseif ismember(predictor_i, [2 3]) && class == 'f'
         change = abs(predictor_v - 1);
     else
-        change = predictor_v + class;
+        change = predictor_v + str2double(class);
     end
 end

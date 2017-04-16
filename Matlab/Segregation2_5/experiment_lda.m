@@ -34,7 +34,7 @@ l = repmat({''},num_agents,1);
 tic
 for agent_idx = 1:num_agents
 
-    try
+%    try
         phis = eye(num_features);
 
         sa_expert = [];
@@ -70,29 +70,8 @@ for agent_idx = 1:num_agents
         end
 
         D  = D./sum(D);
-        P_sa = T_SA(sa_expert(:, [4 1 2 3]), num_actions, num_states, state_space);
-        P_lda = T_LDA(sa_expert(:, [4 1 2 3]), num_actions, num_states, state_space);
-        P  = P_lda;
-        
-        percent_different = 0;
-        count_different = 0;
-        
-        for a = 1:num_actions
-            for s = 1:(num_states-1)
-                sa_zero_columns = P_sa{a}(s,:) == 0;
-                lda_zero_columns = P_lda{a}(s,:) == 0;
-                
-                if P_sa{a}(s,25) ~= 1
-                    percent_different = percent_different + sum(P_lda{a}(s,sa_zero_columns)) + sum(P_sa{a}(s,lda_zero_columns));
-                    count_different = count_different + 1;
-                end
-            end
-        end
+        P = T_LDA(sa_expert(:, [4 1 2 3]), num_actions, num_states, state_space);
 
-        percent_different = percent_different / (count_different*2);
-        
-        disp(percent_different);
-        
         for e = (0:episode_n-1)*num_steps
             for t = 1:num_steps
                 [~, state_action_ix] = ismember(sa_expert(e + t, :), state_action_space, 'rows');
@@ -178,9 +157,9 @@ for agent_idx = 1:num_agents
 
     fprintf('%d Done t(%d) = %6.4f\n', agent_idx, i-1, t(i-1));
 
-    catch ME
-        fprintf('%d Failed (%s)\n', agent_idx, ME.message);
-    end        
+%     catch ME
+%         fprintf('%d Failed (%s)\n', agent_idx, ME.message);
+%     end
 end
 toc
 
@@ -205,9 +184,8 @@ function [state_space, state_action_space] = Spaces()
     action              = 1:4;
 
     state_space = sortrows(cartesian(conversation_length, similar_partner_yn, people_around_yn), 1:3);
-    state_space = vertcat(state_space, [9,9,9]); %limbo state
 
-    state_action_space = horzcat(sortrows(repmat(state_space,4,1), 1:3), repmat(action', 25,1));
+    state_action_space = horzcat(sortrows(repmat(state_space,4,1), 1:3), repmat(action', 24,1));
 end
 
 function Pol = Init_Policy(P)
