@@ -15,7 +15,7 @@ num_samples = 100; % Number of samples to use in feature expectations
 num_steps   = 100; % Number of steps to use in each sample
 
 % Sample trajectories from expert policy.
-expert_trajectories = ReadSampleTrajectories_tsne('SampleTrajectories_tsne.csv');
+expert_trajectories = ReadSampleTrajectories_tsne('SampleTrajectories_lda.csv');
 expert_lbls         = containers.Map(expert_trajectories{1}, expert_trajectories{7});
 expert_trajectories = horzcat(expert_trajectories{1}, expert_trajectories{2}, expert_trajectories{3}, expert_trajectories{4}, expert_trajectories{5}, expert_trajectories{6});
 
@@ -29,9 +29,15 @@ o = zeros(num_agents,num_features);
 r = zeros(num_agents,num_features);
 l = repmat({''},num_agents,1);
 
+tic
+
+%rnd_agents = randperm(700, 400)-1;
+%ind_agents = arrayfun(@(rnd_agent) (0:99)' + find(expert_trajectories(:,1) == rnd_agent, 1), rnd_agents, 'UniformOutput', false);
+%ind_agents = cell2mat(ind_agents');
+%P = T_lda(expert_trajectories(ind_agents, [6 3 4 5]), num_actions, num_states, state_space);
+
 %delete(gcp('nocreate'));
 %parpool(3);
-tic
 for agent_idx = 1:num_agents
 
 %    try
@@ -70,7 +76,7 @@ for agent_idx = 1:num_agents
         end
 
         D  = D./sum(D);
-        P = T_LDA(sa_expert(:, [4 1 2 3]), num_actions, num_states, state_space);
+        P = T_lda(sa_expert(:, [4 1 2 3]), num_actions, num_states, state_space);
 
         for e = (0:episode_n-1)*num_steps
             for t = 1:num_steps
