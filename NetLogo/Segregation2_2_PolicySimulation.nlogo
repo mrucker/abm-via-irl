@@ -1,12 +1,11 @@
-extensions [csv pathdir]
+extensions [csv]
 
 globals [
-  aline
   num-states
   num-state-variables
   state-space
   num-clusters
-  num-agents                       ;list, number of agents in each cluster
+  num-agents
   policy-sets
 
   ;global statistics
@@ -20,16 +19,20 @@ turtles-own [
   action                  ;1: move short distance 2: move long distance 3: start conversation 4: continue conversation
 
   conversation-length     ;number of tick during which the agent have a conversation
-  conversation-with-like? ;defines the color of the recent partner
+  recent-partner-like-me? ;1: same character 0: different character
   people-around           ;list of people around
   potential-partner       ;list of people who are available to talk
+  any-partner-to-talk?    ;1: there is a partner to talk: no partner
   partner                 ;current converstaion partner
-  people-around-to-talk?  ;whether there is a potential conversation partner
+  familiar-environment?   ;0: after making a long move 1: after making a short move or during a conversation
+  conversation-history    ;record the number of conversations with each other person
+  last-conversation       ;record tick of last conversation
+  link-list               ;manage links
 
   ;agent statistics
-  cumulative-conversation-length-with-same-color
-  cumulative-conversation-length-with-different-color
-  same-color-ratio-around-me
+  cumulative-conversation-length-with-same-character
+  cumulative-conversation-length-with-different-character
+  same-character-ratio-around-me
 ]
 
 
@@ -43,7 +46,6 @@ to setup
   ;Read policy file
   read-policy-file
 
-
   set-default-shape turtles "person"
   ask n-of number-of-agents patches [ sprout 1 ]
 
@@ -53,14 +55,18 @@ to setup
     set policy []
     set color one-of [ red green ] ;make approximately half the turtles red and the other half green
     set conversation-length 0
-    set people-around-to-talk? 0
-    set conversation-with-like? 0
-    set people-around nobody
-    set potential-partner nobody
+    set any-partner-to-talk? 0
+    set recent-partner-like-me? 0
+    set people-around []
+    set potential-partner []
     set partner nobody
-    set same-color-ratio-around-me 0
-    set cumulative-conversation-length-with-same-color 0.1
-    set cumulative-conversation-length-with-different-color 0.1
+    set familiar-environment? 0
+    set conversation-history n-values number-of-agents [0]
+    set last-conversation n-values number-of-agents [0]
+    set link-list n-values number-of-agents [0]
+    set same-character-ratio-around-me 0
+    set cumulative-conversation-length-with-same-character 0.1
+    set cumulative-conversation-length-with-different-character 0.1
     move 2
   ]
 
@@ -92,16 +98,15 @@ to update-agents
   ask turtles [
     ;determine states
     set people-around other turtles in-radius proximity-radius
+    set potential-partner people-around with [ conversation-length = 0 ]
+
     if (conversation-length = 0) [
-      ifelse any? people-around [
-        set potential-partner people-around with [conversation-length = 0]
-        ifelse any? potential-partner [;in case there is a potential partner
-          set people-around-to-talk? 1
-        ][ set people-around-to-talk? 0 ]
-      ][ set people-around-to-talk? 0 ]
+      ifelse (any? potential-partner or partner != nobody) [;in case there is a potential partner or the other agent has picked me as a partner
+          set any-partner-to-talk? 1
+      ][ set any-partner-to-talk? 0 ]
     ]
 
-    set state conversation-length * 4 + conversation-with-like? * 2 + people-around-to-talk? + 1
+    set state (get-state-number conversation-length recent-partner-like-me? any-partner-to-talk? familiar-environment?)
 
     ;look up action
     let prob-actions item (state - 1) policy
@@ -113,13 +118,34 @@ to update-agents
     [ set action 4 ]]]
 
     ;do action unless it tries illegal actions
-    ifelse (action = 3 and member? state [1 6 10 14 18 22 3 8 12 16 20 24]) or (action = 4 and member? state [1 2 3 4]) [
-      die
-    ][
+;    ifelse (action = 3 and member? state [1 6 10 14 18 22 3 8 12 16 20 24]) or (action = 4 and member? state [1 2 3 4]) [
+;      die
+;    ][
       do-action
-    ]
+;    ]
+    update-agent-links
     update-agent-statistics
   ]
+end
+
+
+
+to-report get-state-number [ conv-len rcnt_prtnr any_prtnr fmlr_env ]
+  let state-num 0
+
+  let s 0
+  let found? 0
+  let state-variables []
+  while [s < num-states and found? = 0] [
+    set state-variables item s state-space
+    if (conv-len = item 1 state-variables and rcnt_prtnr = item 2 state-variables and any_prtnr = item 3 state-variables and fmlr_env = item 4 state-variables) [
+      set state-num item 0 state-variables
+      set found? 1
+    ]
+    set s s + 1
+  ]
+
+  report state-num
 end
 
 
@@ -130,42 +156,60 @@ to do-action
   ifelse (action = 1) [
     if (partner != nobody) [
       ask partner [
-        set conversation-length 0
         set partner nobody
       ]
     ]
     set conversation-length 0
+    set familiar-environment? 1
     set partner nobody
     move 1
 
   ][ifelse (action = 2) [
     if (partner != nobody) [
       ask partner [
-        set conversation-length 0
         set partner nobody
       ]
     ]
     set conversation-length 0
+    set familiar-environment? 0
     set partner nobody
     move 2
 
   ][ifelse (action = 3) [
-    set partner one-of potential-partner
+    if (partner = nobody) [
+      set partner one-of potential-partner
+    ]
     face partner
     fd 0.5
     set conversation-length 1
+    set familiar-environment? 1
     let same-color? ifelse-value ([color] of self = [color] of partner) [1] [0]
-    set conversation-with-like? same-color?
+    set recent-partner-like-me? same-color?
+    let partner-id ([who] of partner)
+    let num-conversation-with-partner (item partner-id conversation-history + 1)
+    set conversation-history replace-item partner-id conversation-history num-conversation-with-partner
+    set last-conversation replace-item partner-id last-conversation ticks
+    ;if (num-conversation-with-partner > 3) [
+      ;create-link-with partner
+    ;]
+
     ask partner
     [
-      set people-around-to-talk? 1
-      set action 3
-      set conversation-length 1
-      set conversation-with-like? same-color?
+      set partner myself
+      let myself-id [who] of myself
+      let num-conversation-with-myself item myself-id conversation-history + 1
+      set conversation-history replace-item myself-id conversation-history num-conversation-with-myself
+      set last-conversation replace-item myself-id last-conversation ticks
     ]
 
   ][ifelse (action = 4) [
-    set conversation-length conversation-length + 1
+    ifelse (partner != nobody) [
+      set conversation-length conversation-length + 1
+      set familiar-environment? 1
+    ][ ;in case the partner left during the conversation
+      set conversation-length 0
+      set familiar-environment? 1
+    ]
   ][]]]]
 
 end
@@ -182,11 +226,7 @@ to move [dist] ; 1:short distance 2:long distance
 end
 
 
-to-report get-state-number [ conv-len rcnt_prtnr any_prtnr fmlr_env ]
-  let state-num 0
 
-  report state-num
-end
 
 
 
@@ -195,22 +235,74 @@ to update-agent-statistics
   if any? people-around [
       let num_same count people-around with [color = [color] of myself]
       let num_different count people-around with [color != [color] of myself]
-      set same-color-ratio-around-me num_same / (num_same + num_different) * 100
+      set same-character-ratio-around-me num_same / (num_same + num_different) * 100
   ]
   if (action = 3 or action = 4) [
-    ifelse (conversation-with-like? = 1) [ set cumulative-conversation-length-with-same-color cumulative-conversation-length-with-same-color + 1 ]
-                                         [ set cumulative-conversation-length-with-different-color cumulative-conversation-length-with-different-color + 1 ]
+    ifelse (recent-partner-like-me? = 1) [ set cumulative-conversation-length-with-same-character cumulative-conversation-length-with-same-character + 1 ]
+                                         [ set cumulative-conversation-length-with-different-character cumulative-conversation-length-with-different-character + 1 ]
   ]
 end
 
 
 
 
+to update-agent-links
+
+  let myself-id who
+
+  ask my-links [
+    let id1 [who] of end1
+    let id2 [who] of end2
+
+    let partner-id 0
+
+    ifelse (id1 = myself-id) [
+      set partner-id id2
+    ][ set partner-id id1 ]
+
+    if (ticks - (item partner-id [last-conversation] of myself) > 10) [
+      die
+;      set [conversation-history] of myself replace-item partner-id [conversation-history] of myself 0
+;      set [last-conversation] of myself replace-item partner-id [last-conversation] of myself 0
+    ]
+  ]
+
+
+
+;  let partner-id 0
+;  foreach my-links [
+;     set partner-id [who] of ?
+;     if (ticks - (item partner-id last-conversation) > 10) [
+;       ask link who partner-id [die]
+;     ]
+;  ]
+
+;  let partner-id 0
+;
+;  while [partner-id < number-of-agents] [
+;    if ((item partner-id last-conversation) > 0 ) [
+;      if (ticks - (item partner-id last-conversation) > 10) [
+;        set conversation-history replace-item partner-id conversation-history 0
+;        set last-conversation replace-item partner-id last-conversation 0
+;      ]
+;    ]
+;
+;    if (item partner-id conversation-history > 5) [
+;      create-link-with turtle partner-id
+;    ]
+;    set partner-id partner-id + 1
+;  ]
+
+end
+
+
+
+
 to update-global-statistics
-  let total-time-with-same-color sum [cumulative-conversation-length-with-same-color] of turtles
-  let total-time-with-different-color sum [cumulative-conversation-length-with-different-color] of turtles
+  let total-time-with-same-color sum [cumulative-conversation-length-with-same-character] of turtles
+  let total-time-with-different-color sum [cumulative-conversation-length-with-different-character] of turtles
   set percent-same-color-conversation (total-time-with-same-color / (total-time-with-same-color + total-time-with-different-color)) * 100
-  set percent-same-color-area mean [same-color-ratio-around-me] of turtles
+  set percent-same-color-area mean [same-character-ratio-around-me] of turtles
 end
 
 
@@ -220,15 +312,21 @@ to read-policy-file
   file-open policy-file
   let dummy []
   set dummy csv:from-row file-read-line ;read title
+  show dummy
 
   set dummy csv:from-row file-read-line ;read space line
   set dummy csv:from-row file-read-line ;read head
+  show dummy
   set num-states item 0 csv:from-row file-read-line ;read number of states
 
   set dummy csv:from-row file-read-line ;read space line
   set dummy csv:from-row file-read-line ;read head
+  show dummy
   set num-state-variables item 0 csv:from-row file-read-line ;read number of states
 
+  set dummy csv:from-row file-read-line ;read space line
+  set dummy csv:from-row file-read-line ;read head
+  show dummy
   set state-space []
   let s 0
   while [s < num-states] [
@@ -238,10 +336,12 @@ to read-policy-file
 
   set dummy csv:from-row file-read-line ;read space line
   set dummy csv:from-row file-read-line ;read head
+  show dummy
   set num-clusters item 0 csv:from-row file-read-line ;read number of clusters
 
   set dummy csv:from-row file-read-line ;read space line
   set dummy csv:from-row file-read-line ;read head
+  show dummy
   set num-agents csv:from-row file-read-line ;read number of agents in clusters
 
   set policy-sets []
@@ -249,6 +349,7 @@ to read-policy-file
   while [c < num-clusters] [
     set dummy csv:from-row file-read-line ;read space line
     set dummy csv:from-row file-read-line ;read head
+    show dummy
 
     let l 0
     let a-policy-set []
@@ -400,7 +501,7 @@ long-distance
 long-distance
 0
 20
-2
+3
 1
 1
 NIL

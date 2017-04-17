@@ -202,10 +202,6 @@ end
 % w_selected{2}
 % w_selected{3}
 
-% Save environment information and stochastic policies to csv file
-file_name = 'Segregation2_2_learned_policies.csv';
-save_learned_policy(file_name, num_clusters, group_idx, stochastic_pol_selected);
-
 determ_pol = cell(num_clusters, 1);
 for c=1:num_clusters
     determ_pol{c} = zeros(num_states, num_actions);
@@ -214,32 +210,38 @@ for c=1:num_clusters
     end
 end
 
+% Save environment information and stochastic policies to csv file
+file_name = 'Segregation2_2_learned_policies.csv';
+save_learned_policy(file_name, num_clusters, group_idx, state_space, stochastic_pol_selected);
+%save_learned_policy(file_name, num_clusters, group_idx, state_space, determ_pol);
+
 x_scale = 1:29;
 y_scale = {'action1', 'action2', 'action3', 'action4'};
-% for c=1:num_clusters
-%     figure
-%     subplot(3,1,1);
-%     heatmap(SAF{c}', x_scale, y_scale, '%0.2f', 'Colorbar', true, 'NaNColor', [0 0 0]);
-%     title('Original State Action Frequency');
-%     subplot(3,1,2);
-%     heatmap(determ_pol{c}', x_scale, y_scale, '%0.2f', 'Colorbar', true, 'NaNColor', [0 0 0]);
-%     title('Deterministic Policy learned from IRL');
-%     subplot(3,1,3);
-%     heatmap(stochastic_pol_selected{c}', x_scale, y_scale, '%0.2f', 'Colorbar', true);
-%     title('Stochastic Policy learned from IRL');
-%     xlabel('STATES');
-% end
 
 for c=1:num_clusters
     figure
-    subplot(2,1,1);
+    subplot(3,1,1);
     heatmap(SAF{c}', x_scale, y_scale, '%0.2f', 'Colorbar', true, 'NaNColor', [0 0 0]);
     title('Original State Action Frequency');
-    subplot(2,1,2);
+    subplot(3,1,2);
+    heatmap(determ_pol{c}', x_scale, y_scale, '%0.2f', 'Colorbar', true, 'NaNColor', [0 0 0]);
+    title('Deterministic Policy learned from IRL');
+    subplot(3,1,3);
     heatmap(stochastic_pol_selected{c}', x_scale, y_scale, '%0.2f', 'Colorbar', true);
     title('Stochastic Policy learned from IRL');
     xlabel('STATES');
 end
+
+% for c=1:num_clusters
+%     figure
+%     subplot(2,1,1);
+%     heatmap(SAF{c}', x_scale, y_scale, '%0.2f', 'Colorbar', true, 'NaNColor', [0 0 0]);
+%     title('Original State Action Frequency');
+%     subplot(2,1,2);
+%     heatmap(stochastic_pol_selected{c}', x_scale, y_scale, '%0.2f', 'Colorbar', true);
+%     title('Stochastic Policy learned from IRL');
+%     xlabel('STATES');
+% end
 
 figure
 for c=1:num_clusters

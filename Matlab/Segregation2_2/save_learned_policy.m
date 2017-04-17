@@ -32,7 +32,7 @@ function save_learned_policy(output_file, num_clusters, group_idx, state_space, 
     for i=1:num_clusters
         head = ['stochastic policy for cluster',num2str(i)];
         write_head(output_file, head);
-        dlmwrite(output_file, policies{i}, '-append');
+        dlmwrite(output_file, round(policies{i},4), '-append');
     end
 %     
 %     for i=1:num_clusters

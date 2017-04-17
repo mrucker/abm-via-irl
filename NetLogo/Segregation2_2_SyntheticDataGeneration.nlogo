@@ -68,29 +68,29 @@ end
 
 
 to go
-  if (episode = 21) [ stop ]
+  ;if (episode = 21) [ stop ]
   update-agents
   update-global-statistics
   tick
-  if (ticks = 60) [
-    set episode episode + 1
-    reset-ticks
-    ask turtles [
-      set conversation-length 0
-      set any-partner-to-talk? 0
-      set recent-partner-like-me? 0
-      set people-around nobody
-      set potential-partner nobody
-      set partner nobody
-      set familiar-environment? 0
-      set action 0
-      set same-people-ratio-around-me 0
-      set cumulative-conversation-length-with-same-color 0.1
-      set cumulative-conversation-length-with-different-color 0.1
-      move-to one-of patches
-      move 2
-    ]
-  ]
+;  if (ticks = 60) [
+;    set episode episode + 1
+;    reset-ticks
+;    ask turtles [
+;      set conversation-length 0
+;      set any-partner-to-talk? 0
+;      set recent-partner-like-me? 0
+;      set people-around nobody
+;      set potential-partner nobody
+;      set partner nobody
+;      set familiar-environment? 0
+;      set action 0
+;      set same-people-ratio-around-me 0
+;      set cumulative-conversation-length-with-same-color 0.1
+;      set cumulative-conversation-length-with-different-color 0.1
+;      move-to one-of patches
+;      move 2
+;    ]
+;  ]
 end
 
 
@@ -118,7 +118,8 @@ to update-agents
     ]
     [;in case the agent is having a conversation
       ifelse recent-partner-like-me? = 1 [;in case the partner has the same color
-        ifelse (conversation-length >= long-conv-length or partner = nobody) [
+        ;ifelse (conversation-length >= long-conv-length or partner = nobody) [
+        ifelse (conversation-length >= long-conv-length) [
           set action 1
         ]
         [;in case conversation-length < duration-with-same-color and partner != nobody
@@ -126,7 +127,8 @@ to update-agents
         ]
       ]
       [;in case the partner has the different color
-        ifelse (conversation-length >= short-conv-length or partner = nobody) [
+        ;ifelse (conversation-length >= short-conv-length or partner = nobody) [
+        ifelse (conversation-length >= short-conv-length) [
           set action 2
         ]
         [;in case conversation-length < duration-with-different-color and partner != nobody
@@ -154,7 +156,8 @@ to update-agents
     ]
     [;in case the agent is having a conversation
       let conv-limit long-conv-length * 2
-      ifelse (conversation-length >= conv-limit or partner = nobody) [
+      ;ifelse (conversation-length >= conv-limit or partner = nobody) [
+      ifelse (conversation-length >= conv-limit) [
         set action one-of [1 2]
       ]
       [;in case conversation-length < conv-limit and partner != nobody
@@ -188,7 +191,8 @@ to update-agents
     [;in case the agent is having a conversation
       ifelse recent-partner-like-me? = 1 [;in case the partner has the same color
         let conv-limit long-conv-length * 2
-        ifelse (conversation-length >= conv-limit or partner = nobody) [
+        ;ifelse (conversation-length >= conv-limit or partner = nobody) [
+        ifelse (conversation-length >= conv-limit) [
           set action 1
         ]
         [;in case conversation-length < conv-limit and partner != nobody)
@@ -241,7 +245,8 @@ to do-action
     ]
     face partner
     fd 0.5
-    set conversation-length 1
+    create-link-with partner
+    ;set conversation-length 1
     set familiar-environment? 1
     let same-color? ifelse-value ([color] of self = [color] of partner) [1] [0]
     set recent-partner-like-me? same-color?
@@ -251,8 +256,14 @@ to do-action
 
   ][ifelse (action = 4) [
     save-trajectory
-    set conversation-length conversation-length + 1
-    set familiar-environment? 1
+    ifelse (partner != nobody) [
+      set conversation-length conversation-length + 1
+      set familiar-environment? 1
+    ][ ;in case the partner left during the conversation
+      set conversation-length 0
+      set familiar-environment? 1
+    ]
+
   ][]]]]
 
 end

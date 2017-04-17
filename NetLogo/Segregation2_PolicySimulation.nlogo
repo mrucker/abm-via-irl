@@ -377,7 +377,7 @@ long-distance
 long-distance
 0
 20
-2
+3
 1
 1
 NIL
