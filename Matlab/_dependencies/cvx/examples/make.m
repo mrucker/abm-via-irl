@@ -4,39 +4,35 @@ function make( varargin )
 % Determine the base path
 %
 
-odir = pwd;
-base = mfilename('fullpath');
+odir = cd;
+try
+    base = dbstack( '-completenames' );
+    base = base(1);
+    base = base.file;
+catch
+    base = dbstack;
+    base = base(1);
+    base = base.name;
+end
 base = fileparts( base );
+fclose all;
+close all;
 
 %
 % Check the force and runonly flags
 %
 
 args = varargin;
-is_octave = exist( 'OCTAVE_VERSION', 'builtin' );
-if is_octave,
-    force = true;
-    runonly = true;
-    indexonly = false;
-    page_output_immediately(true);
-else
-    temp = strcmp( args, '-force' );
-    force = any( temp );
-    if force, args(temp) = []; end
-    temp = strcmp( args, '-runonly' );
-    runonly = any( temp );
-    if runonly, args(temp) = []; end
-    temp = strcmp( args, '-indexonly' );
-    indexonly = any( temp );
-    if indexonly, args(temp) = []; end
-    if ~runonly,
-      close all;
-      fclose all;
-    end
-end
-if isempty( args ), 
-    args = { base }; 
-end
+temp = strcmp( args, '-force' );
+force = any( temp );
+if force, args(temp) = []; end
+temp = strcmp( args, '-runonly' );
+runonly = any( temp );
+if runonly, args(temp) = []; end
+temp = strcmp( args, '-indexonly' );
+indexonly = any( temp );
+if indexonly, args(temp) = []; end
+if isempty( args ), args = { base }; end
 
 %
 % Process the arguments
@@ -79,7 +75,7 @@ for k = 1 : length( args ),
                 end
             case 7,
                 cd( file );
-                mpath = pwd;
+                mpath = cd;
                 cd( odir );
                 file = '';
             otherwise,
@@ -117,10 +113,10 @@ for k = 1 : length( args ),
             fidw = -1;
         end
         if isempty( file ),
-            generate_directory( mpath, '', force, runonly, indexonly, fidw, base, 0, is_octave );
+            generate_directory( mpath, '', force, runonly, indexonly, fidw, base );
         else
             cd( mpath );
-            generate_file( file, '', force, runonly, indexonly, is_octave );
+            generate_file( file, '', force, runonly, indexonly );
         end
         cd( odir );
         if fidw >= 0,
@@ -136,12 +132,13 @@ for k = 1 : length( args ),
     end
 end
 
-function [ title, files ] = generate_directory( mpath, prefix, force, runonly, indexonly, fidc, base, depth, is_octave )
+function [ title, files ] = generate_directory( mpath, prefix, force, runonly, indexonly, fidc, base, depth )
+if nargin < 8, depth = 0; end
 
 fprintf( 1, '%sDirectory: %s\n', prefix, mpath );
 prefix = [ prefix, '   ' ];
 cd( mpath );
-mpath = pwd;
+mpath = cd;
 
 %
 % Open Contents.m file and retrieve title and comments
@@ -200,7 +197,7 @@ for k = 1 : length( dd ),
         switch name(ndx+1:end),
             case 'm',
                 if strcmp( name, 'Contents.m' ) || strcmp( name, 'make.m' ) || name(end-2) == '_', continue; end
-                [ temp, isfunc ] = generate_file( name, prefix, force, runonly, indexonly, is_octave );
+                [ temp, isfunc ] = generate_file( name, prefix, force, runonly, indexonly );
                 if isfunc, type = 'func'; else type = 'script'; end
                 files( end + 1 ) = struct( 'name', name, 'title', temp, 'type', type );
             case 'tex',
@@ -292,7 +289,7 @@ if fidc >= 0,
     end
 
     for k = tdir(1) : tdir(2),
-        files(k).title = generate_directory( files(k).name(1:end-1), prefix, force, runonly, indexonly, fidc, base, depth+1, is_octave );
+        files(k).title = generate_directory( files(k).name(1:end-1), prefix, force, runonly, indexonly, fidc, base, depth+1 );
         cd(mpath);
     end
     
@@ -352,7 +349,7 @@ elseif any( tdir ),
     
     for k = 1 : length( files ),
         if strcmp( files(k).type, 'dir' ),
-            files(k).title = generate_directory( files(k).name(1:end-1), prefix, force, runonly, indexonly, fidc, base, depth+1, is_octave );
+            files(k).title = generate_directory( files(k).name(1:end-1), prefix, force, runonly, indexonly, fidc, base, depth+1 );
             cd(mpath);
         end
     end
@@ -400,7 +397,7 @@ if fidw >= 0,
     compare_and_replace( prefix, 'Contents.m' );
 end
 
-function [ title, isfunc ] = generate_file( name, prefix, force, runonly, indexonly, is_octave )
+function [ title, isfunc ] = generate_file( name, prefix, force, runonly, indexonly )
 
 if length( name ) < 2 || ~strcmp( name(end-1:end), '.m' ),
     error( 'Not an m-file.' );
@@ -463,7 +460,7 @@ if runonly,
     if isfunc, return; end
 end
 hfile = [ name(1:end-1), 'html' ];
-odir = pwd;
+odir = cd;
 hdir = 'html';
 hdate = 0;
 if exist( hdir, 'dir' ),
@@ -507,9 +504,7 @@ elseif force || hdate <= ndate,
     success = true;
     try
         out___ = [];
-        if is_octave,
-            run_clean_octave( name );
-        elseif runonly,
+        if runonly,
             out___ = run_clean( name );
             fprintf( 1, ' done.\n' );
         else
@@ -683,9 +678,6 @@ else
     delete( names{2} )
     fprintf( 1, ' up to date.\n' );
 end
-
-function run_clean_octave( name )
-feval( name );
 
 function out___ = run_clean( name )
 out___ = evalc( name );

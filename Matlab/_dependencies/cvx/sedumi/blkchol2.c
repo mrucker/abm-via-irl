@@ -50,10 +50,16 @@ mwIndex blkLDL(const mwIndex neqns, const mwIndex nsuper, const mwIndex *xsuper,
    TIME-CRITICAL PROCEDURE -- isscalarmul(x,alpha,n)
    Computes x *= alpha using BLAS.
    ************************************************************ */
-void isscalarmul(double *x, double alpha, mwIndex n)
+void isscalarmul(double *x, const double alpha, const mwIndex n)
 {
-    blasint one=1,nn=n;
-    FORT(dscal)(&n,&alpha,x,&one);
+    mwIndex one=1;
+    #ifdef PC
+    dscal(&n,&alpha,x,&one);
+    #endif
+    #ifdef UNIX
+    dscal_(&n,&alpha,x,&one);
+    #endif
+    return;
 }
 
 /* ************************************************************
@@ -63,10 +69,15 @@ void isscalarmul(double *x, double alpha, mwIndex n)
      n - length of x.
    RETURNS y = norm(x,inf).
    ************************************************************ */
-double maxabs(const double *x,mwIndex n)
+double maxabs(const double *x,const mwIndex n)
 {
-    blasint one=1,nn=n;
-    return fabs(x[FORT(idamax)(&nn,(double*)x,&one)]);
+mwIndex one=1;
+#ifdef PC
+    return fabs(x[idamax(&n,x,&one)]);
+#endif
+#ifdef UNIX
+    return fabs(x[idamax_(&n,x,&one)]);
+#endif
 }
 
 /* ************************************************************

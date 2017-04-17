@@ -7,6 +7,12 @@
 
 #include "mex.h"
 #include <math.h>
+#include <matrix.h>
+
+#if !defined(MX_API_VER) || ( MX_API_VER < 0x07030000 )
+typedef int mwIndex;
+typedef int mwSize;
+#endif
 
 /********************************************************************
   PROCEDURE mexFunction - Entry for Matlab
@@ -61,7 +67,7 @@ void mexFunction(const int nlhs, mxArray *plhs[],
      }
   }
   /********************************************************/
-  Ytmp = (double*)mxCalloc(n,sizeof(double)); 
+  Ytmp = mxCalloc(n,sizeof(double)); 
   if (options==1) { 
      if (isspY) { 
         for (k=0; k<jcY[1]; ++k) { r=irY[k]; Ytmp[r]=Y[k]; }  

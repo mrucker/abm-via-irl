@@ -13,6 +13,16 @@
 
 #include <mex.h>
 #include <math.h>
+#include <matrix.h>
+
+#if !defined(MX_API_VER) || ( MX_API_VER < 0x07030000 )
+typedef int mwIndex;
+typedef int mwSize;
+#endif
+
+#if !defined(MAX)
+#define  MAX(A, B)   ((A) > (B) ? (A) : (B))
+#endif
 
 /********************************
 * realdotde: x dense matrix,  
@@ -76,7 +86,7 @@ void mexFunction(int nlhs,   mxArray  *plhs[],
 
 /* CHECK THE DIMENSIONS */
 
-   if (mxIsCell(prhs[0]) || mxIsCell(prhs[1])) { 
+   if (mxIsCell(prhs[0]) | mxIsCell(prhs[1])) { 
        mexErrMsgTxt(" mexMatvec: A, x must be a double array"); }
    if (nrhs <2) {
        mexErrMsgTxt(" mexMatvec: must have at least 2 inputs"); }
@@ -104,16 +114,16 @@ void mexFunction(int nlhs,   mxArray  *plhs[],
           jcy = mxGetJc(prhs[1]); 
           ytmp = mxGetPr(prhs[1]); 
           /***** copy ytmp to y *****/ 
-          y = (double*)mxCalloc(m2,sizeof(double)); 
+          y = mxCalloc(m2,sizeof(double)); 
           kstart = jcy[0]; kend = jcy[1]; 
           for (k=kstart; k<kend; k++) { 
 	      r = iry[k]; y[r] = ytmp[k]; }
        } else {
           y = mxGetPr(prhs[1]); 
        }       
-       if (options == 0 && n1 != m2) {
+       if (options == 0 & n1 != m2) {
           mexErrMsgTxt("mexMatvec: 1ST and 2ND input not compatible."); 
-       } else if (options && m1 != m2) {
+       } else if (options & m1 != m2) {
           mexErrMsgTxt("mexMatvec: 1ST and 2ND input not compatible."); 
        }
 

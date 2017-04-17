@@ -17,6 +17,12 @@
 
 #include <mex.h>
 #include <math.h>
+#include <matrix.h>
+
+#if !defined(MX_API_VER) || ( MX_API_VER < 0x07030000 )
+typedef int mwIndex;
+typedef int mwSize;
+#endif
 
 /**********************************************************
 * single block: stack upper triangular part of A column-wise 
@@ -689,8 +695,8 @@ void mexFunction(int nlhs, mxArray  *plhs[],
     if (numblk == 1) { 
        n2 = n*(n+1)/2; 
     } else { 
-       cumblksize = (int*)mxCalloc(numblk+1,sizeof(int)); 
-       blknnz = (int*)mxCalloc(numblk+1,sizeof(int)); 
+       cumblksize = mxCalloc(numblk+1,sizeof(int)); 
+       blknnz = mxCalloc(numblk+1,sizeof(int)); 
        cumblksize[0] = 0; blknnz[0] = 0; 
        n = 0; n2 = 0; 
        for (k=0; k<numblk; ++k) {

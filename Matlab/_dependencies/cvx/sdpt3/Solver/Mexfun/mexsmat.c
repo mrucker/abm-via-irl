@@ -11,6 +11,12 @@
 
 #include <mex.h>
 #include <math.h>
+#include <matrix.h>
+
+#if !defined(MX_API_VER) || ( MX_API_VER < 0x07030000 )
+typedef int mwIndex;
+typedef int mwSize;
+#endif
 
 /**********************************************************
 * form Q using the upper triangular part
@@ -356,8 +362,8 @@ void mexFunction(int nlhs,   mxArray  *plhs[],
         mexErrMsgTxt("mexsmat: blk not properly specified"); }    
      numblk  = mxGetN(blk_cell_pr);            
      blksize = mxGetPr(blk_cell_pr);
-     cumblksize = (int*)mxCalloc(numblk+1,sizeof(int)); 
-     blknnz = (int*)mxCalloc(numblk+1,sizeof(int)); 
+     cumblksize = mxCalloc(numblk+1,sizeof(int)); 
+     blknnz = mxCalloc(numblk+1,sizeof(int)); 
      cumblksize[0] = 0; blknnz[0] = 0; 
      n = 0;  n2 = 0; 
      for (k=0; k<numblk; ++k) {
@@ -439,11 +445,7 @@ void mexFunction(int nlhs,   mxArray  *plhs[],
      if (isspB) {
         /*** if isspB, (actual B) = B+B' ****/ 
         mexCallMATLAB(1, &rhs[1], 1, &rhs[0], "ctranspose"); 
-#if defined HAVE_OCTAVE
-        mexCallMATLAB(1, &plhs[0],2, rhs, "plus");  
-#else
-       mexCallMATLAB(1, &plhs[0],2, rhs, "+");  
-#endif
+        mexCallMATLAB(1, &plhs[0],2, rhs, "+");  
         mxDestroyArray(*rhs); 
      }
      mxFree(blknnz); 

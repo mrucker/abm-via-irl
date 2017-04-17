@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <title>Exercise 4.31: Design of a cantilever beam (GP)</title>
-<link rel="canonical" href="/Users/mcgrant/Projects/CVX/examples/cvxbook/Ch04_cvx_opt_probs/html/cantilever_beam.html">
+<link rel="canonical" href="http://cvxr.com/cvx/examples/cvxbook/Ch04_cvx_opt_probs/html/cantilever_beam.html">
 <link rel="stylesheet" href="../../../examples.css" type="text/css">
 </head>
 <body>
@@ -93,33 +93,32 @@ cantilever_beam_plot([h; w])
 <pre class="codeoutput">
  
 Successive approximation method to be employed.
-   SDPT3 will be called several times to refine the solution.
-   Original size: 323 variables, 144 equality constraints
+   sedumi will be called several times to refine the solution.
+   Original size: 225 variables, 144 equality constraints
    48 exponentials add 384 variables, 240 equality constraints
 -----------------------------------------------------------------
  Cones  |             Errors              |
 Mov/Act | Centering  Exp cone   Poly cone | Status
 --------+---------------------------------+---------
- 26/ 26 | 8.000e+00  7.849e-01  0.000e+00 | Solved
- 42/ 43 | 3.803e-01  9.215e-03  0.000e+00 | Solved
- 34/ 40 | 1.422e-02  1.389e-05  0.000e+00 | Solved
-  6/ 10 | 1.760e-03  1.263e-07  0.000e+00 | Solved
-  0/  0 | 1.747e-04  0.000e+00  0.000e+00 | Solved
+  8/  8 | 2.949e+00  6.560e-01  1.365e-07 | Solved
+  8/  8 | 2.417e-01  4.179e-03  1.926e-07 | Solved
+  8/  8 | 1.636e-02  1.932e-05  2.106e-07 | Solved
+  7/  8 | 1.028e-03  2.853e-07  2.123e-07 | Solved
+  0/  8 | 6.427e-05  2.153e-07  2.127e-07 | Solved
 -----------------------------------------------------------------
 Status: Solved
-Optimal value (cvx_optval): +42.3965
- 
+Optimal value (cvx_optval): +40.9668
 The optimal widths and heights are: 
 
 w =
 
     0.6214
     0.7830
-    0.9060
-    1.0124
-    1.1004
-    1.1762
-    1.2000
+    0.8963
+    0.9865
+    1.0627
+    1.1292
+    1.1888
     1.3333
 
 
@@ -127,14 +126,14 @@ h =
 
     3.1072
     3.9149
-    4.5298
-    5.0620
-    5.5019
-    5.8811
-    6.0000
+    4.4814
+    4.9324
+    5.3133
+    5.6462
+    5.9439
     6.0000
 
-The optimal minimum volume of the beam is 42.3965.
+The optimal minimum volume of the beam is 40.9668.
 </pre>
 <a id="plots"></a>
 <div id="plotoutput">

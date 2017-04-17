@@ -1,7 +1,5 @@
-function [ y, symm ] = cvx_s_hermitian( m, n, symm ) %#ok
-
-%CVX_S_HERMITIAN Complex Hermitian matrices. This is no longer used by
-%cvx_create_structure, but it is used by cvx_sdpt3.
+function y = cvx_s_hermitian( m, n )
+%CVX_S_HERMITIAN Complex Hermitian matrices.
 
 if m ~= n,
     error( 'Hermitian structure requires square matrices.' );
@@ -27,8 +25,7 @@ mn = min( r, c );
 mx = max( r, c );
 y  = sparse( 2 * ( mx + mn .* ( n - 0.5 * ( mn + 1 ) ) + 1 ) - ( v == 1 ), r + n * c + 1, v, length( v ), nsq );
 y  = y( any( y, 2 ), : );
-symm = false;
 
-% Copyright 2005-2014 CVX Research, Inc. 
-% See the file LICENSE.txt for full copyright information.
+% Copyright 2012 Michael C. Grant and Stephen P. Boyd. 
+% See the file COPYING.txt for full copyright information.
 % The command 'cvx_where' will show where this file is located.

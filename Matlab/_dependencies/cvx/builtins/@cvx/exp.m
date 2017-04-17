@@ -12,7 +12,7 @@ function y = exp( x )
 %       geometric programs wherever a posynomial would be appropriate.
 
 global cvx___
-error(nargchk(1,1,nargin)); %#ok
+error(nargchk(1,1,nargin));
 cvx_expert_check( 'log', x );
             
 %
@@ -86,10 +86,9 @@ for k = 1 : nv,
                     cvx___.canslack( n2 ) = +1;
                 end
                 exps = cvx___.exponential( rx, 1 );
-                cvx___.exp_used = true;
             end
             nb = size( xt.basis_, 2 );
-            bx = sparse( exps, cx, 1, full( max( exps ) ), nb );
+            bx = sparse( exps, cx, 1, max( exps ), nb );
             if ~isempty( cc ),
                 bx = bx * diag(exp(sparse(cc,1,vc,nb,1)));
             end
@@ -110,6 +109,6 @@ for k = 1 : nv,
 
 end
 
-% Copyright 2005-2014 CVX Research, Inc.
-% See the file LICENSE.txt for full copyright information.
+% Copyright 2012 Michael C. Grant and Stephen P. Boyd.
+% See the file COPYING.txt for full copyright information.
 % The command 'cvx_where' will show where this file is located.

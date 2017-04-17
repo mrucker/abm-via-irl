@@ -24,6 +24,12 @@
 
 #include <mex.h>
 #include <math.h>
+#include <matrix.h>
+
+#if !defined(MX_API_VER) || ( MX_API_VER < 0x07030000 )
+typedef int mwIndex;
+typedef int mwSize;
+#endif
 
 /**********************************************************
 * realdot: 
@@ -166,8 +172,8 @@ void mexFunction(int nlhs,  mxArray        *plhs[],
        if (nlist != 2 ) { 
           mexErrMsgTxt("mexProd2nz: list must have 2 columns");}
        listtmp = mxGetPr(prhs[3]); 
-       list1 = (int*)mxCalloc(mlist,sizeof(int)); 
-       list2 = (int*)mxCalloc(mlist,sizeof(int));
+       list1 = mxCalloc(mlist,sizeof(int)); 
+       list2 = mxCalloc(mlist,sizeof(int));
        for (k=0; k<mlist; k++) {
           /** subtract 1 to adjust for Matlab index **/
           list1[k] = (int)listtmp[k] -1;
@@ -181,7 +187,7 @@ void mexFunction(int nlhs,  mxArray        *plhs[],
         if (!isspB) { 
    	   prod1(n1,m2,n2,A,irA,jcA,isspA,B,P,irP,jcP,list1,list2,mlist); }
         else {
-           Btmp = (double*)mxCalloc(m2,sizeof(double)); 
+           Btmp = mxCalloc(m2,sizeof(double)); 
    	   prod2(n1,m2,n2,A,irA,jcA,isspA,B,irB,jcB,isspB,\
                  P,irP,jcP,Btmp,list1,list2,mlist);
 	}

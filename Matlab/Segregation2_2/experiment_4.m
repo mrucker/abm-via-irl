@@ -11,13 +11,15 @@ num_features      = num_states;
 
 num_samples = 100; % Number of samples to use in feature expectations
 num_steps   = 50; % Number of steps in each sample to use in feature expectations
-num_traj_steps = 50;  % Number of steps needed in an expert's trajectory
+num_traj_steps = 51;  % Number of steps needed in an expert's trajectory
 
 phis = eye(num_features);
 
 % Sample trajectories from expert policy.
 expert_trajectories = ReadSampleTrajectories_2('SampleTrajectories_3.csv');
 expert_trajectories = horzcat(expert_trajectories{1}, expert_trajectories{2}, expert_trajectories{3}, expert_trajectories{4}, expert_trajectories{5}, expert_trajectories{6}, expert_trajectories{7}, expert_trajectories{8});
+
+%expert_trajectories = expert_trajectories(expert_trajectories(:,8) == 3, :);
 
 % get transition probabilities
 fprintf('Getting transition probabilities...\n');
@@ -41,11 +43,11 @@ for agent_idx = 1:length(agentId_list)
     % look for valid episodes
     for e = episode_list
         sa_step_ix  = find(agent_trajectories(:,1) == e);
-        if(length(sa_step_ix) < num_traj_steps)
+        if(length(sa_step_ix) < num_traj_steps+1)
             continue;
         end
         num_valid_episode(agent_idx) = num_valid_episode(agent_idx) + 1;
-        episodes{num_valid_episode(agent_idx)} = agent_trajectories(sa_step_ix(1:num_traj_steps), [2 3 4 5]);
+        episodes{num_valid_episode(agent_idx)} = agent_trajectories(sa_step_ix(2:num_traj_steps+1), [2 3 4 5]);
         % count initial state visit for D
         init_state = agent_trajectories(1,[2 3 4 5]);
         init_s_id  = find(all(state_space' == init_state'));
@@ -210,10 +212,6 @@ for c=1:num_clusters
     end
 end
 
-% Save environment information and stochastic policies to csv file
-file_name = 'Segregation2_2_learned_policies.csv';
-save_learned_policy(file_name, num_clusters, group_idx, state_space, stochastic_pol_selected);
-%save_learned_policy(file_name, num_clusters, group_idx, state_space, determ_pol);
 
 x_scale = 1:29;
 y_scale = {'action1', 'action2', 'action3', 'action4'};
@@ -250,6 +248,12 @@ for c=1:num_clusters
     title(sprintf('Rewards function for group %d', c));
 end
 
+
+
+% Save environment information and stochastic policies to csv file
+file_name = 'Segregation2_2_learned_policies.csv';
+save_learned_policy(file_name, num_clusters, group_idx, state_space, determ_pol, stochastic_pol_selected, [1 1 2]);
+%save_learned_policy(file_name, num_clusters, group_idx, state_space, determ_pol);
 
 
 

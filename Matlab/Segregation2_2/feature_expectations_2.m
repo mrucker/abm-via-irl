@@ -15,6 +15,8 @@ function mu = feature_expectations_2(P, discount, D, policy, num_samples, num_st
         Mu(i,:) = zeros(num_features, 1)';
 
         for t = 1:num_steps
+            %Mu(i,:) = Mu(i,:) + discount^(t-1) * phis(s,:);
+            
             a = policy(s);
             cumprob = cumsum(P{a}(s,:));
             r = rand();

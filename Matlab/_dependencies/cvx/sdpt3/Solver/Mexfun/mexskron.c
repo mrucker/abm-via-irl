@@ -21,6 +21,12 @@
 
 #include <mex.h>
 #include <math.h>
+#include <matrix.h>
+
+#if !defined(MX_API_VER) || ( MX_API_VER < 0x07030000 )
+typedef int mwIndex;
+typedef int mwSize;
+#endif
 
 #if !defined(MAX)
 #define  MAX(A, B)   ((A) > (B) ? (A) : (B))
@@ -154,11 +160,11 @@ void mexFunction(int nlhs, mxArray  *plhs[],
     blk_cell_pr = mxGetCell(prhs[0],index);
     numblk  = mxGetN(blk_cell_pr);
     blksizetmp = mxGetPr(blk_cell_pr); 
-    blksize    = (int*)mxCalloc(numblk,sizeof(int));
+    blksize    = mxCalloc(numblk,sizeof(int));
     for (k=0; k<numblk; k++) { blksize[k] = (int) blksizetmp[k]; }
-    cumblksize = (int*)mxCalloc(numblk+1,sizeof(int));
-    blksize2   = (int*)mxCalloc(numblk+1,sizeof(int)); 
-    blksize4   = (int*)mxCalloc(numblk+1,sizeof(int)); 
+    cumblksize = mxCalloc(numblk+1,sizeof(int));
+    blksize2   = mxCalloc(numblk+1,sizeof(int)); 
+    blksize4   = mxCalloc(numblk+1,sizeof(int)); 
     cumblksize[0] = 0; blksize2[0] = 0;  blksize4[0] = 0; 
     maxblksize=0; 
     for (k=0; k<numblk; ++k) {
@@ -202,10 +208,10 @@ void mexFunction(int nlhs, mxArray  *plhs[],
     tmparr[2] = mxCreateDoubleMatrix(maxblksize*(maxblksize+1)/2,1,mxREAL); 
     vvtmp = mxGetPr(tmparr[2]);
 
-    x1 = (double*)mxCalloc(maxblksize,sizeof(double)); 
-    y1 = (double*)mxCalloc(maxblksize,sizeof(double)); 
-    x2 = (double*)mxCalloc(maxblksize,sizeof(double)); 
-    y2 = (double*)mxCalloc(maxblksize,sizeof(double)); 
+    x1 = mxCalloc(maxblksize,sizeof(double)); 
+    y1 = mxCalloc(maxblksize,sizeof(double)); 
+    x2 = mxCalloc(maxblksize,sizeof(double)); 
+    y2 = mxCalloc(maxblksize,sizeof(double)); 
 
     /***** create return argument *****/
     len = blksize4[numblk]; 
