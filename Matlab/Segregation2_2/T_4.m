@@ -40,13 +40,13 @@ function P = T_SA(SA, skip_line, num_actions, num_states, state_space)
     P = Initialize(num_actions, num_states);
     
     % calculate transition probabilities using SA (observed state-action trajectoies)
-    P = Count(P, SA, skip_line, state_space);
+    Cnt = Count(P, SA, skip_line, state_space);
     
-    P = Normalize(P);
+    P = Normalize(Cnt);
     
     % project the calculated transition probabilities onto the non-observed but structurally same state-actions
     % and assign transition probabilities for illegal actions and unreachable states
-    P = Assign(P, num_actions, num_states, state_space);
+    P = Assign(P, Cnt, num_actions, num_states, state_space);
     
     Validate(P, num_actions, num_states);
 end
@@ -77,13 +77,14 @@ end
 
 function p = Normalize(P)
    for a = 1:size(P,1)
-       P{a} = diag(1./sum(P{a},2))*P{a};
+       %P{a} = diag(1./sum(P{a},2))*P{a};
+       P{a} = P{a}./sum(P{a},2);
    end
    
    p = P;
 end
 
-function p = Assign(P, num_actions, num_states, state_space)
+function p = Assign(P, Cnt, num_actions, num_states, state_space)
     
     % model probability: action 1 in state(0,0,0,0)
     P = Copy_Identical(P, [[1,1]; [1,2]]);
@@ -109,16 +110,8 @@ function p = Assign(P, num_actions, num_states, state_space)
     % model probability: action 2 in state(2,0,1,1)
     P = Copy_Identical(P, [[2,10]; [2,9]; [2,11]; [2,12]; [2,13]; [2,14]; [2,15]; [2,16]; [2,17]; [2,18]]);
     % model probability: action 2 in state(1,1,1,1)
-    P = Copy_Identical(P, [[1,19]; [1,20]; [1,21]; [1,22]; [1,23]; [1,24]; [1,25]; [1,26]; [1,27]; [1,28]]);
-    
-    
-    % assign probability for definite actions
-    for from = [9:17, 19:27]
-        to = from + 1;
-        P{4}(from, :) = 0;
-        P{4}(from, to) = 1;
-    end
-    
+    P = Copy_Identical(P, [[2,19]; [2,20]; [2,21]; [2,22]; [2,23]; [2,24]; [2,25]; [2,26]; [2,27]; [2,28]]);
+
     
     % assign probability for illegal actions    
     % 1. continue conversation while not having a conversation
@@ -138,6 +131,17 @@ function p = Assign(P, num_actions, num_states, state_space)
     P{3}(find(state_space(:,1) ~= 0), :) = 0;
     P{3}(find(state_space(:,1) ~= 0), 29) = 1;
 
+    
+    % assign probability for definite actions
+    for from = [9:17, 19:27]
+        to = from + 1;
+        if(sum(Cnt{4}(from, :)) < 10) % in case there are little evidence to estimate the probability
+            P{4}(from, :) = P{4}(from-1, :);
+            P{4}(from, to - 1) = 0;
+            P{4}(from, to) = P{4}(from-1, to-1);
+        end
+    end
+    
     
     % assign probability for limbo state
     P{1}(29, :) = 0;
