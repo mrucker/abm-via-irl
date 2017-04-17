@@ -1,10 +1,20 @@
+**/NetLogo/trajectory.csv
+
+##Ignore Visual Studio temp files
 *.vs
+
+##Ignore Matlab temp files
 *.m~
 *.asv
+
+##Ignore R temporary files
 .DS_Store
 .Rhistory
 .RData
-**/NetLogo/trajectory.csv
+
+##Ignore Microsoft Word temp files
+*~*.tmp
+*~*.docx
 
 #######################################################################################
 #Ignore all latex bild files. Expects latex projects to be in a directory named "latex"
