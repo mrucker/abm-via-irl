@@ -98,7 +98,7 @@ to update-agents
   ask turtles [
     ;determine states
     set people-around other turtles in-radius proximity-radius
-    set potential-partner people-around with [ conversation-length = 0 ]
+    set potential-partner people-around with [ conversation-length = 0 and partner = nobody ]
 
     if (conversation-length = 0) [
       ifelse (any? potential-partner or partner != nobody) [;in case there is a potential partner or the other agent has picked me as a partner
@@ -190,7 +190,7 @@ to do-action
     set conversation-history replace-item partner-id conversation-history num-conversation-with-partner
     set last-conversation replace-item partner-id last-conversation ticks
     ;if (num-conversation-with-partner > 3) [
-      ;create-link-with partner
+      create-link-with partner
     ;]
 
     ask partner

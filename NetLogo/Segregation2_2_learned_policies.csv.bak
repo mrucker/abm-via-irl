@@ -45,7 +45,7 @@ number of agents in each cluster
 
 stochastic policy for cluster1
 0.0061,0.9939,0,0
-0,0,1,0
+0,0.0297,0.9703,0
 0.0061,0.9939,0,0
 0,0.0245,0.9755,0
 0.9999,0.0001,0,0

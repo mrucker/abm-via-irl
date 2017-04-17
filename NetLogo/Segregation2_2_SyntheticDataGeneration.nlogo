@@ -99,7 +99,7 @@ end
 to update-agents
   ask biased-people [
     set people-around other turtles in-radius proximity-radius
-    set potential-partner people-around with [ conversation-length = 0 ]
+    set potential-partner people-around with [ conversation-length = 0 and partner = nobody ]
 
     ifelse (conversation-length = 0) [;in case the agent is not having a conversation
       ifelse (any? potential-partner or partner != nobody) [;in case there is a potential partner or the other agent has picked me as a partner
@@ -142,7 +142,7 @@ to update-agents
 
   ask unbiased-people [
     set people-around other turtles in-radius proximity-radius
-    set potential-partner people-around with [ conversation-length = 0 ]
+    set potential-partner people-around with [ conversation-length = 0 and partner = nobody ]
 
     ifelse (conversation-length = 0) [;in case the agent is not having a conversation
       ifelse (any? potential-partner or partner != nobody) [;in case there is a potential partner or the other agent has picked me as a partner
@@ -171,7 +171,7 @@ to update-agents
 
   ask racists [
     set people-around other turtles in-radius proximity-radius
-    set potential-partner people-around with [ conversation-length = 0 ]
+    set potential-partner people-around with [ conversation-length = 0 and partner = nobody ]
 
     ifelse (conversation-length = 0) [;in case the agent is not having a conversation
       ifelse (any? potential-partner or partner != nobody) [;in case there is a potential partner or the other agent has picked me as a partner
@@ -246,7 +246,7 @@ to do-action
     face partner
     fd 0.5
     create-link-with partner
-    ;set conversation-length 1
+    set conversation-length 1
     set familiar-environment? 1
     let same-color? ifelse-value ([color] of self = [color] of partner) [1] [0]
     set recent-partner-like-me? same-color?
