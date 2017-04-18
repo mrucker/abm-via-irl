@@ -16,7 +16,7 @@ num_traj_steps = 51;  % Number of steps needed in an expert's trajectory
 phis = eye(num_features);
 
 % Sample trajectories from expert policy.
-expert_trajectories = ReadSampleTrajectories_2('SampleTrajectories_3.csv');
+expert_trajectories = ReadSampleTrajectories_2('Segregation2_2_trajectory.csv');
 expert_trajectories = horzcat(expert_trajectories{1}, expert_trajectories{2}, expert_trajectories{3}, expert_trajectories{4}, expert_trajectories{5}, expert_trajectories{6}, expert_trajectories{7}, expert_trajectories{8});
 
 %expert_trajectories = expert_trajectories(expert_trajectories(:,8) == 3, :);
@@ -43,11 +43,11 @@ for agent_idx = 1:length(agentId_list)
     % look for valid episodes
     for e = episode_list
         sa_step_ix  = find(agent_trajectories(:,1) == e);
-        if(length(sa_step_ix) < num_traj_steps+1)
+        if(length(sa_step_ix) < num_traj_steps)
             continue;
         end
         num_valid_episode(agent_idx) = num_valid_episode(agent_idx) + 1;
-        episodes{num_valid_episode(agent_idx)} = agent_trajectories(sa_step_ix(2:num_traj_steps+1), [2 3 4 5]);
+        episodes{num_valid_episode(agent_idx)} = agent_trajectories(sa_step_ix(2:num_traj_steps), [2 3 4 5]);
         % count initial state visit for D
         init_state = agent_trajectories(1,[2 3 4 5]);
         init_s_id  = find(all(state_space' == init_state'));
@@ -56,7 +56,7 @@ for agent_idx = 1:length(agentId_list)
     
     % calculate mu_expert in each valid episode and add them
     for ve = 1:num_valid_episode(agent_idx)
-        for t = 1:num_traj_steps
+        for t = 1:num_traj_steps-1
             [~, state_ix] = ismember(episodes{ve}(t,:), state_space, 'rows');
             mu_expert(:,agent_idx) = mu_expert(:,agent_idx) + discount^(t-1) * phis(state_ix,:)';
         end
@@ -136,6 +136,7 @@ for c=1:num_clusters
 
         % 3.
         if i > 30 && (t(i) <= epsilon || (t(i-10)-t(i)<0.00001)) % condition for experiment
+        %if i > 100 && (t(i) <= epsilon || (t(i-10)-t(i)<0.00001)) % condition for experiment
             fprintf('[Cluster %d] Terminate...\n\n', c);
             break;
         end
@@ -230,17 +231,6 @@ for c=1:num_clusters
     xlabel('STATES');
 end
 
-% for c=1:num_clusters
-%     figure
-%     subplot(2,1,1);
-%     heatmap(SAF{c}', x_scale, y_scale, '%0.2f', 'Colorbar', true, 'NaNColor', [0 0 0]);
-%     title('Original State Action Frequency');
-%     subplot(2,1,2);
-%     heatmap(stochastic_pol_selected{c}', x_scale, y_scale, '%0.2f', 'Colorbar', true);
-%     title('Stochastic Policy learned from IRL');
-%     xlabel('STATES');
-% end
-
 figure
 for c=1:num_clusters
     subplot(3,1,c);
@@ -249,10 +239,29 @@ for c=1:num_clusters
 end
 
 
+prompt = 'Which type of policy each cluster has? (1: determ ,2: stoch) ex.[1 2 1] ';
+cluster_policy = input(prompt);
+
+for c=1:num_clusters
+    figure
+    subplot(2,1,1);
+    heatmap(SAF{c}', x_scale, y_scale, '%0.2f', 'Colorbar', true, 'NaNColor', [0 0 0]);
+    title('Original State Action Frequency');
+    subplot(2,1,2);
+    if (cluster_policy(c) == 1)
+        heatmap(determ_pol{c}', x_scale, y_scale, '%0.2f', 'Colorbar', true, 'NaNColor', [0 0 0]);
+        title('Deterministic Policy learned from IRL');
+        xlabel('STATES');
+    elseif (cluster_policy(c) == 2)
+        heatmap(stochastic_pol_selected{c}', x_scale, y_scale, '%0.2f', 'Colorbar', true);
+        title('Stochastic Policy learned from IRL');
+        xlabel('STATES');
+    end
+end
 
 % Save environment information and stochastic policies to csv file
 file_name = 'Segregation2_2_learned_policies.csv';
-save_learned_policy(file_name, num_clusters, group_idx, state_space, determ_pol, stochastic_pol_selected, [1 1 2]);
+save_learned_policy(file_name, num_clusters, group_idx, state_space, determ_pol, stochastic_pol_selected, cluster_policy);
 %save_learned_policy(file_name, num_clusters, group_idx, state_space, determ_pol);
 
 
