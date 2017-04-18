@@ -1,37 +1,9 @@
-function P = T_lda(AS, num_actions, num_states, state_space)
+function P = T_4_lda(AS, skip_line, num_actions, num_states, state_space)
 %%    actions
 %     action 1, move short distance
 %     action 2, move long distance
 %     action 3, start conversation
 %     action 4, continue conversation
-%
-%%    state space
-%      id  convo  like  near
-%      1     0     0     0
-%      2     0     0     1
-%      3     0     1     0
-%      4     0     1     1
-%      5     1     0     0
-%      6     1     0     1
-%      7     1     1     0
-%      8     1     1     1
-%      9     2     0     0
-%     10     2     0     1
-%     11     2     1     0
-%     12     2     1     1
-%     13     3     0     0
-%     14     3     0     1
-%     15     3     1     0
-%     16     3     1     1
-%     17     4     0     0
-%     18     4     0     1
-%     19     4     1     0
-%     20     4     1     1
-%     21     5     0     0
-%     22     5     0     1
-%     23     5     1     0
-%     24     5     1     1
-%     25     limbo
 
     AS = double(AS);
 
@@ -116,7 +88,7 @@ function P = Predict(p, num_actions, state_space, fit_predictors, cls_predictors
                 this_s_i = all(state_space' == s);
                 next_s_i = all(state_space' == t(2:end));
                 
-                p{a}(this_s_i, next_s_i) = p{a}(this_s_i, next_s_i) + round(t(1),1);
+                p{a}(this_s_i, next_s_i) = p{a}(this_s_i, next_s_i) + t(1);
                 
             end
             
@@ -176,7 +148,7 @@ function class = Class(i, v, v_)
 
     if i == 1 && v_ == 0
         class = 'z';
-    elseif ismember(i, [2 3]) && v ~= v_
+    elseif ismember(i, [2 3 4]) && v ~= v_
         class = 'f';
     else
         class = num2str(v_ - v);
@@ -185,8 +157,8 @@ function class = Class(i, v, v_)
 end
 
 function change = Change(predictor_i, predictor_v, class)
-    if predictor_i == 1 && class == '1' && predictor_v == 5
-        change = 5;
+    if predictor_i == 1 && class == '1' && predictor_v == 10
+        change = 10;
     elseif class == 'z'
         change = 0;
     elseif class == 'f'

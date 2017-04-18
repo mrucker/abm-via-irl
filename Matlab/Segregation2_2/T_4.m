@@ -1,4 +1,4 @@
-function P = T_SA(SA, skip_line, num_actions, num_states, state_space)
+function P = T_4(SA, skip_line, num_actions, num_states, state_space)
 %%    actions
 %     action 1, move short distance
 %     action 2, move long distance

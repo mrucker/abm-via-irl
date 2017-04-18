@@ -1,33 +1,33 @@
-addpath(genpath(fullfile(fileparts(which(mfilename)),'../_utilities/')));
 addpath(genpath(fullfile(fileparts(which(mfilename)),'../_dependencies/')));
+addpath(genpath(fullfile(fileparts(which(mfilename)),'../_utilties/')));
 
 discount = 0.99;
-epsilon  = .9;
+epsilon  = .2;
 
-[state_space, state_action_space, action_space] = Spaces();
+[state_space, action_space] = Spaces();
 
-num_actions       = size(action_space,1);
-num_states        = size(state_space,1);
-num_state_actions = size(state_action_space,1);
-num_features      = num_state_actions;
+num_actions  = size(action_space,1);
+num_states   = size(state_space,1);
+num_features = num_states;
 
-num_samples = 100; % Number of samples to use in feature expectations
-num_steps   = 50; % Number of steps in each sample to use in feature expectations
+num_samples    = 100; % Number of samples to use in feature expectations
+num_steps      = 50; % Number of steps in each sample to use in feature expectations
 num_traj_steps = 50;  % Number of steps needed in an expert's trajectory
 
 phis = eye(num_features);
 
 % Sample trajectories from expert policy.
-expert_trajectories = ReadSampleTrajectories_2('SampleTrajectories_5.csv');
+expert_trajectories = ReadSampleTrajectories_2('SampleTrajectories_3.csv');
 expert_trajectories = horzcat(expert_trajectories{1}, expert_trajectories{2}, expert_trajectories{3}, expert_trajectories{4}, expert_trajectories{5}, expert_trajectories{6}, expert_trajectories{7}, expert_trajectories{8});
 
 % get transition probabilities
 fprintf('Getting transition probabilities...\n');
+skip_line  = find(expert_trajectories(:, 2) ~= [zeros(1,1);expert_trajectories(1:end-1, 2)]);
 rnd_agents = randperm(700, 400)-1;
-ind_agents = arrayfun(@(rnd_agent) (0:99)' + find(expert_trajectories(:,1) == rnd_agent, 1), rnd_agents, 'UniformOutput', false);
+ind_agents = arrayfun(@(rnd_agent) (0:49)' + find(expert_trajectories(:,1) == rnd_agent, 1), rnd_agents, 'UniformOutput', false);
 ind_agents = cell2mat(ind_agents');
 
-P = T_5_lda(expert_trajectories(ind_agents, [7 3 4 5 6]), num_actions, num_states, state_space);
+P = T_4_lda(expert_trajectories(ind_agents, [7 3 4 5 6]), skip_line, num_actions, num_states, state_space);
 
 % Calulate empirical estimates of feature expectations for all agents
 fprintf('Calulating empirical estimates of feature expectations...\n');
@@ -41,7 +41,7 @@ for agent_idx = 1:length(agentId_list)
     episodes = cell(0,1);
     %num_valid_episode = 0; % number of valid episodes
     agentId   = agentId_list(agent_idx);
-    agent_trajectories = expert_trajectories(expert_trajectories(:,1) == agentId, 2:7);
+    agent_trajectories = expert_trajectories(expert_trajectories(:,1) == agentId, 2:6);
 
     % look for valid episodes
     for e = episode_list
@@ -50,7 +50,7 @@ for agent_idx = 1:length(agentId_list)
             continue;
         end
         num_valid_episode(agent_idx) = num_valid_episode(agent_idx) + 1;
-        episodes{num_valid_episode(agent_idx)} = agent_trajectories(sa_step_ix(1:num_traj_steps), [2 3 4 5 6]);
+        episodes{num_valid_episode(agent_idx)} = agent_trajectories(sa_step_ix(1:num_traj_steps), [2 3 4 5]);
         % count initial state visit for D
         init_state = agent_trajectories(1,[2 3 4 5]);
         init_s_id  = find(all(state_space' == init_state'));
@@ -60,8 +60,8 @@ for agent_idx = 1:length(agentId_list)
     % calculate mu_expert in each valid episode and add them
     for ve = 1:num_valid_episode(agent_idx)
         for t = 1:num_traj_steps
-            [~, state_action_ix] = ismember(episodes{ve}(t,:), state_action_space, 'rows');
-            mu_expert(:,agent_idx) = mu_expert(:,agent_idx) + discount^(t-1) * phis(state_action_ix,:)';
+            [~, state_ix] = ismember(episodes{ve}(t,:), state_space, 'rows');
+            mu_expert(:,agent_idx) = mu_expert(:,agent_idx) + discount^(t-1) * phis(state_ix,:)';
         end
     end
     
@@ -84,24 +84,23 @@ group_idx = cell(num_clusters,1);
 figure('visible', 'off');
 [~, T] = dendrogram(clustTree, num_clusters);
 
+
 % Calculate mu_expert for each cluster
 mu_expert_cluster = cell(num_clusters, 1);
 for c=1:num_clusters
     group_idx{c} = find(T==c);
-    mu_expert_cluster{c} = mu_expert(:,group_idx{c})*num_valid_episode(group_idx{c})./sum(num_valid_episode(group_idx{c})); 
+    mu_expert_cluster{c} = mu_expert(:,group_idx{c})*num_valid_episode(group_idx{c})...
+                          ./sum(num_valid_episode(group_idx{c})); 
 end
-
 
 % Calculate state_action_frequency
 SAF = state_action_frequency(num_clusters, expert_trajectories, group_idx, agentId_list, num_states, num_actions, state_space);
-
 
 % Initialize result variables
 pol_selected = cell(num_clusters, 1);
 stochastic_pol_selected = cell(num_clusters, 1);
 w_last = cell(num_clusters, 1);
 w_selected = cell(num_clusters, 1);
-V_selected = cell(num_clusters,1);
 
 for c=1:num_clusters
     fprintf('[Cluster %d] Starting projection algorithm...\n', c);
@@ -115,7 +114,6 @@ for c=1:num_clusters
     % Projection algorithm
     % 1.
     Pol{1}  = ceil(rand(num_states,1) * num_actions);
-    V{1} = zeros(num_states,1);
     mu(:,1) = feature_expectations_2(P, discount, D, Pol{1}, num_samples, num_steps, num_features, phis);
     i = 2;
 
@@ -140,14 +138,15 @@ for c=1:num_clusters
         fprintf('[Cluster %d] t(%d) = %6.4f\n', c, i, t(i));
 
         % 3.
-        if i > 30 && (t(i) <= epsilon || (t(i-5)-t(i)<0.00001)) % condition for experiment
+        if i > 30 && (t(i) <= epsilon || (t(i-10)-t(i)<0.00001)) % condition for experiment
             fprintf('[Cluster %d] Terminate...\n\n', c);
             break;
         end
 
         % 4.
-        R = reshape(w(:,i), [num_actions, num_states])'; %reshape w into S*A
-        [V{i}, Pol{i}, iter, cpu_time] = mdp_value_iteration(P, R, discount);
+        %R = reshape(w(:,i), [num_actions, num_states])'; %reshape w into S*A
+        R = repmat(w(:,i), 1, num_actions);
+        [V, Pol{i}, iter, cpu_time] = mdp_value_iteration(P, R, discount);
 
         % 5.
         mu(:,i) = feature_expectations_2(P, discount, D, Pol{i}, num_samples, num_steps, num_features, phis);
@@ -166,7 +165,6 @@ for c=1:num_clusters
     w_last{c} = w(:,i);
     w_selected{c} = w(:,selected);
     pol_selected{c} = Pol{selected};
-    V_selected{c} = V{selected};
     
     %(KL) mixing together policies according to the mixture weights lambda
     fprintf('[Cluster %d] Calculating combination of mu...\n', c);
@@ -208,17 +206,6 @@ end
 % w_selected{1}
 % w_selected{2}
 % w_selected{3}
-%
-% V_selected{1}
-% V_selected{2}
-% V_selected{3}
-%
-
-
-% Save environment information and stochastic policies to csv file
-file_name = 'Segregation2_learned_policies.csv';
-save_learned_policy(file_name, num_clusters, group_idx, stochastic_pol_selected);
-
 
 determ_pol = cell(num_clusters, 1);
 for c=1:num_clusters
@@ -228,8 +215,14 @@ for c=1:num_clusters
     end
 end
 
-x_scale = 1:45;
+% Save environment information and stochastic policies to csv file
+file_name = 'Segregation2_2_learned_policies.csv';
+save_learned_policy(file_name, num_clusters, group_idx, state_space, stochastic_pol_selected);
+%save_learned_policy(file_name, num_clusters, group_idx, state_space, determ_pol);
+
+x_scale = 1:29;
 y_scale = {'action1', 'action2', 'action3', 'action4'};
+
 for c=1:num_clusters
     figure
     subplot(3,1,1);
@@ -244,34 +237,37 @@ for c=1:num_clusters
     xlabel('STATES');
 end
 
+% for c=1:num_clusters
+%     figure
+%     subplot(2,1,1);
+%     heatmap(SAF{c}', x_scale, y_scale, '%0.2f', 'Colorbar', true, 'NaNColor', [0 0 0]);
+%     title('Original State Action Frequency');
+%     subplot(2,1,2);
+%     heatmap(stochastic_pol_selected{c}', x_scale, y_scale, '%0.2f', 'Colorbar', true);
+%     title('Stochastic Policy learned from IRL');
+%     xlabel('STATES');
+% end
+
 figure
 for c=1:num_clusters
     subplot(3,1,c);
-    heatmap(reshape(w_selected{c}, [num_actions, num_states]), x_scale, y_scale, '%0.2f', 'Colormap', 'money', 'Colorbar', true);
+    heatmap(w_selected{c}', x_scale, [], '%0.2f', 'Colormap', 'money', 'Colorbar', true);
     title(sprintf('Rewards function for group %d', c));
 end
 
 
+
+
+
 %% Local functions
 
-function [V, policy] = Value_Iteration(P, R, discount)    
-    [V, policy, ~, ~] = mdp_value_iteration (P, R, discount);
-end
+function [state_space, action_space] = Spaces()
+    conversation_length = 0:10;
+    recent_partner      = 0:1;
+    any_partner         = 0:1;
+    familiar_env        = 0:1;
+    action              = 1:4;
 
-
-function [state_space, state_action_space, action_space] = Spaces()
-    conversation_length         = 0:9;
-    recent_partner_similar_yn   = 0:1;
-    previous_partner_similar_yn = 0:1;
-    people_around_yn            = 0:1;
-    action                      = 1:4;
-
-    state_space = cartesian(conversation_length, recent_partner_similar_yn, previous_partner_similar_yn, people_around_yn);
-    state_space = horzcat((1:80)', state_space);
-
-    state_action_space = horzcat(sortrows(repmat(state_space,4,1), 1), repmat(action', 80,1));
-    
-    state_space = state_space(:,2:5);
-    state_action_space = state_action_space(:,2:6);
+    state_space = cartesian(conversation_length, recent_partner, any_partner, familiar_env);
     action_space = action';
 end
