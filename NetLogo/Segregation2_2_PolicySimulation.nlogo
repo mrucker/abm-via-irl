@@ -123,7 +123,7 @@ to update-agents
 ;    ][
       do-action
 ;    ]
-    update-agent-links
+    ;update-agent-links
     update-agent-statistics
   ]
 end
@@ -189,9 +189,9 @@ to do-action
     let num-conversation-with-partner (item partner-id conversation-history + 1)
     set conversation-history replace-item partner-id conversation-history num-conversation-with-partner
     set last-conversation replace-item partner-id last-conversation ticks
-    if (num-conversation-with-partner = 5) [
-      create-link-with partner
-    ]
+;    if (num-conversation-with-partner = 5) [
+;      create-link-with partner
+;    ]
 
     ask partner
     [
@@ -494,7 +494,7 @@ short-distance
 short-distance
 0
 5
-0
+1
 1
 1
 NIL
@@ -524,7 +524,7 @@ proximity-radius
 proximity-radius
 1
 10
-1
+2
 1
 1
 NIL

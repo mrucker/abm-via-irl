@@ -68,29 +68,29 @@ end
 
 
 to go
-  if (episode = 21) [ stop ]
+  ;if (episode = 21) [ stop ]
   update-agents
   update-global-statistics
   tick
-  if (ticks = 60) [
-    set episode episode + 1
-    reset-ticks
-    ask turtles [
-      set conversation-length 0
-      set any-partner-to-talk? 0
-      set recent-partner-like-me? 0
-      set people-around nobody
-      set potential-partner nobody
-      set partner nobody
-      set familiar-environment? 0
-      set action 0
-      set same-people-ratio-around-me 0
-      set cumulative-conversation-length-with-same-color 0.1
-      set cumulative-conversation-length-with-different-color 0.1
-      move-to one-of patches
-      move 2
-    ]
-  ]
+;  if (ticks = 110) [
+;    set episode episode + 1
+;    reset-ticks
+;    ask turtles [
+;      set conversation-length 0
+;      set any-partner-to-talk? 0
+;      set recent-partner-like-me? 0
+;      set people-around nobody
+;      set potential-partner nobody
+;      set partner nobody
+;      set familiar-environment? 0
+;      set action 0
+;      set same-people-ratio-around-me 0
+;      set cumulative-conversation-length-with-same-color 0.1
+;      set cumulative-conversation-length-with-different-color 0.1
+;      move-to one-of patches
+;      move 2
+;    ]
+;  ]
 end
 
 
@@ -517,7 +517,7 @@ long-distance
 long-distance
 0
 20
-2
+3
 1
 1
 NIL
