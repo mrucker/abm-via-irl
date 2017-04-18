@@ -1,4 +1,4 @@
-function P = T_LDA(AS, num_actions, num_states, state_space)
+function P = T_lda(AS, num_actions, num_states, state_space)
 %%    actions
 %     action 1, move short distance
 %     action 2, move long distance
