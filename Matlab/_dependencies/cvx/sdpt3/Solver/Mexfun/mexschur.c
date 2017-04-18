@@ -22,6 +22,12 @@
 
 #include <mex.h>
 #include <math.h>
+#include <matrix.h>
+
+#if !defined(MX_API_VER) || ( MX_API_VER < 0x07030000 )
+typedef int mwIndex;
+typedef int mwSize;
+#endif
 
 #if !defined(MAX)
 #define  MAX(A, B)   ((A) > (B) ? (A) : (B))
@@ -309,7 +315,7 @@ void mexFunction(int nlhs,   mxArray  *plhs[],
     blk_cell_pr = mxGetCell(prhs[0],index); 
     numblk  = mxGetN(blk_cell_pr);
     blksizetmp = mxGetPr(blk_cell_pr); 
-    blksize = (mwIndex*)mxCalloc(numblk,sizeof(mwIndex)); 
+    blksize = mxCalloc(numblk,sizeof(mwIndex)); 
     for (k=0; k<numblk; k++) { 
         blksize[k] = (int)blksizetmp[k];
     }
@@ -320,21 +326,21 @@ void mexFunction(int nlhs,   mxArray  *plhs[],
        mexErrMsgTxt("mexschur: Avec must be sparse"); }
     idxstarttmp = mxGetPr(prhs[2]);  
     len = MAX(mxGetM(prhs[2]),mxGetN(prhs[2])); 
-    idxstart = (mwIndex*)mxCalloc(len,sizeof(mwIndex)); 
+    idxstart = mxCalloc(len,sizeof(mwIndex)); 
     for (k=0; k<len; k++) { 
         idxstart[k] = (int)idxstarttmp[k]; 
     }
     nzlistAtmp = mxGetPr(prhs[3]); 
     len = mxGetM(prhs[3]);
-    nzlistAi = (mwIndex*)mxCalloc(len,sizeof(mwIndex)); 
-    nzlistAj = (mwIndex*)mxCalloc(len,sizeof(mwIndex)); 
+    nzlistAi = mxCalloc(len,sizeof(mwIndex)); 
+    nzlistAj = mxCalloc(len,sizeof(mwIndex)); 
     for (k=0; k<len; k++) { 
         nzlistAi[k] = (int)nzlistAtmp[k] -1; /* -1 to adjust for matlab index */
         nzlistAj[k] = (int)nzlistAtmp[k+len] -1; 
     }
     permAtmp = mxGetPr(prhs[4]); 
     m1 = mxGetN(prhs[4]); 
-    permA = (mwIndex*)mxCalloc(m1,sizeof(mwIndex)); 
+    permA = mxCalloc(m1,sizeof(mwIndex)); 
     for (k=0; k<m1; k++) {
         permA[k] = (int)permAtmp[k]-1; /* -1 to adjust for matlab index */
     }
@@ -344,7 +350,7 @@ void mexFunction(int nlhs,   mxArray  *plhs[],
     V = mxGetPr(prhs[6]);  nV = mxGetM(prhs[6]); 
     isspV = mxIsSparse(prhs[6]);
     if (isspV) { irV = mxGetIr(prhs[6]); jcV = mxGetJc(prhs[6]); }
-    if ((isspU && !isspV) || (!isspU && isspV)) { 
+    if ((isspU & !isspV) || (!isspU & isspV)) { 
        mexErrMsgTxt("mexschur: U,V must be both dense or both sparse"); 
     }
     colend = (int)*mxGetPr(prhs[7]); 
@@ -375,9 +381,9 @@ void mexFunction(int nlhs,   mxArray  *plhs[],
 /************************************
 * initialization 
 ************************************/
-    if (isspU && isspV) { 
-       cumblksize = (mwIndex*)mxCalloc(numblk+1,sizeof(mwIndex)); 
-       blknnz = (mwIndex*)mxCalloc(numblk+1,sizeof(mwIndex)); 
+    if (isspU & isspV) { 
+       cumblksize = mxCalloc(numblk+1,sizeof(mwIndex)); 
+       blknnz = mxCalloc(numblk+1,sizeof(mwIndex)); 
        cumblksize[0] = 0; blknnz[0] = 0; 
        n1 = 0; n2 = 0; 
        for (k=0; k<numblk; ++k) {
@@ -388,17 +394,17 @@ void mexFunction(int nlhs,   mxArray  *plhs[],
            blknnz[k+1] = n2;  }
        if (nU != n1 || nV != n1) { 
           mexErrMsgTxt("mexschur: blk and dimension of U not compatible"); }
-       Utmp = (double*)mxCalloc(n2,sizeof(double)); 
+       Utmp = mxCalloc(n2,sizeof(double)); 
        vec(numblk,cumblksize,blknnz,U,irU,jcU,Utmp); 
-       Vtmp = (double*)mxCalloc(n2,sizeof(double)); 
+       Vtmp = mxCalloc(n2,sizeof(double)); 
        vec(numblk,cumblksize,blknnz,V,irV,jcV,Vtmp); 
-       blkidx = (mwIndex*)mxCalloc(nU,sizeof(mwIndex));
+       blkidx = mxCalloc(nU,sizeof(mwIndex));
        for (l=0; l<numblk; l++) {  
  	   kstart=cumblksize[l]; kend=cumblksize[l+1];
            for (k=kstart; k<kend; k++) { blkidx[k] = l; }           
        }
-       nzlistAc = (mwIndex*)mxCalloc(len,sizeof(mwIndex)); 
-       nzlistAr = (mwIndex*)mxCalloc(len,sizeof(mwIndex)); 
+       nzlistAc = mxCalloc(len,sizeof(mwIndex)); 
+       nzlistAr = mxCalloc(len,sizeof(mwIndex)); 
        for (k=0; k<len; k++) {
           rb = nzlistAi[k]; 
 	  cb = nzlistAj[k]; 
@@ -411,17 +417,17 @@ void mexFunction(int nlhs,   mxArray  *plhs[],
 * compute schur(i,j)
 ************************************/
 
-    colm = (mwIndex*)mxCalloc(colend,sizeof(mwIndex));     
+    colm = mxCalloc(colend,sizeof(mwIndex));     
     for (k=0; k<colend; k++) { colm[k] = permA[k]*m; } 
 
     n = nU; 
-    if      (type==1 && !isspU)  { opt=1; }
-    else if (type==0 && !isspU)  { opt=3; } 
-    else if (type==1 &&  isspU)  { opt=2; }
-    else if (type==0 &&  isspU)  { opt=4; }
+    if      (type==1 & !isspU)  { opt=1; }
+    else if (type==0 & !isspU)  { opt=3; } 
+    else if (type==1 &  isspU)  { opt=2; }
+    else if (type==0 &  isspU)  { opt=4; }
 
     /*************************************/
-    schurcol = (double*)mxCalloc(colend,sizeof(double)); 
+    schurcol = mxCalloc(colend,sizeof(double)); 
     count = 0;
  
     for (col=0; col<colend; col++) { 
@@ -444,7 +450,7 @@ void mexFunction(int nlhs,   mxArray  *plhs[],
 	}
         for (row=0; row<=col; row++) {
 	    if (schurcol[row] != 0) {
-	       if (count<nzP && nlhs==2) { jcP[col+1]=count+1; irP[count]=row; P[count]=1; }
+	       if (count<nzP & nlhs==2) { jcP[col+1]=count+1; irP[count]=row; P[count]=1; }
 	       count++; 
    	       idx1 = permA[row]+colm[col]; 
                idx2 = permA[col]+colm[row]; 

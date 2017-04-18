@@ -7,8 +7,8 @@ typedef int mwSize;
 #endif
 
 /*
-% Copyright 2005-2014 CVX Research, Inc.
-% See the file LICENSE.txt for full copyright information.
+% Copyright 2012 Michael C. Grant and Stephen P. Boyd.
+% See the file COPYING.txt for full copyright information.
 % The command 'cvx_where' will show where this file is located.
 */
 
@@ -145,7 +145,7 @@ void mexFunction(
 {
     mwSize n, k, col, nskip, lastcol, *ss_ndxs;
     double *map, *scl, lastnorm;
-    int first = 1;
+    bool first;
     
     n       = mxGetN(  prhs[0] );
     ss_ir   = mxGetIr( prhs[0] );
@@ -175,6 +175,7 @@ void mexFunction(
         mexErrMsgTxt( "Unable to allocate output arguments" );
     map = mxGetPr( plhs[0] );
     scl = mxGetPr( plhs[1] );
+    first = true;
     lastnorm = 0.0;
     for ( k = 0 ; k < n ; ++k ) {
         col = ss_ndxs[k];
@@ -189,7 +190,7 @@ void mexFunction(
             lastnorm = ss_pr[ss_jc[col]];
             map[col] = lastcol + 1;
             scl[col] = 1.0;
-            first = 0;
+            first = false;
         } else {
             map[col] = lastcol + 1;
             scl[col] = ss_pr[ss_jc[col]] / lastnorm;

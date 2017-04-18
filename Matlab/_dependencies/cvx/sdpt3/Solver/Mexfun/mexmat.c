@@ -11,6 +11,12 @@
 
 #include <mex.h>
 #include <math.h>
+#include <matrix.h>
+
+#if !defined(MX_API_VER) || ( MX_API_VER < 0x07030000 )
+typedef int mwIndex;
+typedef int mwSize;
+#endif
 
 /**********************************************************
 * single block (real)
@@ -23,7 +29,7 @@ void  mat1(int n,
 {  int idx, i, j, r, jn, k, kstart, kend, idxj, j2, count;
    double tmp;  
    
-   if (!isspA && !isspB) { 
+   if (!isspA & !isspB) { 
       idx = colidx*mA; 
       for (j=0; j<n; j++) { 
           jn = j*n; 
@@ -31,7 +37,7 @@ void  mat1(int n,
               B[i+jn] = A[idx]; 
               idx++; } 
       }
-   } else if (!isspA && isspB) { 
+   } else if (!isspA & isspB) { 
       idx = colidx*mA; 
       count = 0; 
       for (j=0; j<n; j++) { 
@@ -42,7 +48,7 @@ void  mat1(int n,
           }     
           jcB[j+1] = count; 
       }   
-   } else if (isspA && !isspB) {
+   } else if (isspA & !isspB) {
       j2 = 0; idxj = 0; 
       kstart = jcA[colidx];  kend = jcA[colidx+1]; 
       for (k=kstart; k<kend; k++) { 
@@ -50,7 +56,7 @@ void  mat1(int n,
           for (j=j2; j<n; j++) {i=r-idxj; if (i>=n) {idxj+=n;} else {break;}} j2=j; 
           B[i+j*n] = A[k]; 
       }
-   } else if (isspA && isspB) {
+   } else if (isspA & isspB) {
       count = 0; 
       j2 = 0; idxj = 0; 
       kstart = jcA[colidx];  kend = jcA[colidx+1]; 
@@ -78,7 +84,7 @@ void  mat1cmp(int n,
 {  int idx, ind, i, j, r, jn, k, kstart, kend, idxj, j2, count;
    double tmp, tmp2;  
    
-   if (!isspA && !isspB) { 
+   if (!isspA & !isspB) { 
       idx = colidx*mA; 
       for (j=0; j<n; j++) { 
           jn = j*n; 
@@ -87,7 +93,7 @@ void  mat1cmp(int n,
               BI[i+jn] = AI[idx]; 
               idx++; } 
       }
-   } else if (!isspA && isspB) { 
+   } else if (!isspA & isspB) { 
       idx = colidx*mA; 
       count = 0; 
       for (j=0; j<n; j++) { 
@@ -100,7 +106,7 @@ void  mat1cmp(int n,
           }     
           jcB[j+1] = count; 
       }   
-   } else if (isspA && !isspB) {
+   } else if (isspA & !isspB) {
       j2 = 0; idxj = 0; 
       kstart = jcA[colidx];  kend = jcA[colidx+1]; 
       for (k=kstart; k<kend; k++) { 
@@ -109,7 +115,7 @@ void  mat1cmp(int n,
           ind = i+j*n; 
           B[ind] = A[k]; BI[ind] = AI[k]; 
       }
-   } else if (isspA && isspB) {
+   } else if (isspA & isspB) {
       count = 0; 
       j2 = 0; idxj = 0; 
       kstart = jcA[colidx];  kend = jcA[colidx+1]; 
@@ -234,8 +240,8 @@ void mexFunction(int nlhs, mxArray  *plhs[],
      blk_cell_pr = mxGetCell(prhs[0],index);
      numblk  = mxGetN(blk_cell_pr);            
      blksize = mxGetPr(blk_cell_pr);
-     cumblksize = (int*)mxCalloc(numblk+1,sizeof(int)); 
-     blknnz = (int*)mxCalloc(numblk+1,sizeof(int)); 
+     cumblksize = mxCalloc(numblk+1,sizeof(int)); 
+     blknnz = mxCalloc(numblk+1,sizeof(int)); 
      cumblksize[0] = 0; blknnz[0] = 0; 
      n = 0;  n2 = 0; 
      for (k=0; k<numblk; ++k) {
@@ -280,7 +286,7 @@ void mexFunction(int nlhs, mxArray  *plhs[],
      }    
      /***** create return argument *****/
      if (isspB) {
-        if (numblk == 1 && isspA) {           
+        if (numblk == 1 & isspA) {           
 	  NZmax = jcA[colidx+1]-jcA[colidx]; 
         } else {
 	  NZmax = blknnz[numblk]; 
@@ -312,11 +318,11 @@ void mexFunction(int nlhs, mxArray  *plhs[],
 	}
      } else {
        if (isspA) {
-          Atmp = (double*)mxCalloc(blknnz[numblk],sizeof(double)); 
+          Atmp = mxCalloc(blknnz[numblk],sizeof(double)); 
           kstart = jcA[colidx]; kend = jcA[colidx+1]; 
           for (k=kstart; k<kend; k++) { r = irA[k]; Atmp[r] = A[k]; } 
 	  if (iscmpA) {  
- 	     AItmp = (double*)mxCalloc(blknnz[numblk],sizeof(double)); 
+ 	     AItmp = mxCalloc(blknnz[numblk],sizeof(double)); 
              for (k=kstart; k<kend; k++) { r = irA[k]; AItmp[r] = AI[k]; } 
              mat2cmp(n,numblk,cumblksize,blknnz,Atmp,m1,0,B,irB,jcB,isspB,AItmp,BI);
 	  } else { 
@@ -330,7 +336,7 @@ void mexFunction(int nlhs, mxArray  *plhs[],
 	  }
        }
      }
-     if ((isspA) && (numblk>1)) { 
+     if ((isspA) & (numblk>1)) { 
         mxFree(Atmp); 
         if (iscmpA) { mxFree(AItmp); }
      }

@@ -12,7 +12,7 @@ function y = log( x )
 %       will not be officially supported.
 
 global cvx___
-error(nargchk(1,1,nargin)); %#ok
+error(nargchk(1,1,nargin));
 cvx_expert_check( 'log', x );
 
 %
@@ -68,7 +68,6 @@ for k = 1 : nv,
         case 2,
             % Affine, convex (invalid)
             sx = xt.size_; %#ok
-            yt = [];
             cvx_begin
                 hypograph variable yt( sx ) 
                 exp( yt ) <= xt;            %#ok
@@ -79,7 +78,7 @@ for k = 1 : nv,
             [ rx, cx, vx ] = find( xt.basis_ );
             logs = cvx___.logarithm( rx, 1 );
             tt = vx ~= 1; nt = sum( tt );
-            bx = sparse( [ ones( nt, 1 ) ; logs ], [ cx( tt ) ; cx ], [ log( vx( tt ) ) ; ones( nb, 1 ) ], full( max( logs ) ), size( xt.basis_, 2 ) );
+            bx = sparse( [ ones( nt, 1 ) ; logs ], [ cx( tt ) ; cx ], [ log( vx( tt ) ) ; ones( nb, 1 ) ], max( logs ), size( xt.basis_, 2 ) );
             yt = cvx( xt.size_, bx );
         case 4,
             % Posynomial
@@ -100,13 +99,13 @@ for k = 1 : nv,
                     tt  = rc == rk;
                     xtt = xt( :, tt );
                 end
-                [ rx, cx, vx ] = find( xtt ); %#ok
+                [ rx, cx, vx ] = find( xtt );
                 rx = rx( : ); vx = vx( : );
                 nq = length( vx );
                 vx = log( vx );
                 tz = rx ~= 1;
                 rx = cvx___.logarithm( rx( tz ), 1 );
-                vx = vx + cvx( nq, sparse( rx, find( tz ), 1, full( max( rx ) ), nq ) );
+                vx = vx + cvx( nq, sparse( rx, find( tz ), 1, max( rx ), nq ) );
                 vx = reshape( vx, rk, nq / rk );
                 vx = log_sum_exp( vx );
                 if nu == 1,
@@ -131,6 +130,6 @@ for k = 1 : nv,
 
 end
 
-% Copyright 2005-2014 CVX Research, Inc.
-% See the file LICENSE.txt for full copyright information.
+% Copyright 2012 Michael C. Grant and Stephen P. Boyd.
+% See the file COPYING.txt for full copyright information.
 % The command 'cvx_where' will show where this file is located.

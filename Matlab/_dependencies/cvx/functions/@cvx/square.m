@@ -6,7 +6,7 @@ function y = square( x )
 % 1 : constant
 % 2 : real affine
 % 3 : monomial, posynomial
-error( nargchk( 1, 1, nargin ) ); %#ok
+error( nargchk( 1, 1, nargin ) );
 persistent remap
 if isempty( remap ),
     remap1 = cvx_remap( 'constant' );
@@ -74,6 +74,6 @@ for k = 1 : nv,
 
 end
 
-% Copyright 2005-2014 CVX Research, Inc.
-% See the file LICENSE.txt for full copyright information.
+% Copyright 2012 Michael C. Grant and Stephen P. Boyd.
+% See the file COPYING.txt for full copyright information.
 % The command 'cvx_where' will show where this file is located.

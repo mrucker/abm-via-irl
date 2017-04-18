@@ -1,4 +1,4 @@
-function save_learned_policy(output_file, num_clusters, group_idx, state_space, policies)
+function save_learned_policy(output_file, num_clusters, group_idx, state_space, determ_pol, stoch_pol, which_pol)
 
     new_file(output_file);
     
@@ -30,9 +30,16 @@ function save_learned_policy(output_file, num_clusters, group_idx, state_space, 
     dlmwrite(output_file, num_agents, '-append');
     
     for i=1:num_clusters
-        head = ['stochastic policy for cluster',num2str(i)];
-        write_head(output_file, head);
-        dlmwrite(output_file, round(policies{i},4), '-append');
+        if (which_pol(i) == 1)
+            head = ['deterministic policy for cluster',num2str(i)];
+            write_head(output_file, head);
+            dlmwrite(output_file, round(determ_pol{i},4), '-append');
+        end
+        if (which_pol(i) == 2)
+            head = ['stochastic policy for cluster',num2str(i)];
+            write_head(output_file, head);
+            dlmwrite(output_file, round(stoch_pol{i},4), '-append');
+        end
     end
 %     
 %     for i=1:num_clusters

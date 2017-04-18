@@ -17,6 +17,12 @@
 
 #include <mex.h>
 #include <math.h>
+#include <matrix.h>
+
+#if !defined(MX_API_VER) || ( MX_API_VER < 0x07030000 )
+typedef int mwIndex;
+typedef int mwSize;
+#endif
 
 /**********************************************************
 * saxpy:  z = z + alpha*y
@@ -124,7 +130,7 @@ void product3(double *A, mwIndex *irA, mwIndex *jcA, double *B,
               if (tmp != 0) {
   		 for (i=istart; i<iend; i++) {
                     ri = irA[i]; 
-                    if (ri > j && sym) { break; }
+                    if (ri > j & sym) { break; }
 		    P[ri+jm] += tmp*A[i]; }
 	      }
 	  }
@@ -179,25 +185,25 @@ void product5(double *A, mwIndex *irA, mwIndex *jcA,
 
 {  int  k, kx, ky, kx2, ky2, rx, ry;
 
-      if ( !isspA && !isspB ) {
+      if ( !isspA & !isspB ) {
          for (k=0; k<n; k++){ P[k] = A[k]*B[k]; }
       }
-      else if ( isspA && !isspB ) {
+      else if ( isspA & !isspB ) {
          kx = jcA[0];  kx2 = jcA[1];
 	 for (k=kx; k<kx2; k++) {
              rx = irA[k]; 
              P[rx] = A[k]*B[rx]; }   
       }
-      else if ( !isspA && isspB ) {
+      else if ( !isspA & isspB ) {
          ky = jcB[0];  ky2 = jcB[1];
 	 for (k=ky; k<ky2; k++) {
              ry = irB[k]; 
              P[ry] = A[ry]*B[k]; }   
       }
-      else if ( isspA && isspB ) {
+      else if ( isspA & isspB ) {
            kx = jcA[0];  kx2 = jcA[1];  rx = irA[kx];
            ky = jcB[0];  ky2 = jcB[1];  ry = irB[ky]; 
-           while ( (kx<kx2) && (ky<ky2) ){
+           while ( (kx<kx2) & (ky<ky2) ){
                if (rx == ry) { 
 		  P[rx] = A[kx]*B[ky]; 
                   kx++; ky++; 
@@ -245,7 +251,7 @@ void mexFunction(int nlhs,  mxArray        *plhs[],
     blk_cell_pr = mxGetCell(prhs[0],index); 
     blksize = mxGetPr(blk_cell_pr); 
     numblk = mxGetN(blk_cell_pr);
-    cumblk = (int*)mxCalloc(numblk+1,sizeof(int)); 
+    cumblk = mxCalloc(numblk+1,sizeof(int)); 
     NZmax = 0; 
     for (l=0; l<numblk; l++) { 
         cols = (int)blksize[l]; 
@@ -263,42 +269,42 @@ void mexFunction(int nlhs,  mxArray        *plhs[],
     isspB = mxIsSparse(prhs[2]);
     if (isspB) { irB = mxGetIr(prhs[2]);
         	 jcB = mxGetJc(prhs[2]); }       
-    if ((n1!=m2) && !(n1==1 && n2==1)) { 
+    if ((n1!=m2) & !(n1==1 & n2==1)) { 
         mexErrMsgTxt("mexProd2: 2ND and 3RD input not compatible"); }
-    if ((numblk > 1) && !(isspA && isspB) && !(n1==1 && n2==1)) { 
+    if ((numblk > 1) & !(isspA & isspB) & !(n1==1 & n2==1)) { 
        mexErrMsgTxt("mexProd2: 2ND and 3RD must be both sparse"); }
 
 /***** create return argument *****/   
 
-    if (isspA && isspB && !(n1==1 && n2==1)){ 
+    if (isspA & isspB & !(n1==1 & n2==1)){ 
        plhs[0] = mxCreateSparse(m1,n2,NZmax,mxREAL); 
        P = mxGetPr(plhs[0]); irP = mxGetIr(plhs[0]); jcP = mxGetJc(plhs[0]); }
     else { 
        plhs[0] = mxCreateDoubleMatrix(m1,n2,mxREAL);
        P = mxGetPr(plhs[0]); 
     }
-    if (isspA && isspB && !(n1==1 && n2==1)) {  
-       Ptmp = (double*)mxCalloc(cumblk[numblk],sizeof(double)); 
+    if (isspA & isspB & !(n1==1 & n2==1)) {  
+       Ptmp = mxCalloc(cumblk[numblk],sizeof(double)); 
     }
 /**********************************************
 * Do the actual computations in a subroutine 
 **********************************************/
 
-    if (m1 == m2 && n1 == 1 && n2 == 1) {
+    if (m1 == m2 & n1 == 1 & n2 == 1) {
        product5(A, irA, jcA, B, irB, jcB, P, m1, isspA, isspB); 
     } else {
-      if (!isspA && !isspB){
+      if (!isspA & !isspB){
          product(A, B, P, m1, n1, n2, type); }
-      else if (!isspA && isspB){ 
+      else if (!isspA & isspB){ 
          product2(A, B, irB, jcB, P, m1, n1, n2, type); }
-      else if (isspA && !isspB){ 
+      else if (isspA & !isspB){ 
          product3(A, irA, jcA, B, P, m1, n1, n2, type); }
-      else if (isspA && isspB){
+      else if (isspA & isspB){
          product4(A, irA, jcA, B, irB, jcB,P,irP,jcP,Ptmp,numblk,cumblk); 
       } 
     }
    mxFree(cumblk); 
-   if (isspA && isspB && !(n1==1 && n2==1)) { mxFree(Ptmp); }
+   if (isspA & isspB & !(n1==1 & n2==1)) { mxFree(Ptmp); }
    return;
  }
 /**********************************************************/

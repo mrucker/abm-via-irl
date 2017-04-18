@@ -35,8 +35,7 @@ if dim > length( s ) || s( dim ) == 1,
 
 elseif s( dim ) == 0,
 
-    if ~any( s ), s = [1,1];
-    else s( dim ) = 1; end
+    s( dim ) = 1;
     y = cvx( s, sparse( 1, prod( s ) ) );
 
 else
@@ -58,6 +57,6 @@ else
 
 end
 
-% Copyright 2005-2014 CVX Research, Inc.
-% See the file LICENSE.txt for full copyright information.
+% Copyright 2012 Michael C. Grant and Stephen P. Boyd.
+% See the file COPYING.txt for full copyright information.
 % The command 'cvx_where' will show where this file is located.

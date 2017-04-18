@@ -108,11 +108,9 @@ elseif length( w ) ~= nx,
 elseif nx ~= 0 && ~any( w ),
     error( 'At least one of the weights must be nonzero.' );
 end
-if ~isempty( w ) && any( w ~= floor( w ) ),
+if any( w ~= floor( w ) ),
     [ nn, dd ] = rat( w );
-    dmax = dd(1);
-    for k = 2 : length(dd), dmax = lcm(dmax,dd(k)); end
-    w = nn .* ( dmax ./ dd );
+    w = nn .* ( prod(unique(nonzeros(dd))) ./ dd );
 end
 
 %
@@ -136,12 +134,12 @@ end
 %
 
 if any( sx == 0 ),
-    cvx_begin set
+    cvx_begin_set
         variables x(sx) y(sy)
-    cvx_end
+    cvx_end_set
     return
 elseif nx == 1,
-    cvx_begin set
+    cvx_begin_set
         variable x(sx)
         x >= 0; %#ok
         switch mode,
@@ -159,7 +157,7 @@ elseif nx == 1,
                 variable y(sy) complex
                 x >= abs( y ); %#ok
         end
-    cvx_end
+    cvx_end_set
     return
 end
 
@@ -243,32 +241,25 @@ if ~wbasic,
         if isempty( ndx2 ), break; end
         % Greedy: select the largest overlap
         ee = ee(ndx2);
-        [ wc_t, wnm ] = max( sum(dec2bin(ww(ndx2))-'0',2)+(1-ee/(max(ee)+1)) ); %#ok
+        [ wc_t, wnm ] = max( sum(dec2bin(ww(ndx2))-'0',2)+(1-ee/(max(ee)+1)) );
         % Construct a 2-element geo_mean
         wi_t     = ndx1(wi(ndx2(wnm)));
         wj_t     = ndx1(wj(ndx2(wnm)));
         n3       = n3 + 1;
-        ndxs     = [ ndxs, n3 ]; %#ok
-        map      = [ map, [ ndxs(wi_t) ; ndxs(wj_t) ; n3 ] ]; %#ok
+        ndxs     = [ ndxs, n3 ];
+        map      = [ map, [ ndxs(wi_t) ; ndxs(wj_t) ; n3 ] ];
         % Update the weights
         wt       = bitand( w(wi_t), w(wj_t) );
-        w(end+1) = 2 * wt; %#ok
-        try
-            wt       = bitcmp( wt, nq );
-            w(wi_t)  = bitand( w(wi_t), wt );
-            w(wj_t)  = bitand( w(wj_t), wt );
-        catch
-            wt       = bitcmp( uint64(wt) );
-            w(wi_t)  = double( bitand( uint64(w(wi_t)), wt ) );
-            w(wj_t)  = double( bitand( uint64(w(wj_t)), wt ) );
-        end
+        w(end+1) = 2 * wt;
+        wt       = bitcmp( wt, nq );
+        w(wi_t)  = bitand( w(wi_t), wt );
+        w(wj_t)  = bitand( w(wj_t), wt );
         % Update the count
-        ndx1 = [ ndx1, length(ndxs) ]; %#ok
+        ndx1 = [ ndx1, length(ndxs) ];
         [ ff, ee ] = log2( w(ndx1) ); %#ok
         ndx1 = ndx1( ff ~= 0.5 & ff ~= 0 );
     end
 end
-
 %
 % Now do standard left-to-right combining
 %    x1^3 x2^2 x3^3 = x1 x1 x1 x2 x2 x3 x3 x3
@@ -281,9 +272,9 @@ for k = 1 : nq,
     ntt = 0.5 * length( n12 );
     if ntt >= 1,
         n3    = n3(end) + 1 : n3(end) + ntt;
-        map   = [ map, [ reshape( n12, 2, ntt ) ; n3 ] ]; %#ok
-        ndxs  = [ ndxs, n3 ]; %#ok
-        w     = [ w, ones( 1, ntt ) ]; %#ok
+        map   = [ map, [ reshape( n12, 2, ntt ) ; n3 ] ];
+        ndxs  = [ ndxs, n3 ];
+        w     = [ w, ones( 1, ntt ) ];
     end
 end
 if ~isempty( map ),
@@ -299,7 +290,7 @@ end
 nv    = prod( sy );
 nm    = size(map,2);
 mused = nnz( map == nm + nx ) > 1;
-cvx_begin set
+cvx_begin_set
     variable x( nx, nv );
     if isequal( mode, 'cabs' ),
         variable y( 1, nv ) complex;
@@ -341,18 +332,18 @@ cvx_begin set
     end
     if isempty( cone ),
         cone = semidefinite( [2,2,nm,nv] );
-    elseif nm > 1,
+    else
         cone = cat( 3, semidefinite( [2,2,nm-1,nv] ), cone );
     end
     xt = [ x ; xw ; xa ]; %#ok
-    xt( map(1,:), : ) == reshape( cone(1,1,:,:), [nm,nv] ); %#ok
-    xt( map(2,:), : ) == reshape( cone(2,2,:,:), [nm,nv] ); %#ok
-    xt( map(3,:), : ) == reshape( cone(2,1,:,:), [nm,nv] ); %#ok
+    xt( map(1,:), : ) == reshape( cone(1,1,:,:), [nm,nv] );
+    xt( map(2,:), : ) == reshape( cone(2,2,:,:), [nm,nv] );
+    xt( map(3,:), : ) == reshape( cone(2,1,:,:), [nm,nv] );
     tt = worig == 0;
     if any( tt ),
         x( tt, : ) >= 0; %#ok
     end
-cvx_end
+cvx_end_set
 
 %
 % Permute and reshape as needed
@@ -370,6 +361,6 @@ x = reshape( x, sx );
 y = reshape( y, sy );
 cvx_optpnt = cvxtuple( struct( 'x', x, 'y', y ) );
 
-% Copyright 2005-2014 CVX Research, Inc.
-% See the file LICENSE.txt for full copyright information.
+% Copyright 2012 Michael C. Grant and Stephen P. Boyd.
+% See the file COPYING.txt for full copyright information.
 % The command 'cvx_where' will show where this file is located.

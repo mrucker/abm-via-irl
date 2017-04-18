@@ -20,6 +20,12 @@
 
 #include <mex.h>
 #include <math.h>
+#include <matrix.h>
+
+#if !defined(MX_API_VER) || ( MX_API_VER < 0x07030000 )
+typedef int mwIndex;
+typedef int mwSize;
+#endif
 
 /**********************************************************
 * ops1 
@@ -100,7 +106,7 @@ void mexFunction(int nlhs, mxArray  *plhs[],
     
     numblk = mxGetN(prhs[0]); 
     blksize = mxGetPr(prhs[0]);
-    cumblk = (int*)mxCalloc(numblk+1,sizeof(int)); 
+    cumblk = mxCalloc(numblk+1,sizeof(int)); 
     for (l=0; l<numblk; l++) { 
         cols = (int)blksize[l]; 
         cumblk[l+1] = cumblk[l] + cols;  
@@ -110,20 +116,20 @@ void mexFunction(int nlhs, mxArray  *plhs[],
     options = (int)*mxGetPr(prhs[3]); 
     if (mxGetM(prhs[2]) != n) {
        mexErrMsgTxt("mexqops: dim not compatible.");  }
-    if (options < 3 && mxGetM(prhs[1]) != n) {        
+    if (options < 3 & mxGetM(prhs[1]) != n) {        
        mexErrMsgTxt("mexqops: dim not compatible.."); }            
-    if (options >= 3 && mxGetM(prhs[1]) != numblk) { 
+    if (options >= 3 & mxGetM(prhs[1]) != numblk) { 
        mexErrMsgTxt("mexqops: dim not compatible..."); }    
     if (mxIsSparse(prhs[1])) { 
        irx = mxGetIr(prhs[1]);  jcx = mxGetJc(prhs[1]); xtmp = mxGetPr(prhs[1]); 
-       x = (double*)mxCalloc(n,sizeof(double)); 
+       x = mxCalloc(n,sizeof(double)); 
        for (k=0; k<jcx[1]; ++k) { r=irx[k]; x[r]=xtmp[k]; } }
     else { 
        x = mxGetPr(prhs[1]);    
     }    
     if (mxIsSparse(prhs[2])) { 
        iry = mxGetIr(prhs[2]);  jcy = mxGetJc(prhs[2]); ytmp = mxGetPr(prhs[2]); 
-       y = (double*)mxCalloc(n,sizeof(double)); 
+       y = mxCalloc(n,sizeof(double)); 
        for (k=0; k<jcy[1]; ++k) { r=iry[k]; y[r]=ytmp[k]; }  }
     else { 
        y = mxGetPr(prhs[2]); 

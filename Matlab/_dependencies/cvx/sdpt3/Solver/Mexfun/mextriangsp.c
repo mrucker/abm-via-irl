@@ -12,6 +12,12 @@
 
 #include <mex.h>
 #include <math.h>
+#include <matrix.h>
+
+#if !defined(MX_API_VER) || ( MX_API_VER < 0x07030000 )
+typedef int mwIndex;
+typedef int mwSize;
+#endif
 
 /*************************************************************
   bwsolve2: solve Ux = b for x by backward substitutions. 
@@ -103,7 +109,7 @@ void fwsolve2(int n, double *U, mwIndex *irU, mwIndex *jcU,
    if (isspb) {
       btmp = mxGetPr(prhs[1]);
       irb = mxGetIr(prhs[1]); jcb = mxGetJc(prhs[1]); 
-      b = (double*)mxCalloc(n,sizeof(double));       
+      b = mxCalloc(n,sizeof(double));       
       kend = jcb[1]; 
       for (k=0; k<kend; k++) { b[irb[k]] = btmp[k]; } 
    } else {

@@ -37,14 +37,6 @@
 #if !defined(BLKSDP)
 #define BLKSDP
 #include "mex.h"
-#ifdef OCTAVE
-#include "f77blas.h"
-#define FORT(x) BLASFUNC(x)
-#else
-#include "blas.h"
-#define FORT(x) FORTRAN_WRAPPER(x)
-typedef ptrdiff_t blasint;
-#endif
 
 /* ------------------------------------------------------------
    Type definitions:
@@ -122,6 +114,21 @@ typedef struct{
 
 #define kiqsort(vec,n)  qsort((void *)(vec), (n), sizeof(keyint), (COMPFUN) kicmp);
 #define kdsortdec(vec,n)  qsort((void *)(vec), (n), sizeof(keydouble), (COMPFUN) kdcmpdec);
+
+/*BLAS functions returning anything other than void need to be declared here as
+ *Matlab does not include a header file, so the compiler will
+ *assume they return an int.*/
+#ifdef PC
+extern double ddot(const mwIndex*, const double*, const mwIndex*, const double*, const mwIndex*);
+extern double dnrm2(const mwIndex*, const double*, const mwIndex*);
+extern mwIndex idamax(mwIndex *,double *,mwIndex *);
+#endif
+
+#ifdef UNIX
+extern double ddot_(const mwIndex*, const double*,const mwIndex*, const double*, const mwIndex*);
+extern double dnrm2_(const mwIndex*, const double*,const mwIndex*);
+extern mwIndex idamax_(const mwIndex *,const double *,const mwIndex *);
+#endif
 
 /* ------------------------------------------------------------
    Prototypes:

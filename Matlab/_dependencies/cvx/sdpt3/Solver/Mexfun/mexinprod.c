@@ -12,6 +12,12 @@
 
 #include <mex.h>
 #include <math.h>
+#include <matrix.h>
+
+#if !defined(MX_API_VER) || ( MX_API_VER < 0x07030000 )
+typedef int mwIndex;
+typedef int mwSize;
+#endif
 
 /**********************************************************
 * realdot1: x dense, y dense 
@@ -101,7 +107,7 @@ void mexFunction(int nlhs,   mxArray  *plhs[],
           jcB = mxGetJc(prhs[2]); 
           Btmp = mxGetPr(prhs[2]); 
           /***** copy Btmp to B *****/ 
-          B = (double*)mxCalloc(m2,sizeof(double)); 
+          B = mxCalloc(m2,sizeof(double)); 
           kstart = jcB[0]; kend = jcB[1]; 
           for (k=kstart; k<kend; k++) { 
 	      r = irB[k]; B[r] = Btmp[k]; }

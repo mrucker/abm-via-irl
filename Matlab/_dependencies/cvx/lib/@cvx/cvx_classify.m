@@ -47,7 +47,7 @@ end
 tt = isnan( v );
 v( tt ) = 13;
 
-if nnz( cvx___.exp_used ),
+if nnz( cvx___.exponential ),
     tt = find( ( v == 13 | v == 7 ) & q == 1 );
     if ~isempty( tt ),
         [ rx, cx, vx ] = find( x.basis_( :, tt ) );
@@ -63,6 +63,6 @@ if nnz( cvx___.exp_used ),
     end
 end
 
-% Copyright 2005-2014 CVX Research, Inc.
-% See the file LICENSE.txt for full copyright information.
+% Copyright 2012 Michael C. Grant and Stephen P. Boyd.
+% See the file COPYING.txt for full copyright information.
 % The command 'cvx_where' will show where this file is located.

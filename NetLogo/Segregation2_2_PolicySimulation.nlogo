@@ -98,7 +98,7 @@ to update-agents
   ask turtles [
     ;determine states
     set people-around other turtles in-radius proximity-radius
-    set potential-partner people-around with [ conversation-length = 0 ]
+    set potential-partner people-around with [ conversation-length = 0 and partner = nobody ]
 
     if (conversation-length = 0) [
       ifelse (any? potential-partner or partner != nobody) [;in case there is a potential partner or the other agent has picked me as a partner
@@ -189,9 +189,9 @@ to do-action
     let num-conversation-with-partner (item partner-id conversation-history + 1)
     set conversation-history replace-item partner-id conversation-history num-conversation-with-partner
     set last-conversation replace-item partner-id last-conversation ticks
-    ;if (num-conversation-with-partner > 3) [
-      ;create-link-with partner
-    ;]
+    if (num-conversation-with-partner = 5) [
+      create-link-with partner
+    ]
 
     ask partner
     [
@@ -260,8 +260,16 @@ to update-agent-links
       set partner-id id2
     ][ set partner-id id1 ]
 
-    if (ticks - (item partner-id [last-conversation] of myself) > 10) [
+    if (ticks - (item partner-id [last-conversation] of myself) > 50) [
+      ask turtle id1 [
+        set conversation-history replace-item id2 conversation-history 0
+      ]
+      ask turtle id2 [
+        set conversation-history replace-item id1 conversation-history 0
+      ]
+
       die
+
 ;      set [conversation-history] of myself replace-item partner-id [conversation-history] of myself 0
 ;      set [last-conversation] of myself replace-item partner-id [last-conversation] of myself 0
     ]
@@ -281,15 +289,15 @@ to update-agent-links
 ;
 ;  while [partner-id < number-of-agents] [
 ;    if ((item partner-id last-conversation) > 0 ) [
-;      if (ticks - (item partner-id last-conversation) > 10) [
+;      if (ticks - (item partner-id last-conversation) > 20) [
 ;        set conversation-history replace-item partner-id conversation-history 0
 ;        set last-conversation replace-item partner-id last-conversation 0
 ;      ]
 ;    ]
 ;
-;    if (item partner-id conversation-history > 5) [
-;      create-link-with turtle partner-id
-;    ]
+;;    if (item partner-id conversation-history > 5) [
+;;      create-link-with turtle partner-id
+;;    ]
 ;    set partner-id partner-id + 1
 ;  ]
 
@@ -516,7 +524,7 @@ proximity-radius
 proximity-radius
 1
 10
-2
+1
 1
 1
 NIL

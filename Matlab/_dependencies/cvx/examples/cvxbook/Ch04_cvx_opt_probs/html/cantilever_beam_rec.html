@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <title>Section 4.5.4: Design of a cantilever beam: recursive formulation (GP)</title>
-<link rel="canonical" href="/Users/mcgrant/Projects/CVX/examples/cvxbook/Ch04_cvx_opt_probs/html/cantilever_beam_rec.html">
+<link rel="canonical" href="http://cvxr.com/cvx/examples/cvxbook/Ch04_cvx_opt_probs/html/cantilever_beam_rec.html">
 <link rel="stylesheet" href="../../../examples.css" type="text/css">
 </head>
 <body>
@@ -100,33 +100,32 @@ Building recursive relations for index: 2
 Building recursive relations for index: 1
  
 Successive approximation method to be employed.
-   SDPT3 will be called several times to refine the solution.
-   Original size: 231 variables, 88 equality constraints
+   sedumi will be called several times to refine the solution.
+   Original size: 127 variables, 88 equality constraints
    23 exponentials add 184 variables, 115 equality constraints
 -----------------------------------------------------------------
  Cones  |             Errors              |
 Mov/Act | Centering  Exp cone   Poly cone | Status
 --------+---------------------------------+---------
- 15/ 15 | 8.000e+00  6.560e-01  0.000e+00 | Solved
- 23/ 23 | 2.725e-01  5.153e-03  0.000e+00 | Solved
- 16/ 16 | 1.372e-02  1.293e-05  0.000e+00 | Solved
-  6/ 11 | 1.057e-03  6.085e-08  0.000e+00 | Solved
-  0/  0 | 8.196e-05  0.000e+00  0.000e+00 | Solved
+  8/  8 | 2.949e+00  6.560e-01  7.202e-08 | Solved
+  8/  8 | 2.417e-01  4.179e-03  1.569e-07 | Solved
+  8/  8 | 1.641e-02  1.922e-05  1.253e-08 | Solved
+  8/  8 | 1.033e-03  8.954e-08  1.041e-08 | Solved
+  0/  8 | 6.465e-05  1.084e-08  1.031e-08 | Solved
 -----------------------------------------------------------------
 Status: Solved
-Optimal value (cvx_optval): +42.3965
- 
+Optimal value (cvx_optval): +40.9668
 The optimal widths and heights are: 
 
 w =
 
     0.6214
     0.7830
-    0.9060
-    1.0124
-    1.1004
-    1.1762
-    1.2000
+    0.8963
+    0.9865
+    1.0627
+    1.1292
+    1.1888
     1.3333
 
 
@@ -134,14 +133,14 @@ h =
 
     3.1072
     3.9149
-    4.5299
-    5.0620
-    5.5019
-    5.8811
-    6.0000
+    4.4814
+    4.9324
+    5.3133
+    5.6462
+    5.9439
     6.0000
 
-The optimal minimum volume of the beam is 42.3965.
+The optimal minimum volume of the beam is 40.9668.
 </pre>
 <a id="plots"></a>
 <div id="plotoutput">
