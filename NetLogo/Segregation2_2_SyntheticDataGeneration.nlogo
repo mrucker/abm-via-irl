@@ -10,6 +10,8 @@ globals [
   ;global statistics
   percent-same-color-area          ;on average, percentage of majority color agents in a 10-by-10 patch
   percent-same-color-conversation  ;on average, percentage of conversation time with a same color partner
+  array-spatial-segregation
+  array-social-segregation
 ]
 
 turtles-own [
@@ -60,6 +62,9 @@ to setup
   set percent-same-color-area 0
   set percent-same-color-conversation 0
   set episode 1
+
+  set array-spatial-segregation []
+  set array-social-segregation []
 
   setup-file
   reset-ticks
@@ -310,6 +315,19 @@ to update-global-statistics
   let total-time-with-different-color sum [cumulative-conversation-length-with-different-color] of turtles
   set percent-same-color-conversation (total-time-with-same-color / (total-time-with-same-color + total-time-with-different-color)) * 100
   set percent-same-color-area mean [same-people-ratio-around-me] of turtles
+
+  set array-spatial-segregation (lput percent-same-color-area array-spatial-segregation)
+  set array-social-segregation (lput percent-same-color-conversation array-social-segregation)
+
+  if (ticks = 300 or ticks = 600 or ticks = 900 or ticks = 1200) [
+    show ( word "[ticks] " ticks ": mean spatial-segregation is " mean array-spatial-segregation)
+    show ( word "[ticks] " ticks ": variance of spatial-segregation is " variance array-spatial-segregation)
+    show ( word "[ticks] " ticks ": mean social-segregation is " mean array-social-segregation)
+    show ( word "[ticks] " ticks ": variance of social-segregation is " variance array-social-segregation)
+    set array-spatial-segregation []
+    set array-social-segregation []
+  ]
+
 end
 
 
