@@ -21,8 +21,15 @@ expert_trajectories = horzcat(expert_trajectories{1}, expert_trajectories{2}, ex
 
 %expert_trajectories = expert_trajectories(expert_trajectories(:,8) == 3, :);
 
+
+% get overall transition probabilities
+fprintf('Getting overall transition probabilities...\n');
+skip_line = find(expert_trajectories(:, 2) ~= [zeros(1,1);expert_trajectories(1:end-1, 2)]);
+overall_P = T_4(expert_trajectories(:, [7 3 4 5 6]), skip_line, num_actions, num_states, state_space);
+
+
 % Calulate empirical estimates of feature expectations for all agents
-fprintf('Calulating empirical estimates of feature expectations...\n');
+fprintf('Calulating empirical estimates of feature expectations for all agents...\n');
 agentId_list = unique(expert_trajectories(:,1));
 num_agents = length(agentId_list);
 episode_list = unique(expert_trajectories(:,2))';
@@ -75,7 +82,6 @@ figure('visible', 'off');
 [~, T] = dendrogram(clustTree, num_clusters);
 
 
-
 % get distribution of first state
 group_D = cell(num_clusters, 1);
 for c=1:num_clusters
@@ -84,27 +90,20 @@ for c=1:num_clusters
     group_D{c} = sum(initCount(group_agent_idx{c},:),1)./sum(sum(initCount(group_agent_idx{c},:)));
 end
 
+
 % get group_trajectories for each group
 group_trajectories = cell(num_clusters, 1);
 for c=1:num_clusters
-    [~, group_steps] = ismember(42, expert_trajectories(:,1));
-    
-    
-    
-    agentId_list(group_agent_idx{c})
-    
-    
-    
-   group_trajectories{c} = expert_trajectories(agentId_list(group_agent_idx{c}),:);
+   group_trajectories{c} = expert_trajectories(ismember(expert_trajectories(:,1), agentId_list(group_agent_idx{c})),:);
 end
 
 
 % get transition probabilities for each group
-fprintf('Getting transition probabilities...\n');
+fprintf('Getting transition probabilities for each group...\n');
 group_P = cell(num_clusters, 1);
 for c=1:num_clusters
     skip_line = find(group_trajectories{c}(:, 2) ~= [zeros(1,1); group_trajectories{c}(1:end-1, 2)]);
-    group_P{c} = T_4(group_trajectories{c}(:, [7 3 4 5 6]), skip_line, num_actions, num_states, state_space);
+    group_P{c} = T_4(group_trajectories{c}(:, [7 3 4 5 6]), skip_line, num_actions, num_states, state_space, overall_P);
 end
 
 
@@ -116,10 +115,8 @@ for c=1:num_clusters
 end
 
 % Calculate state_action_frequency
-SAF = cell(num_clusters, 1);
-for c=1:num_clusters
-    SAF{c} = state_action_frequency(num_clusters, group_trajectories{c}, group_agent_idx, agentId_list, num_states, num_actions, state_space);
-end
+SAF = state_action_frequency(num_clusters, expert_trajectories, group_agent_idx, agentId_list, num_states, num_actions, state_space);
+
 
 % Initialize result variables
 pol_selected = cell(num_clusters, 1);
@@ -139,7 +136,7 @@ for c=1:num_clusters
     % Projection algorithm
     % 1.
     Pol{1}  = ceil(rand(num_states,1) * num_actions);
-    mu(:,1) = feature_expectations_2(P, discount, D, Pol{1}, num_samples, num_steps, num_features, phis);
+    mu(:,1) = feature_expectations_2(group_P{c}, discount, group_D{c}, Pol{1}, num_samples, num_steps, num_features, phis);
     i = 2;
 
     tts = 0;
@@ -149,14 +146,14 @@ for c=1:num_clusters
     tic
     while 1
         if i > 2
-            a = (mu(:,i-1) - mu_est(:,i-2))' * (mu_expert_cluster{c} - mu_est(:,i-2)); 
+            a = (mu(:,i-1) - mu_est(:,i-2))' * (group_mu_expert{c} - mu_est(:,i-2)); 
             b = (mu(:,i-1) - mu_est(:,i-2))' * (mu(:,i-1) - mu_est(:,i-2));
 
             mu_est(:,i - 1) = mu_est(:,i - 2) + (a / b) * (mu(:,i - 1) - mu_est(:,i - 2));
         else
             mu_est(:,1) = mu(:,1);
         end
-        w(:,i) = mu_expert_cluster{c} - mu_est(:,i - 1);
+        w(:,i) = group_mu_expert{c} - mu_est(:,i - 1);
         t(i)   = norm(w(:,i), 2);
         w(:,i) = w(:,i) / t(i);
 
@@ -172,10 +169,10 @@ for c=1:num_clusters
         % 4.
         %R = reshape(w(:,i), [num_actions, num_states])'; %reshape w into S*A
         R = repmat(w(:,i), 1, num_actions);
-        [V, Pol{i}, iter, cpu_time] = mdp_value_iteration(P, R, discount);
+        [V, Pol{i}, iter, cpu_time] = mdp_value_iteration(group_P{c}, R, discount);
 
         % 5.
-        mu(:,i) = feature_expectations_2(P, discount, D, Pol{i}, num_samples, num_steps, num_features, phis);
+        mu(:,i) = feature_expectations_2(group_P{c}, discount, group_D{c}, Pol{i}, num_samples, num_steps, num_features, phis);
 
         % 6.
         i = i + 1;
@@ -183,7 +180,7 @@ for c=1:num_clusters
     toc
     
     fprintf('[Cluster %d] Selecting feature expectations closest to expert...\n', c);
-    distances = bsxfun(@minus, mu, mu_expert_cluster{c});
+    distances = bsxfun(@minus, mu, group_mu_expert{c});
     distances = sqrt(sum(distances .^ 2));
     [min_distance, selected] = min(distances);
     fprintf('[Cluster %d] Distance: %6.4f\n\n', min_distance, c);
@@ -196,7 +193,7 @@ for c=1:num_clusters
     fprintf('[Cluster %d] Calculating combination of mu...\n', c);
     cvx_begin
         variable lambda(i-1)
-        minimize( norm( mu*lambda - mu_expert_cluster{c}, 2 ) )
+        minimize( norm( mu*lambda - group_mu_expert{c}, 2 ) )
         subject to
             sum(lambda) == 1;
             lambda >= 0;
