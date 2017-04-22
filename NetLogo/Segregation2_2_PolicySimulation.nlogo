@@ -122,13 +122,10 @@ to update-agents
     [ ifelse (rand < item 2 cum-prob) [ set action 3 ]
     [ set action 4 ]]]
 
-    ;do action unless it tries illegal actions
-;    ifelse (action = 3 and member? state [1 6 10 14 18 22 3 8 12 16 20 24]) or (action = 4 and member? state [1 2 3 4]) [
-;      die
-;    ][
-      do-action
-;    ]
-    ;update-agent-links
+    do-action
+    if (Network-Analysis = true) [
+      update-agent-links
+    ]
     update-agent-statistics
   ]
 end
@@ -194,9 +191,12 @@ to do-action
     let num-conversation-with-partner (item partner-id conversation-history + 1)
     set conversation-history replace-item partner-id conversation-history num-conversation-with-partner
     set last-conversation replace-item partner-id last-conversation ticks
-;    if (num-conversation-with-partner = 5) [
-;      create-link-with partner
-;    ]
+
+    if (Network-Analysis = true) [
+      if (num-conversation-with-partner = 5) [
+        create-link-with partner
+      ]
+    ]
 
     ask partner
     [
@@ -456,9 +456,9 @@ PENS
 
 SLIDER
 15
-55
+115
 240
-88
+148
 number-of-agents
 number-of-agents
 100
@@ -505,9 +505,9 @@ NIL
 
 SLIDER
 15
-95
+155
 240
-128
+188
 short-distance
 short-distance
 0
@@ -520,9 +520,9 @@ HORIZONTAL
 
 SLIDER
 15
-135
+195
 240
-168
+228
 long-distance
 long-distance
 0
@@ -535,9 +535,9 @@ HORIZONTAL
 
 SLIDER
 15
-175
+235
 240
-208
+268
 proximity-radius
 proximity-radius
 1
@@ -547,6 +547,17 @@ proximity-radius
 1
 NIL
 HORIZONTAL
+
+SWITCH
+15
+65
+177
+98
+Network-Analysis
+Network-Analysis
+1
+1
+-1000
 
 @#$#@#$#@
 ## ACKNOWLEDGMENT
