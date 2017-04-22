@@ -1,4 +1,4 @@
-function P = T_4(SA, skip_line, num_actions, num_states, state_space)
+function P = T_4(SA, skip_line, num_actions, num_states, state_space, overall_P)
 %%    actions
 %     action 1, move short distance
 %     action 2, move long distance
@@ -46,7 +46,11 @@ function P = T_4(SA, skip_line, num_actions, num_states, state_space)
     
     % project the calculated transition probabilities onto the non-observed but structurally same state-actions
     % and assign transition probabilities for illegal actions and unreachable states
-    P = Assign(P, Cnt, num_actions, num_states, state_space);
+    if ~exist('overall_P', 'var')
+        P = Assign(P, Cnt, num_actions, num_states, state_space);
+    else
+        P = Assign(P, Cnt, num_actions, num_states, state_space, overall_P);
+    end 
     
     Validate(P, num_actions, num_states);
 end
@@ -84,7 +88,7 @@ function p = Normalize(P)
    p = P;
 end
 
-function p = Assign(P, Cnt, num_actions, num_states, state_space)
+function p = Assign(P, Cnt, num_actions, num_states, state_space, overall_P)
     
     % model probability: action 1 in state(0,0,0,0)
     P = Copy_Identical(P, [[1,1]; [1,2]]);
@@ -130,38 +134,41 @@ function p = Assign(P, Cnt, num_actions, num_states, state_space)
     % 4. start a conversation when having a conversation
     P{3}(find(state_space(:,1) ~= 0), :) = 0;
     P{3}(find(state_space(:,1) ~= 0), 29) = 1;
-
     
-    % assign probability for definite actions
-    for from = [9:17, 19:27]
-        to = from + 1;
-        if(sum(Cnt{4}(from, :)) < 10) % in case there are little evidence to estimate the probability
-            P{4}(from, :) = P{4}(from-1, :);
-            P{4}(from, to - 1) = 0;
-            P{4}(from, to) = P{4}(from-1, to-1);
+    if ~exist('overall_P', 'var')
+        % assign probability for definite actions
+        for from = [9:17, 19:27]
+            to = from + 1;
+            if(sum(Cnt{4}(from, :)) < 10) % in case there are little evidence to estimate the probability
+                P{4}(from, :) = P{4}(from-1, :);
+                P{4}(from, to - 1) = 0;
+                P{4}(from, to) = P{4}(from-1, to-1);
+                %P{4}(from, :) = 0;
+                %P{4}(from, to) = 1;
+            end
+        end
+
+        % assign probability for limbo state
+        P{1}(29, :) = 0;
+        P{2}(29, :) = 0;
+        P{3}(29, :) = 0;
+        P{4}(29, :) = 0;
+        P{1}(29, 29) = 1;
+        P{2}(29, 29) = 1;
+        P{3}(29, 29) = 1;
+        P{4}(29, 29) = 1;
+    else
+        % assign overall transition probabilities for unobserved actions
+        for s=1:num_states
+            for a=1:num_actions
+                if (abs(nansum(P{a}(s,:)) - 1) > .001)
+                    P{a}(s,:) = overall_P{a}(s,:);
+                end
+            end
         end
     end
-    
-    
-    % assign probability for limbo state
-    P{1}(29, :) = 0;
-    P{2}(29, :) = 0;
-    P{3}(29, :) = 0;
-    P{4}(29, :) = 0;
-    P{1}(29, 29) = 1;
-    P{2}(29, 29) = 1;
-    P{3}(29, 29) = 1;
-    P{4}(29, 29) = 1;
-        
 
-% any remaining, undefined transitions send to the limbo state
-%     for s=1:num_states
-%         for a=1:num_actions
-%             if sum(P{a}(s, :)) == 0
-%                 P{a}(s,25) = 1;
-%             end
-%         end
-%     end
+
     
     p = P;
 end
