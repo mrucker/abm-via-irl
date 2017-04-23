@@ -76,7 +76,7 @@ figure('visible', 'on');
 dendrogram(clustTree, 0);
 
 prompt = 'How many clusters seems to be there? ';
-num_clusters = input(prompt);
+%num_clusters = input(prompt);
 group_agent_idx = cell(num_clusters,1);
 figure('visible', 'off');
 [~, T] = dendrogram(clustTree, num_clusters);
@@ -120,9 +120,12 @@ SAF = state_action_frequency(num_clusters, expert_trajectories, group_agent_idx,
 
 % Initialize result variables
 pol_selected = cell(num_clusters, 1);
+pol_max_lambda = cell(num_clusters, 1);
 stochastic_pol_selected = cell(num_clusters, 1);
 w_last = cell(num_clusters, 1);
 w_selected = cell(num_clusters, 1);
+mixture_weights = cell(num_clusters, 1);
+Pol_all = cell(num_clusters, 1);
 
 for c=1:num_clusters
     fprintf('[Cluster %d] Starting projection algorithm...\n', c);
@@ -135,7 +138,8 @@ for c=1:num_clusters
     
     % Projection algorithm
     % 1.
-    Pol{1}  = ceil(rand(num_states,1) * num_actions);
+    Pol{1} = ceil(rand(num_states,1) * num_actions);
+    Pol_all{c,1} = ceil(rand(num_states,1) * num_actions);
     mu(:,1) = feature_expectations_2(group_P{c}, discount, group_D{c}, Pol{1}, num_samples, num_steps, num_features, phis);
     i = 2;
 
@@ -170,6 +174,7 @@ for c=1:num_clusters
         %R = reshape(w(:,i), [num_actions, num_states])'; %reshape w into S*A
         R = repmat(w(:,i), 1, num_actions);
         [V, Pol{i}, iter, cpu_time] = mdp_value_iteration(group_P{c}, R, discount);
+        Pol_all{c,i} = Pol{i};
 
         % 5.
         mu(:,i) = feature_expectations_2(group_P{c}, discount, group_D{c}, Pol{i}, num_samples, num_steps, num_features, phis);
@@ -199,6 +204,8 @@ for c=1:num_clusters
             lambda >= 0;
     cvx_end
     [~,idx] = max(lambda);
+    pol_max_lambda{c} = Pol{idx};
+    mixture_weights{c} = lambda;
     mu_mixed = mu*lambda;
     
     stochastic_pol_selected{c} = zeros(num_states, num_actions);
@@ -234,7 +241,8 @@ determ_pol = cell(num_clusters, 1);
 for c=1:num_clusters
     determ_pol{c} = zeros(num_states, num_actions);
     for s=1:num_states
-        determ_pol{c}(s, pol_selected{c}(s)) = 1;
+        %determ_pol{c}(s, pol_selected{c}(s)) = 1;
+        determ_pol{c}(s, pol_max_lambda{c}(s)) = 1;
     end
 end
 
@@ -255,6 +263,54 @@ for c=1:num_clusters
     title('Stochastic Policy learned from IRL');
     xlabel('STATES');
 end
+
+
+
+
+
+
+
+
+
+
+
+cluster = 2;
+[~, ix] = sort(mixture_weights{cluster});
+top_3_mix_ix = ix(end-2:end);
+top_3_pol = cell(3, 1);
+for t=1:3
+    top_3_pol{t} = zeros(num_states, num_actions);
+    for s=1:num_states
+        %determ_pol{c}(s, pol_max_lambda{c}(s)) = 1;
+        top_3_pol{t}(s, Pol_all{cluster,top_3_mix_ix(t)}(s)) = 1;
+    end
+end
+
+figure
+subplot(2,2,1);
+heatmap(SAF{cluster}', x_scale, y_scale, '%0.2f', 'Colorbar', true, 'NaNColor', [0 0 0]);
+title('Original State Action Frequency');
+subplot(2,2,2);
+heatmap(top_3_pol{1}', x_scale, y_scale, '%0.2f', 'Colorbar', true, 'NaNColor', [0 0 0]);
+title(sprintf('Policy Mix 1 learned from IRL (weights: %.2f)',mixture_weights{cluster}(top_3_mix_ix(3))));
+subplot(2,2,3);
+heatmap(top_3_pol{2}', x_scale, y_scale, '%0.2f', 'Colorbar', true, 'NaNColor', [0 0 0]);
+title(sprintf('Policy Mix 2 learned from IRL (weights: %.2f)',mixture_weights{cluster}(top_3_mix_ix(2))));
+xlabel('STATES');
+subplot(2,2,4);
+heatmap(top_3_pol{3}', x_scale, y_scale, '%0.2f', 'Colorbar', true, 'NaNColor', [0 0 0]);
+title(sprintf('Policy Mix 3 learned from IRL (weights: %.2f)',mixture_weights{cluster}(top_3_mix_ix(1))));
+xlabel('STATES');
+
+
+
+
+
+
+
+
+
+
 
 figure
 for c=1:num_clusters
