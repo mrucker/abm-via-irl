@@ -74,9 +74,11 @@ dist = pdist(mu_expert', 'cosine');
 clustTree = linkage(dist, 'average');
 figure('visible', 'on');
 dendrogram(clustTree, 0);
+set(gca, 'XTickLabelMode', 'Manual')
+set(gca, 'XTick', [])
 
 prompt = 'How many clusters seems to be there? ';
-%num_clusters = input(prompt);
+num_clusters = input(prompt);
 group_agent_idx = cell(num_clusters,1);
 figure('visible', 'off');
 [~, T] = dendrogram(clustTree, num_clusters);
@@ -287,18 +289,17 @@ for t=1:3
 end
 
 figure
-subplot(2,2,1);
+subplot(4,1,1);
 heatmap(SAF{cluster}', x_scale, y_scale, '%0.2f', 'Colorbar', true, 'NaNColor', [0 0 0]);
 title('Original State Action Frequency');
-subplot(2,2,2);
-heatmap(top_3_pol{1}', x_scale, y_scale, '%0.2f', 'Colorbar', true, 'NaNColor', [0 0 0]);
+subplot(4,1,2);
+heatmap(top_3_pol{1}', x_scale, y_scale, [], 'Colorbar', true, 'NaNColor', [0 0 0]);
 title(sprintf('Policy Mix 1 learned from IRL (weights: %.2f)',mixture_weights{cluster}(top_3_mix_ix(3))));
-subplot(2,2,3);
-heatmap(top_3_pol{2}', x_scale, y_scale, '%0.2f', 'Colorbar', true, 'NaNColor', [0 0 0]);
+subplot(4,1,3);
+heatmap(top_3_pol{2}', x_scale, y_scale, [], 'Colorbar', true, 'NaNColor', [0 0 0]);
 title(sprintf('Policy Mix 2 learned from IRL (weights: %.2f)',mixture_weights{cluster}(top_3_mix_ix(2))));
-xlabel('STATES');
-subplot(2,2,4);
-heatmap(top_3_pol{3}', x_scale, y_scale, '%0.2f', 'Colorbar', true, 'NaNColor', [0 0 0]);
+subplot(4,1,4);
+heatmap(top_3_pol{3}', x_scale, y_scale, [], 'Colorbar', true, 'NaNColor', [0 0 0]);
 title(sprintf('Policy Mix 3 learned from IRL (weights: %.2f)',mixture_weights{cluster}(top_3_mix_ix(1))));
 xlabel('STATES');
 
@@ -326,11 +327,11 @@ cluster_policy = input(prompt);
 for c=1:num_clusters
     figure
     subplot(2,1,1);
-    heatmap(SAF{c}', x_scale, y_scale, '%0.2f', 'Colorbar', true, 'NaNColor', [0 0 0]);
+    heatmap(SAF{c}', x_scale, y_scale, [], 'Colorbar', true, 'NaNColor', [0 0 0]);
     title('Original State Action Frequency');
     subplot(2,1,2);
     if (cluster_policy(c) == 1)
-        heatmap(determ_pol{c}', x_scale, y_scale, '%0.2f', 'Colorbar', true, 'NaNColor', [0 0 0]);
+        heatmap(determ_pol{c}', x_scale, y_scale, [], 'Colorbar', true, 'NaNColor', [0 0 0]);
         title('Deterministic Policy learned from IRL');
         xlabel('STATES');
     elseif (cluster_policy(c) == 2)

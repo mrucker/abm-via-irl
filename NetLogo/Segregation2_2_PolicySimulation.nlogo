@@ -50,12 +50,13 @@ to setup
 
   set-default-shape turtles "person"
   ask n-of number-of-agents patches [ sprout 1 ]
+  ask patches [set pcolor 9.9]
 
   ask turtles [
     set state 0
     set action 0
     set policy []
-    set color one-of [ red green ] ;make approximately half the turtles red and the other half green
+    set color one-of [ 6 0 ] ;make approximately half the turtles red and the other half green
     set conversation-length 0
     set any-partner-to-talk? 0
     set recent-partner-like-me? 0
@@ -395,9 +396,9 @@ GRAPHICS-WINDOW
 270
 10
 892
-653
+629
 25
-25
+24
 12.0
 1
 10
@@ -410,8 +411,8 @@ GRAPHICS-WINDOW
 1
 -25
 25
--25
-25
+-24
+24
 1
 1
 1
@@ -512,7 +513,7 @@ short-distance
 short-distance
 0
 5
-0
+1
 1
 1
 NIL
@@ -555,7 +556,7 @@ SWITCH
 98
 Network-Analysis
 Network-Analysis
-1
+0
 1
 -1000
 
