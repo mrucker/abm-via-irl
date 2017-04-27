@@ -73,9 +73,11 @@ end
 dist = pdist(mu_expert', 'cosine');
 clustTree = linkage(dist, 'average');
 figure('visible', 'on');
-dendrogram(clustTree, 0);
+dend = dendrogram(clustTree, 0);
 set(gca, 'XTickLabelMode', 'Manual')
 set(gca, 'XTick', [])
+set(dend, 'Color', 'black')
+
 
 prompt = 'How many clusters seems to be there? ';
 num_clusters = input(prompt);
